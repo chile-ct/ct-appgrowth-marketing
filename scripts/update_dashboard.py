@@ -122,6 +122,83 @@ months_labels = [month_label(m, today) for m in all_months]
 partial = [m for m in months_labels if m.endswith("*")]
 n = len(all_months)
 
+# ── Google Sheets cost sync ───────────────────────────────────────────────────
+def fetch_sheet_cost(spreadsheet_id, months_list, current_month_idx):
+    """Read FC & Actual cost sheet, extract app growth rows, return cost per month."""
+    try:
+        import gspread
+        import google.auth
+        from google.auth.transport.requests import Request
+
+        creds, _ = google.auth.default(scopes=[
+            'https://www.googleapis.com/auth/spreadsheets.readonly',
+            'https://www.googleapis.com/auth/drive.readonly'
+        ])
+        creds.refresh(Request())
+
+        gc = gspread.authorize(creds)
+        sh = gc.open_by_key(spreadsheet_id)
+        try:
+            ws = sh.worksheet("FC & Actual cost")
+        except Exception:
+            ws = sh.get_worksheet(0)
+
+        rows = ws.get_all_values()
+        # Find header row with month names
+        month_abbr = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+        header_idx, col_map, act_col = 0, {}, 2
+        for idx, row in enumerate(rows):
+            hits = sum(1 for c in row if any(c.strip().startswith(m) for m in month_abbr))
+            if hits >= 3:
+                header_idx = idx
+                for ci, cell in enumerate(row):
+                    for mi, ma in enumerate(month_abbr):
+                        if cell.strip().startswith(ma) and mi not in col_map:
+                            col_map[mi] = ci
+                    if 'activit' in cell.lower():
+                        act_col = ci
+                break
+
+        actual_cost, forecast_cost = {}, {}
+        for row in rows[header_idx+1:]:
+            if len(row) <= act_col: continue
+            if 'app growth' not in row[act_col].lower(): continue
+            for mi, ci in col_map.items():
+                if ci >= len(row): continue
+                val_str = row[ci].replace(',','').replace(' ','').strip()
+                if not val_str: continue
+                try:
+                    val = float(val_str)
+                    if mi < current_month_idx:
+                        actual_cost[mi] = actual_cost.get(mi, 0) + val
+                    else:
+                        forecast_cost[mi] = forecast_cost.get(mi, 0) + val
+                except ValueError:
+                    pass
+
+        def get_mi(lbl):
+            for i, ma in enumerate(month_abbr):
+                if lbl.startswith(ma): return i
+            return -1
+
+        cost_out, fc_out = [], []
+        for lbl in months_list:
+            mi = get_mi(lbl)
+            if mi < 0:
+                cost_out.append(None); fc_out.append(None)
+            elif mi < current_month_idx:
+                cost_out.append(int(actual_cost.get(mi,0)) or None); fc_out.append(None)
+            else:
+                cost_out.append(None); fc_out.append(int(forecast_cost.get(mi,0)) or None)
+
+        print(f"  Sheet: {sum(1 for c in cost_out if c)} actual months, {sum(1 for c in fc_out if c)} forecast months")
+        return cost_out, [v for v in fc_out if v]
+    except Exception as e:
+        print(f"  WARNING Sheet fetch failed: {e}")
+        return None, None
+
+
+
 # Days per month
 def days_in(d):
     if d.month == 12: return 31
@@ -195,8 +272,26 @@ def pad(arr, length, val=None):
 tot_d1=pad(D['retention']['total_d1'],n); tot_d7=pad(D['retention']['total_d7'],n)
 tot_m1=pad(D['retention']['total_m1'],n)
 
-# Cost
-cost = pad(D['growth_channel']['cost'], n)
+# Cost — sync from Google Sheets
+SHEET_ID = '1D-2eQcfDMzy42wHUF4bpwCY4cWtrJNvp-kdv9R_iFUI'
+current_month_idx = today.month - 1
+sheet_actual, sheet_forecast = fetch_sheet_cost(SHEET_ID, months_labels, current_month_idx)
+
+if sheet_actual:
+    cost = sheet_actual  # actual costs per month (None for future months)
+    # Merge: use sheet data where available, keep existing for gaps
+    existing_cost = D['growth_channel']['cost']
+    for i in range(n):
+        if cost[i] is None and i < len(existing_cost) and existing_cost[i]:
+            cost[i] = existing_cost[i]  # keep existing actual if sheet missing
+else:
+    cost = pad(D['growth_channel']['cost'], n)
+
+# Forecast cost (Jun-Dec planning)
+if sheet_forecast:
+    new_forecast = [v for v in sheet_forecast if v]
+else:
+    new_forecast = D['growth_channel'].get('cost_forecast', [])
 gc_new = growth_n
 ret_d1_gc=[round(gc_new[i]*(paid_d1[i] or 0)) if gc_new[i] else None for i in range(n)]
 ret_d7_gc=[round(gc_new[i]*(paid_d7[i] or 0)) if gc_new[i] else None for i in range(n)]
@@ -253,7 +348,7 @@ out = {
         "lead_rate": [safe_div(growth_lead[i],gc_new[i]) for i in range(n)],
         "adview_daily": daily(growth_adv,days), "lead_daily": daily(growth_lead,days),
         "nurr_d1": paid_d1, "nurr_d7": paid_d7, "nurr_m1": paid_m1,
-        "cost": cost, "cost_forecast": D['growth_channel']['cost_forecast'],
+        "cost": cost, "cost_forecast": new_forecast,
         "pct_of_total_new": [safe_div(gc_new[i],total_n[i]) for i in range(n)],
         "retained_d1": ret_d1_gc, "retained_d7": ret_d7_gc, "retained_m1": ret_m1_gc,
         "cpa": [round(cost[i]/gc_new[i]) if cost[i] and gc_new[i] else None for i in range(n)],
