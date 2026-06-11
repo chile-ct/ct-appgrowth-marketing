@@ -45,6 +45,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes"
           else
-            git commit -m "data: auto-update $(date -u '+%Y-%m-%d') [skip ci]"
+            git commit -m "data: auto-update $(date -u '+%Y-%m-%d')"
             git push
           fi
