@@ -27,7 +27,7 @@ jobs:
 
       - name: Setup GCP credentials
         run: |
-          echo '${{ secrets.GCP_USER_CREDENTIALS }}' > /tmp/gcp-creds.json
+          echo '${{ secrets.GOOGLE_CREDENTIALS }}' > /tmp/gcp-creds.json
           echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-creds.json" >> $GITHUB_ENV
 
       - name: Update data
