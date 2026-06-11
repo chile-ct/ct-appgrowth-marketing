@@ -1,13 +1,12 @@
 name: Update Dashboard Data
 
 on:
-  schedule:
-    # Every day at 9:00 AM Asia/Saigon = 04:00 UTC
-    - cron: '0 4 * * *'
+  repository_dispatch:
+    types: [sheets-updated]
   workflow_dispatch:
-  repository_dispatch:
-    types: [sheets-updated]
-
+  schedule:
+    - cron: '0 4 * * *'
+ 
 jobs:
   update:
     runs-on: ubuntu-latest
