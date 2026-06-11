@@ -5,6 +5,9 @@ on:
     # Every day at 11:00 AM Asia/Saigon = 04:00 UTC
     - cron: '0 4 * * *'
   workflow_dispatch:
+  
+  repository_dispatch:
+    types: [sheets-updated]
 
 jobs:
   update:
