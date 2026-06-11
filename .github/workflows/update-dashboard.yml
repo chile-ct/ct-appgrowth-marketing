@@ -30,7 +30,7 @@ jobs:
       # 3. Cấu hình quyền truy cập BigQuery công ty
       - name: Setup GCP credentials
         run: |
-          echo '${{ secrets.GCP_USER_CREDENTIALS }}' > /tmp/gcp-creds.json
+          echo '${{ secrets.GOOGLE_CREDENTIALS }}' > /tmp/gcp-creds.json
           echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-creds.json" >> $GITHUB_ENV
 
       # 4. Chạy duy nhất script Python để kéo BigQuery + xử lý data (Đã xóa node build.js lỗi)
