@@ -2,7 +2,7 @@ name: Update Dashboard Data
 
 on:
   schedule:
-    # Every day at 11:00 AM Asia/Saigon = 04:00 UTC
+    # Every day at 9:00 AM Asia/Saigon = 04:00 UTC
     - cron: '0 4 * * *'
   workflow_dispatch:
   
