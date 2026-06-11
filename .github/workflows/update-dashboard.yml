@@ -17,35 +17,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 1. Khởi tạo môi trường Python
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
+      # 2. Chỉ cài đặt các thư viện Python (Đã xóa npm install lỗi)
       - name: Install dependencies
         run: |
           pip install google-cloud-bigquery google-auth gspread
-          npm install
 
+      # 3. Cấu hình quyền truy cập BigQuery công ty
       - name: Setup GCP credentials
         run: |
           echo '${{ secrets.GCP_USER_CREDENTIALS }}' > /tmp/gcp-creds.json
           echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-creds.json" >> $GITHUB_ENV
 
-      - name: Update data + build
+      # 4. Chạy duy nhất script Python để kéo BigQuery + xử lý data (Đã xóa node build.js lỗi)
+      - name: Update data
         run: |
           python scripts/update_dashboard.py
-          node build.js
-          cp dist/index.html index.html
 
+      # 5. Đẩy các file kết quả lên lại GitHub
       - name: Commit and push if changed
         run: |
           git config user.name "dashboard-bot"
           git config user.email "chile@chotot.vn"
-          git add index.html dist/index.html src/index.html
+          
+          # Chỉ add các file thực sự tồn tại trong repo của bạn
+          git add index.html data.json app-growth.html
+          
           if git diff --staged --quiet; then
             echo "No changes"
           else
