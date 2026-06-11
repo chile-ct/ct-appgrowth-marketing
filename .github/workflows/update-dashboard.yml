@@ -16,37 +16,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 1. Chỉ cần thiết lập Python
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
+      # 2. Cài đặt các thư viện Python cần thiết
       - name: Install dependencies
         run: |
           pip install google-cloud-bigquery google-auth gspread
-          npm install
 
+      # 3. Cấu hình tài khoản GCP
       - name: Setup GCP credentials
         run: |
           echo '${{ secrets.GCP_USER_CREDENTIALS }}' > /tmp/gcp-creds.json
           echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-creds.json" >> $GITHUB_ENV
 
-      - name: Update data + build
+      # 4. Chạy script Python để cập nhật dữ liệu (Đã bỏ node build.js thừa)
+      - name: Update data
         run: |
           python scripts/update_dashboard.py
-          node build.js
-          cp dist/index.html index.html
 
+      # 5. Lưu lại thay đổi và push lên GitHub (Đã sửa lại đường dẫn các file thực tế của bạn)
       - name: Commit and push if changed
         run: |
           git config user.name "dashboard-bot"
           git config user.email "chile@chotot.vn"
-          git add index.html dist/index.html src/index.html
+          
+          # Chỉ theo dõi các file thực sự tồn tại trong repo của bạn
+          git add data.json index.html app-growth.html
+          
           if git diff --staged --quiet; then
-            echo "No changes"
+            echo "No changes to commit"
           else
             git commit -m "data: auto-update $(date -u '+%Y-%m-%d') [skip ci]"
             git push
