@@ -554,6 +554,16 @@ canvas { max-height: 320px; }
         <div style="position:relative;height:300px"><canvas id="chartCampJobAcq"></canvas></div>
       </div>
     </div>
+    <div class="charts-grid" style="margin-bottom:16px">
+      <div class="chart-card">
+        <div class="chart-title">New Users by Campaign — VEH Vertical</div>
+        <div style="position:relative;height:300px"><canvas id="chartCampVehAcq"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">New Users by Campaign — GDS Vertical</div>
+        <div style="position:relative;height:300px"><canvas id="chartCampGdsAcq"></canvas></div>
+      </div>
+    </div>
     <div class="card" style="margin-bottom:16px">
       <div class="card-title">Acquisition — Growth Channel</div>
       <div style="overflow-x:auto"><table id="g5AcqTable"></table></div>
@@ -582,6 +592,16 @@ canvas { max-height: 320px; }
       <div class="chart-card">
         <div class="chart-title">Activation Rate by Campaign — JOB Vertical</div>
         <div style="position:relative;height:300px"><canvas id="chartCampJobAct"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-grid" style="margin-bottom:16px">
+      <div class="chart-card">
+        <div class="chart-title">Activation Rate by Campaign — VEH Vertical</div>
+        <div style="position:relative;height:300px"><canvas id="chartCampVehAct"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Activation Rate by Campaign — GDS Vertical</div>
+        <div style="position:relative;height:300px"><canvas id="chartCampGdsAct"></canvas></div>
       </div>
     </div>
     <div class="card" style="margin-bottom:16px">
@@ -1439,9 +1459,11 @@ function renderCampaignTables() {
     t0.innerHTML=`<thead>${scoreHead}</thead><tbody>${scoreRows}</tbody>`;
   }
 
-  // PTY/JOB vertical charts
+  // Vertical campaign slices
   const ptyC = byUsers.filter(r=>r.vertical==='pty').slice(0,10);
   const jobC = byUsers.filter(r=>r.vertical==='job').slice(0,10);
+  const vehC = byUsers.filter(r=>r.vertical==='veh').slice(0,10);
+  const gdsC = byUsers.filter(r=>r.vertical==='gds').slice(0,10);
 
   function shortName(n) { return n.length>30?n.substring(0,28)+'…':n; }
 
@@ -1449,7 +1471,7 @@ function renderCampaignTables() {
     const ctx = document.getElementById(canvasId); if(!ctx) return;
     const existing = Object.values(Chart.instances||{}).find(c=>c.canvas?.id===canvasId);
     if(existing) existing.destroy();
-    if(!campaigns.length){ ctx.parentElement.innerHTML=`<div style="text-align:center;color:#9ca3af;padding:40px;font-size:12px">No ${canvasId.includes('Pty')?'PTY':'JOB'} campaigns found</div>`; return; }
+    if(!campaigns.length){ const v=canvasId.includes('Pty')?'PTY':canvasId.includes('Job')?'JOB':canvasId.includes('Veh')?'VEH':'GDS'; ctx.parentElement.innerHTML=`<div style="text-align:center;color:#9ca3af;padding:40px;font-size:12px">No ${v} campaigns found</div>`; return; }
     const labels = campaigns.map(r=>shortName(r.name));
     const data   = campaigns.map(r=>r[valueKey]||0);
     new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:title,data,backgroundColor:color+'cc',borderColor:color,borderWidth:1,borderRadius:3}]},
@@ -1459,10 +1481,17 @@ function renderCampaignTables() {
           y:{grid:{display:false},ticks:{font:{size:10}}}}}});
   }
 
-  makeHBar('chartCampPtyAcq', ptyC, 'new_users',       'New Users',       v=>v>=1000?(v/1000).toFixed(1)+'K':v, C.blue);
-  makeHBar('chartCampJobAcq', jobC, 'new_users',       'New Users',       v=>v>=1000?(v/1000).toFixed(1)+'K':v, C.green);
-  makeHBar('chartCampPtyAct', [...ptyC].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)), 'activation_rate', 'Activation Rate', v=>(v*100).toFixed(1)+'%', C.orange);
-  makeHBar('chartCampJobAct', [...jobC].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)), 'activation_rate', 'Activation Rate', v=>(v*100).toFixed(1)+'%', C.purple);
+  const fmtUsers = v=>v>=1000?(v/1000).toFixed(1)+'K':v;
+  const fmtRate  = v=>(v*100).toFixed(1)+'%';
+  const byAct    = arr=>[...arr].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0));
+  makeHBar('chartCampPtyAcq', ptyC,       'new_users',       'New Users',       fmtUsers, C.blue);
+  makeHBar('chartCampJobAcq', jobC,       'new_users',       'New Users',       fmtUsers, C.green);
+  makeHBar('chartCampVehAcq', vehC,       'new_users',       'New Users',       fmtUsers, C.orange);
+  makeHBar('chartCampGdsAcq', gdsC,       'new_users',       'New Users',       fmtUsers, C.purple);
+  makeHBar('chartCampPtyAct', byAct(ptyC), 'activation_rate', 'Activation Rate', fmtRate,  C.orange);
+  makeHBar('chartCampJobAct', byAct(jobC), 'activation_rate', 'Activation Rate', fmtRate,  C.purple);
+  makeHBar('chartCampVehAct', byAct(vehC), 'activation_rate', 'Activation Rate', fmtRate,  C.blue);
+  makeHBar('chartCampGdsAct', byAct(gdsC), 'activation_rate', 'Activation Rate', fmtRate,  C.green);
 
   // Vertical mix stacked bar — monthly trend from vertical_monthly in data.json
   const vm = D.vertical_monthly;
