@@ -127,42 +127,37 @@ n = len(all_months)
 
 # ── Google Sheets cost sync ───────────────────────────────────────────────────
 def fetch_sheet_cost(spreadsheet_id, months_list, current_month_idx):
-    """Read FC & Actual cost sheet, extract app growth rows, return cost per month."""
+    """Read FC & Actual cost sheet via Sheets REST API, extract app growth rows."""
     try:
-        import gspread
         import google.auth
         from google.auth.transport.requests import Request
-        import json as _json, os as _os
+        import urllib.request as _req, json as _json, os as _os
 
-        # Load credentials from the JSON file directly to get proper type
+        # Get credentials and refresh token
         creds_path = _os.environ.get('GOOGLE_APPLICATION_CREDENTIALS','')
         creds_data = _json.load(open(creds_path)) if creds_path else {}
         cred_type = creds_data.get('type','')
 
         if cred_type == 'service_account':
             from google.oauth2 import service_account
-            scopes = ['https://www.googleapis.com/auth/spreadsheets.readonly',
-                      'https://www.googleapis.com/auth/drive.readonly']
+            scopes = ['https://www.googleapis.com/auth/spreadsheets.readonly']
             creds = service_account.Credentials.from_service_account_info(creds_data, scopes=scopes)
         else:
-            # authorized_user — needs quota_project for Sheets API
-            creds, project = google.auth.default(scopes=[
-                'https://www.googleapis.com/auth/spreadsheets',
-                'https://www.googleapis.com/auth/drive',
-            ])
-            quota_project = project or creds_data.get('quota_project_id') or 'chotot-dwh'
-            if hasattr(creds, 'with_quota_project'):
-                creds = creds.with_quota_project(quota_project)
-            creds.refresh(Request())
+            creds, _ = google.auth.default(scopes=['https://www.googleapis.com/auth/spreadsheets.readonly'])
+        creds.refresh(Request())
 
-        gc = gspread.Client(auth=creds)
-        sh = gc.open_by_key(spreadsheet_id)
-        try:
-            ws = sh.worksheet("FC & Actual cost")
-        except Exception:
-            ws = sh.get_worksheet(0)
-
-        rows = ws.get_all_values()
+        # Call Sheets REST API directly — set x-goog-user-project to fix quota error
+        quota_project = creds_data.get('quota_project_id') or 'chotot-dwh'
+        sheet_range = 'FC%20%26%20Actual%20cost'
+        url = f'https://sheets.googleapis.com/v4/spreadsheets/{spreadsheet_id}/values/{sheet_range}'
+        request = _req.Request(url, headers={
+            'Authorization': f'Bearer {creds.token}',
+            'x-goog-user-project': quota_project,
+        })
+        with _req.urlopen(request) as resp:
+            data = _json.loads(resp.read())
+        rows = data.get('values', [])
+        print(f"  Sheet: fetched {len(rows)} rows via REST API")
         # Find header row with month names
         month_abbr = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
         header_idx, col_map, act_col = 0, {}, 2
