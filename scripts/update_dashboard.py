@@ -298,7 +298,7 @@ if act_rows:
     growth_lead=[(paid_lead[i] or 0)+(disp_lead[i] or 0)+(crm_lead[i] or 0) for i in range(n)]
     dir_d1=a('Direct','nurr_d1'); dir_d7=a('Direct','nurr_d7'); dir_m1=a('Direct','nurr_m1')
     org_d1=a('Organic Search','nurr_d1'); org_d7=a('Organic Search','nurr_d7'); org_m1=a('Organic Search','nurr_m1')
-    paid_d1=a('Paid Search','nurr_d1'); paid_d7=a('Paid Search','nurr_d7'); paid_m1=a('all','nurr_m1')  # M1: use Total channel (M1 from Paid Search is unreliable)
+    paid_d1=a('Paid Search','nurr_d1'); paid_d7=a('Paid Search','nurr_d7'); paid_m1=a('Total','nurr_m1')  # M1: use Total channel (M1 from Paid Search is unreliable)
 else:
     print("  Using existing activation data")
     ex=D['activation']; er=D['retention']; eg=D['growth_channel']
@@ -361,50 +361,56 @@ paid_m1 = null_partial(paid_m1, [current_month_i, prev_month_i])
 # Campaign-level data — latest full month only
 campaigns = []
 try:
-    # Use the last full month (one before current partial)
-    full_month = all_months[prev_month_i]
-    m_start = full_month.strftime('%Y-%m-01')
-    m_end   = (full_month.replace(day=28) + datetime.timedelta(days=4)).replace(day=1).strftime('%Y-%m-%d')
+    # Fetch top 30 campaigns per month for ALL full months (Jan → last full month)
+    last_full = all_months[prev_month_i]
+    last_full_end = (last_full.replace(day=28) + datetime.timedelta(days=4)).replace(day=1).strftime('%Y-%m-%d')
     camp_rows = run(f"""
-    SELECT
-      campaign,
-      LOWER(campaign) as campaign_lc,
-      SUM(d0) as new_users,
-      SUM(user_20adview_7d) as activated_adview,
-      SUM(user_1lead_7d) as activated_lead,
-      SAFE_DIVIDE(SUM(user_20adview_7d), SUM(d0)) as activation_rate,
-      SAFE_DIVIDE(SUM(d1), SUM(d0)) as nurr_d1,
-      SAFE_DIVIDE(SUM(d7), SUM(d0)) as nurr_d7
-    FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
-    WHERE return_status = 'new'
-      AND campaign NOT IN ('all', '(none)')
-      AND channel = 'all'
-      AND vertical_user = 'all'
-      AND visit_date >= '{m_start}' AND visit_date < '{m_end}'
-    GROUP BY 1, 2
-    HAVING SUM(d0) >= 100
-    ORDER BY new_users DESC
-    LIMIT 50
+    SELECT * EXCEPT(rn) FROM (
+      SELECT
+        DATE_TRUNC(visit_date, MONTH) as month,
+        campaign,
+        LOWER(campaign) as campaign_lc,
+        SUM(d0) as new_users,
+        SUM(user_20adview_7d) as activated_adview,
+        SUM(user_1lead_7d) as activated_lead,
+        SAFE_DIVIDE(SUM(user_20adview_7d), SUM(d0)) as activation_rate,
+        SAFE_DIVIDE(SUM(d1), SUM(d0)) as nurr_d1,
+        SAFE_DIVIDE(SUM(d7), SUM(d0)) as nurr_d7,
+        ROW_NUMBER() OVER (PARTITION BY DATE_TRUNC(visit_date,MONTH) ORDER BY SUM(d0) DESC) as rn
+      FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
+      WHERE return_status = 'new'
+        AND campaign NOT IN ('all', '(none)')
+        AND channel = 'all'
+        AND vertical_user = 'all'
+        AND visit_date >= '2026-01-01' AND visit_date < '{last_full_end}'
+      GROUP BY 1, 2, 3
+      HAVING SUM(d0) >= 100
+    )
+    WHERE rn <= 30
+    ORDER BY month, new_users DESC
     """)
+    def classify_camp(lc):
+        if any(k in lc for k in ['pty','property','bds','nha dat']): return 'pty'
+        if any(k in lc for k in ['job','viec lam','tuyen dung']): return 'job'
+        if any(k in lc for k in ['veh','vehicle']): return 'veh'
+        if any(k in lc for k in ['gds','elt','electronics']): return 'gds'
+        return 'other'
     for r in camp_rows:
         lc = str(r.get('campaign_lc',''))
-        vertical = 'pty' if any(k in lc for k in ['pty','property','bds','nha dat']) \
-                   else 'job' if any(k in lc for k in ['job','viec lam','tuyen dung']) \
-                   else 'veh' if any(k in lc for k in ['veh','vehicle']) \
-                   else 'gds' if any(k in lc for k in ['gds','elt','electronics']) \
-                   else 'other'
+        m_date = to_date(r['month'])
         campaigns.append({
             'name': str(r['campaign']),
-            'vertical': vertical,
+            'vertical': classify_camp(lc),
             'new_users': int(r['new_users']) if r['new_users'] else 0,
             'activated_adview': int(r['activated_adview']) if r['activated_adview'] else 0,
             'activated_lead': int(r['activated_lead']) if r['activated_lead'] else 0,
             'activation_rate': round(float(r['activation_rate']),4) if r['activation_rate'] else None,
             'nurr_d1': round(float(r['nurr_d1']),4) if r['nurr_d1'] else None,
             'nurr_d7': round(float(r['nurr_d7']),4) if r['nurr_d7'] else None,
-            'month': full_month.strftime('%b %Y'),
+            'month': m_date.strftime('%b %Y'),
         })
-    print(f"  Campaigns: {len(campaigns)} rows OK (month: {m_start[:7]})")
+    months_fetched = sorted(set(c['month'] for c in campaigns))
+    print(f"  Campaigns: {len(campaigns)} rows OK (months: {months_fetched})")
 except Exception as e:
     print(f"  WARNING Campaigns skipped: {e}")
     campaigns = D.get('campaigns', [])

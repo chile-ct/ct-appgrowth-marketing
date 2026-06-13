@@ -549,7 +549,10 @@ canvas { max-height: 320px; }
     </div>
     <div class="chart-card" style="margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-        <div class="chart-title" style="margin:0">New Users by Campaign</div>
+        <div>
+          <div class="chart-title" style="margin:0">New Users by Campaign</div>
+          <div id="campAcqSubtitle" style="font-size:11px;color:#6b7280;margin-top:2px">Data: tháng đang hiển thị</div>
+        </div>
         <div id="campAcqChips" style="display:flex;gap:6px">
           <button class="vchip active" onclick="renderCampChart('acq','pty',this)">PTY</button>
           <button class="vchip" onclick="renderCampChart('acq','job',this)">JOB</button>
@@ -557,7 +560,7 @@ canvas { max-height: 320px; }
           <button class="vchip" onclick="renderCampChart('acq','gds',this)">GDS</button>
         </div>
       </div>
-      <div style="position:relative;height:320px"><canvas id="chartCampAcq"></canvas></div>
+      <div style="position:relative;height:340px"><canvas id="chartCampAcq"></canvas></div>
     </div>
     <div class="card" style="margin-bottom:16px">
       <div class="card-title">Acquisition — Growth Channel</div>
@@ -581,7 +584,10 @@ canvas { max-height: 320px; }
     </div>
     <div class="chart-card" style="margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-        <div class="chart-title" style="margin:0">Activation Rate by Campaign</div>
+        <div>
+          <div class="chart-title" style="margin:0">Activation Rate by Campaign</div>
+          <div id="campActSubtitle" style="font-size:11px;color:#6b7280;margin-top:2px">Data: tháng đang hiển thị</div>
+        </div>
         <div id="campActChips" style="display:flex;gap:6px">
           <button class="vchip active" onclick="renderCampChart('act','pty',this)">PTY</button>
           <button class="vchip" onclick="renderCampChart('act','job',this)">JOB</button>
@@ -589,7 +595,7 @@ canvas { max-height: 320px; }
           <button class="vchip" onclick="renderCampChart('act','gds',this)">GDS</button>
         </div>
       </div>
-      <div style="position:relative;height:320px"><canvas id="chartCampAct"></canvas></div>
+      <div style="position:relative;height:340px"><canvas id="chartCampAct"></canvas></div>
     </div>
     <div class="card" style="margin-bottom:16px">
       <div class="card-title">Activation — Growth Channel</div>
@@ -926,7 +932,14 @@ function selectMonth(sectionId, month) {
     const key = c.textContent.toLowerCase().replace('*','').trim();
     c.classList.toggle('active', key.startsWith(month==='overall'?'overall':month.substring(0,3)));
   });
-  if (sectionId === 's5') updateS5KPIs(month);
+  if (sectionId === 's5') {
+    updateS5KPIs(month);
+    if (typeof refreshCampCharts === 'function') {
+      const campMonthMap = {jan:'Jan 2026',feb:'Feb 2026',mar:'Mar 2026',apr:'Apr 2026',may:'May 2026',jun:'Jun 2026'};
+      const lbl = campMonthMap[month];
+      if (lbl && D && (D.campaigns||[]).some(c=>c.month===lbl)) refreshCampCharts(lbl);
+    }
+  }
   if ((sectionId === 's2' || sectionId === 's3') && D) {
     const dM = D.months;
     const mMap = {overall: dM.length-1, jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11};
@@ -1482,50 +1495,96 @@ function renderCampaignTables() {
     t0.innerHTML=`<thead>${scoreHead}</thead><tbody>${scoreRows}</tbody>`;
   }
 
-  // Vertical campaign slices (keyed by vertical)
-  const campByVert = {
-    pty: byUsers.filter(r=>r.vertical==='pty'),
-    job: byUsers.filter(r=>r.vertical==='job'),
-    veh: byUsers.filter(r=>r.vertical==='veh'),
-    gds: byUsers.filter(r=>r.vertical==='gds'),
-  };
-  const campActByVert = {
-    pty: [...campByVert.pty].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)),
-    job: [...campByVert.job].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)),
-    veh: [...campByVert.veh].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)),
-    gds: [...campByVert.gds].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)),
-  };
   const vertColors = {pty:C.blue, job:C.green, veh:C.orange, gds:C.purple};
-
-  function shortName(n) { return n.length>32?n.substring(0,30)+'…':n; }
   const fmtUsers = v=>v>=1000?(v/1000).toFixed(1)+'K':String(v);
   const fmtRate  = v=>(v*100).toFixed(1)+'%';
 
-  function drawHBar(canvasId, rows, valueKey, fmtFn, color) {
-    const ctx = document.getElementById(canvasId); if(!ctx) return;
-    const inst = Object.values(Chart.instances||{}).find(c=>c.canvas?.id===canvasId);
-    if(inst) inst.destroy();
-    const top = rows.slice(0,12);
-    if(!top.length){ ctx.parentElement.innerHTML=`<div style="text-align:center;color:#9ca3af;padding:60px;font-size:12px">No campaigns found</div>`; return; }
-    new Chart(ctx,{type:'bar',
-      data:{labels:top.map(r=>shortName(r.name)),datasets:[{label:valueKey,data:top.map(r=>r[valueKey]||0),backgroundColor:color+'cc',borderColor:color,borderWidth:1,borderRadius:3}]},
-      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${fmtFn(c.parsed.x)}`}}},
-        scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>fmtFn(v)}},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
+  // All campaigns from data.json — may span multiple months
+  const allCamps = (D.campaigns||[]).filter(r=>r.name!=='(none)');
+  // Default month = latest full month present in campaigns
+  const campMonths = [...new Set(allCamps.map(r=>r.month))].sort();
+  let currentCampMonth = campMonths[campMonths.length-1] || '';
+
+  function getCampForMonth(m) {
+    const rows = allCamps.filter(r=>r.month===m);
+    const byU = [...rows].sort((a,b)=>b.new_users-a.new_users);
+    return {
+      acq: {
+        pty: byU.filter(r=>r.vertical==='pty'),
+        job: byU.filter(r=>r.vertical==='job'),
+        veh: byU.filter(r=>r.vertical==='veh'),
+        gds: byU.filter(r=>r.vertical==='gds'),
+      },
+      act: {
+        pty: [...rows].filter(r=>r.vertical==='pty').sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)),
+        job: [...rows].filter(r=>r.vertical==='job').sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)),
+        veh: [...rows].filter(r=>r.vertical==='veh').sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)),
+        gds: [...rows].filter(r=>r.vertical==='gds').sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)),
+      }
+    };
   }
 
-  window.renderCampChart = function(tab, vert, btn) {
-    // Update chip active state
-    const chipContainer = btn.parentElement;
-    chipContainer.querySelectorAll('.vchip').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    if(tab==='acq') drawHBar('chartCampAcq', campByVert[vert],    'new_users',       fmtUsers, vertColors[vert]);
-    else             drawHBar('chartCampAct', campActByVert[vert], 'activation_rate', fmtRate,  vertColors[vert]);
+  function drawHBar(canvasId, rows, valueKey, fmtFn, color) {
+    const ctx = document.getElementById(canvasId); if(!ctx) return;
+    const inst = Object.values(Chart.instances||{}).find(ch=>ch.canvas?.id===canvasId);
+    if(inst) inst.destroy();
+    const top = rows.slice(0,10);
+    if(!top.length){ ctx.parentElement.innerHTML=`<div style="text-align:center;color:#9ca3af;padding:60px;font-size:12px">No campaigns found</div>`; return; }
+    const vertTotal = top.reduce((s,r)=>s+(r[valueKey]||0),0);
+    new Chart(ctx,{type:'bar',
+      data:{
+        labels: top.map(r=>r.name),
+        datasets:[{
+          label:valueKey,
+          data:top.map(r=>r[valueKey]||0),
+          backgroundColor:color+'cc',borderColor:color,borderWidth:1,borderRadius:3,
+          barThickness:18,
+        }]
+      },
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+        layout:{padding:{right:8}},
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{
+          const pct = vertTotal>0?` (${(c.parsed.x/vertTotal*100).toFixed(1)}% of vertical)`:'';
+          return ` ${fmtFn(c.parsed.x)}${pct}`;
+        }}}},
+        scales:{
+          x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>fmtFn(v)}},
+          y:{grid:{display:false},ticks:{font:{size:10},autoSkip:false},afterFit:axis=>{axis.width=Math.max(axis.width,220);}}
+        }
+      }
+    });
+  }
+
+  function updateCampSubtitles(monthLabel) {
+    const s1=document.getElementById('campAcqSubtitle'); if(s1) s1.textContent=`Data: ${monthLabel}`;
+    const s2=document.getElementById('campActSubtitle'); if(s2) s2.textContent=`Data: ${monthLabel}`;
+  }
+
+  window.refreshCampCharts = function(monthLabel) {
+    currentCampMonth = monthLabel;
+    updateCampSubtitles(monthLabel);
+    const data = getCampForMonth(monthLabel);
+    const acqVert = (document.querySelector('#campAcqChips .vchip.active')||{}).textContent?.toLowerCase() || 'pty';
+    const actVert = (document.querySelector('#campActChips .vchip.active')||{}).textContent?.toLowerCase() || 'pty';
+    drawHBar('chartCampAcq', data.acq[acqVert]||[], 'new_users',       fmtUsers, vertColors[acqVert]);
+    drawHBar('chartCampAct', data.act[actVert]||[], 'activation_rate', fmtRate,  vertColors[actVert]);
   };
 
-  // Initial render — PTY selected by default
-  drawHBar('chartCampAcq', campByVert.pty,    'new_users',       fmtUsers, C.blue);
-  drawHBar('chartCampAct', campActByVert.pty, 'activation_rate', fmtRate,  C.blue);
+  window.renderCampChart = function(tab, vert, btn) {
+    btn.parentElement.querySelectorAll('.vchip').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const data = getCampForMonth(currentCampMonth);
+    if(tab==='acq') drawHBar('chartCampAcq', data.acq[vert]||[], 'new_users',       fmtUsers, vertColors[vert]);
+    else             drawHBar('chartCampAct', data.act[vert]||[], 'activation_rate', fmtRate,  vertColors[vert]);
+  };
+
+  // Initial render — PTY, latest full month
+  updateCampSubtitles(currentCampMonth);
+  {
+    const initData = getCampForMonth(currentCampMonth);
+    drawHBar('chartCampAcq', initData.acq.pty, 'new_users',       fmtUsers, C.blue);
+    drawHBar('chartCampAct', initData.act.pty, 'activation_rate', fmtRate,  C.blue);
+  }
 
   // Vertical mix stacked bar — monthly trend from vertical_monthly in data.json
   const vm = D.vertical_monthly;
@@ -1776,6 +1835,14 @@ async function initDashboard() {
       gc.caa = gc.adview_activated.map((a,i)=>a&&gc.cost[i]?Math.round(gc.cost[i]/a):null);
       gc.crr_d1 = (gc.retained_d1||[]).map((r,i)=>r&&gc.cost[i]?Math.round(gc.cost[i]/r):null);
       gc.crr_d7 = (gc.retained_d7||[]).map((r,i)=>r&&gc.cost[i]?Math.round(gc.cost[i]/r):null);
+      // CRR M1: compute from growth_m1 retention rate × new_users; fall back to nurr_m1 (total channel)
+      const growthM1 = (D.retention.growth_m1||[]);
+      const nurrM1   = (D.retention.nurr_m1||[]);
+      gc.retained_m1 = gc.new_users.map((u,i)=>{
+        const rate = growthM1[i] ?? nurrM1[i];
+        return u && rate ? Math.round(u * rate) : null;
+      });
+      gc.crr_m1 = gc.retained_m1.map((r,i)=>r&&gc.cost[i]?Math.round(gc.cost[i]/r):null);
     }
   } catch(e) {}
 
@@ -2010,6 +2077,9 @@ document.addEventListener('DOMContentLoaded', initDashboard);
     gc.caa = gc.adview_activated.map((a,i) => a && gc.cost[i] ? Math.round(gc.cost[i]/a) : null);
     gc.crr_d1 = gc.retained_d1.map((r,i) => r && gc.cost[i] ? Math.round(gc.cost[i]/r) : null);
     gc.crr_d7 = gc.retained_d7.map((r,i) => r && gc.cost[i] ? Math.round(gc.cost[i]/r) : null);
+    const gm1 = (D.retention.growth_m1||[]), nm1 = (D.retention.nurr_m1||[]);
+    gc.retained_m1 = gc.new_users.map((u,i)=>{ const rate=gm1[i]??nm1[i]; return u&&rate?Math.round(u*rate):null; });
+    gc.crr_m1 = gc.retained_m1.map((r,i) => r && gc.cost[i] ? Math.round(gc.cost[i]/r) : null);
 
     // Re-render cost charts by destroying and reinitializing
     ['chartG5Cost','chartG5CostVsUsers'].forEach(id => {
