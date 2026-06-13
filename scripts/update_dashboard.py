@@ -366,25 +366,28 @@ try:
     last_full_end = (last_full.replace(day=28) + datetime.timedelta(days=4)).replace(day=1).strftime('%Y-%m-%d')
     camp_rows = run(f"""
     SELECT * EXCEPT(rn) FROM (
-      SELECT
-        DATE_TRUNC(visit_date, MONTH) as month,
-        campaign,
-        LOWER(campaign) as campaign_lc,
-        SUM(d0) as new_users,
-        SUM(user_20adview_7d) as activated_adview,
-        SUM(user_1lead_7d) as activated_lead,
-        SAFE_DIVIDE(SUM(user_20adview_7d), SUM(d0)) as activation_rate,
-        SAFE_DIVIDE(SUM(d1), SUM(d0)) as nurr_d1,
-        SAFE_DIVIDE(SUM(d7), SUM(d0)) as nurr_d7,
-        ROW_NUMBER() OVER (PARTITION BY DATE_TRUNC(visit_date,MONTH) ORDER BY SUM(d0) DESC) as rn
-      FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
-      WHERE return_status = 'new'
-        AND campaign NOT IN ('all', '(none)')
-        AND channel = 'all'
-        AND vertical_user = 'all'
-        AND visit_date >= '2026-01-01' AND visit_date < '{last_full_end}'
-      GROUP BY 1, 2, 3
-      HAVING SUM(d0) >= 100
+      SELECT *,
+        ROW_NUMBER() OVER (PARTITION BY month ORDER BY new_users DESC) as rn
+      FROM (
+        SELECT
+          DATE_TRUNC(visit_date, MONTH) as month,
+          campaign,
+          LOWER(campaign) as campaign_lc,
+          SUM(d0) as new_users,
+          SUM(user_20adview_7d) as activated_adview,
+          SUM(user_1lead_7d) as activated_lead,
+          SAFE_DIVIDE(SUM(user_20adview_7d), SUM(d0)) as activation_rate,
+          SAFE_DIVIDE(SUM(d1), SUM(d0)) as nurr_d1,
+          SAFE_DIVIDE(SUM(d7), SUM(d0)) as nurr_d7
+        FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
+        WHERE return_status = 'new'
+          AND campaign NOT IN ('all', '(none)')
+          AND channel = 'all'
+          AND vertical_user = 'all'
+          AND visit_date >= '2026-01-01' AND visit_date < '{last_full_end}'
+        GROUP BY 1, 2, 3
+        HAVING SUM(d0) >= 100
+      )
     )
     WHERE rn <= 30
     ORDER BY month, new_users DESC
