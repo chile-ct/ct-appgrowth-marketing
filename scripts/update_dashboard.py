@@ -195,6 +195,7 @@ def fetch_sheet_cost(spreadsheet_id, months_list, current_month_idx):
                 cost_out.append(None); fc_out.append(int(forecast_cost.get(mi,0)) or None)
 
         print(f"  Sheet: {sum(1 for c in cost_out if c)} actual months, {sum(1 for c in fc_out if c)} forecast months")
+        print(f"  Sheet actual values: {[int(v) if v else None for v in cost_out]}")
         return cost_out, [v for v in fc_out if v]
     except Exception as e:
         print(f"  WARNING Sheet fetch failed: {e}")
