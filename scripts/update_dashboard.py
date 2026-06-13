@@ -145,11 +145,14 @@ def fetch_sheet_cost(spreadsheet_id, months_list, current_month_idx):
                       'https://www.googleapis.com/auth/drive.readonly']
             creds = service_account.Credentials.from_service_account_info(creds_data, scopes=scopes)
         else:
-            # authorized_user or other — use default and refresh
-            creds, _ = google.auth.default(scopes=[
+            # authorized_user — needs quota_project for Sheets API
+            creds, project = google.auth.default(scopes=[
                 'https://www.googleapis.com/auth/spreadsheets',
                 'https://www.googleapis.com/auth/drive',
             ])
+            quota_project = project or creds_data.get('quota_project_id') or 'chotot-dwh'
+            if hasattr(creds, 'with_quota_project'):
+                creds = creds.with_quota_project(quota_project)
             creds.refresh(Request())
 
         gc = gspread.Client(auth=creds)
