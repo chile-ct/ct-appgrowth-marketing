@@ -654,8 +654,14 @@ canvas { max-height: 320px; }
         </tfoot>
       </table>
     </div>
-    <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <button onclick="pasteFromClipboard()" style="background:#0ea5e9;color:white;border:none;padding:8px 18px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer">📋 Paste từ Sheets</button>
+    <div style="margin-top:14px">
+      <div style="margin-bottom:8px;font-size:12px;color:#6b7280;font-weight:500">📋 Copy range <strong>G5:R9</strong> từ Google Sheets → paste vào ô bên dưới → nhấn <strong>Apply</strong></div>
+      <div style="display:flex;gap:8px;align-items:flex-start">
+        <textarea id="pasteArea" rows="5" placeholder="Paste (Cmd+V) dữ liệu Google Sheets vào đây..." style="flex:1;font-family:monospace;font-size:11px;padding:8px;border:1.5px solid #d1d5db;border-radius:6px;resize:vertical;min-height:80px;color:#374151;background:#fafafa"></textarea>
+        <button onclick="applyPasteArea()" style="background:#0ea5e9;color:white;border:none;padding:10px 18px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">✓ Apply</button>
+      </div>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <button onclick="saveBudget()" style="background:#4361ee;color:white;border:none;padding:8px 20px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer">💾 Lưu & cập nhật charts</button>
       <button onclick="resetBudget()" style="background:#f3f4f6;color:#374151;border:1px solid #d1d5db;padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer">↺ Reset về default</button>
       <span id="budgetSaveMsg" style="font-size:12px;color:#10b981;font-weight:500"></span>
@@ -1977,18 +1983,24 @@ document.addEventListener('DOMContentLoaded', initDashboard);
   };
 
   // Attach paste to wrapper div via bubbling — same pattern as ct-demand-marketing
-  window._budgetFocused = null;
-  const pasteZone = document.getElementById('budgetPasteZone');
-  if (pasteZone) {
-    pasteZone.addEventListener('paste', function(e) {
-      const text = e.clipboardData.getData('text');
-      if (!text || !text.includes('\t')) return;
-      e.preventDefault();
-      const filled = applyTSV(text);
-      const msg = document.getElementById('budgetSaveMsg');
-      if (msg) { msg.textContent = '✓ Đã paste ' + filled + ' ô'; setTimeout(() => msg.textContent='',3000); }
-    });
-  }
+  // Apply button reads from textarea — 100% reliable, no clipboard API needed
+  window.applyPasteArea = function() {
+    const ta = document.getElementById('pasteArea');
+    if (!ta) return;
+    const text = ta.value;
+    const msg = document.getElementById('budgetSaveMsg');
+    if (!text.trim()) {
+      if (msg) { msg.textContent = '⚠️ Textarea trống, hãy paste dữ liệu vào trước'; setTimeout(() => msg.textContent='',3000); }
+      return;
+    }
+    if (!text.includes('\t')) {
+      if (msg) { msg.textContent = '⚠️ Dữ liệu không đúng định dạng (cần copy từ Google Sheets)'; setTimeout(() => msg.textContent='',4000); }
+      return;
+    }
+    const filled = applyTSV(text);
+    ta.value = '';
+    if (msg) { msg.textContent = '✓ Đã apply ' + filled + ' ô'; setTimeout(() => msg.textContent='',3000); }
+  };
 
   window.saveBudget = function() {
     const newData = {};
