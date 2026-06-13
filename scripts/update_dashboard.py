@@ -94,7 +94,7 @@ try:
       SAFE_DIVIDE(SUM(m1),SUM(d0)) as nurr_m1
     FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
     WHERE return_status='new' AND campaign='all'
-    AND vertical_user IN ('all','gds','veh','pty','job','other')
+    AND vertical_user = 'all'
     AND channel IN ('all','Direct','Organic Search','Paid Search','Display','Growth','Social')
     AND visit_date >= '2026-01-01'
     GROUP BY 1,2 ORDER BY 1,2
@@ -290,15 +290,13 @@ def null_partial(arr, partial_indices, extra_indices=None):
 current_month_i = n - 1  # last index = current (partial) month
 prev_month_i = n - 2     # second-to-last = previous month
 
-app_d7  = null_partial(app_d7,  [current_month_i])
+# D7: show partial month data (current month D7 is valid for users installed ≥7 days ago)
+# M1: null current + previous month (M1 window of ~30 days not complete yet)
 app_m1  = null_partial(app_m1,  [current_month_i], [prev_month_i])
-nurr_d7 = null_partial(nurr_d7 if act_rows else D['retention']['nurr_d7'], [current_month_i])
+nurr_d7 = nurr_d7 if act_rows else D['retention']['nurr_d7']
 nurr_m1 = null_partial(nurr_m1 if act_rows else D['retention']['nurr_m1'], [current_month_i], [prev_month_i])
-dir_d7  = null_partial(dir_d7,  [current_month_i])
 dir_m1  = null_partial(dir_m1,  [current_month_i], [prev_month_i])
-org_d7  = null_partial(org_d7,  [current_month_i])
 org_m1  = null_partial(org_m1,  [current_month_i], [prev_month_i])
-paid_d7 = null_partial(paid_d7, [current_month_i])
 paid_m1 = null_partial(paid_m1, [current_month_i], [prev_month_i])
 
 # Campaign-level data — latest full month only
@@ -331,8 +329,10 @@ try:
     """)
     for r in camp_rows:
         lc = str(r.get('campaign_lc',''))
-        vertical = 'pty' if any(k in lc for k in ['pty','property','bds','bat dong','nha dat']) \
-                   else 'job' if any(k in lc for k in ['job','viec lam','tuyen dung','nhan su']) \
+        vertical = 'pty' if any(k in lc for k in ['pty','property','bds','nha dat']) \
+                   else 'job' if any(k in lc for k in ['job','viec lam','tuyen dung']) \
+                   else 'veh' if any(k in lc for k in ['veh','vehicle']) \
+                   else 'gds' if any(k in lc for k in ['gds','elt','electronics']) \
                    else 'other'
         campaigns.append({
             'name': str(r['campaign']),
@@ -343,7 +343,7 @@ try:
             'activation_rate': round(float(r['activation_rate']),4) if r['activation_rate'] else None,
             'nurr_d1': round(float(r['nurr_d1']),4) if r['nurr_d1'] else None,
             'nurr_d7': round(float(r['nurr_d7']),4) if r['nurr_d7'] else None,
-            'month': m_start[:7],
+            'month': full_month.strftime('%b %Y'),
         })
     print(f"  Campaigns: {len(campaigns)} rows OK (month: {m_start[:7]})")
 except Exception as e:
