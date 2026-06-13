@@ -184,19 +184,25 @@ def fetch_sheet_cost(spreadsheet_id, months_list, current_month_idx):
                 if lbl.startswith(ma): return i
             return -1
 
-        cost_out, fc_out = [], []
+        # Actual cost — aligned to months_list (Jan–current in BQ)
+        cost_out = []
         for lbl in months_list:
             mi = get_mi(lbl)
-            if mi < 0:
-                cost_out.append(None); fc_out.append(None)
-            elif mi < current_month_idx:
-                cost_out.append(int(actual_cost.get(mi,0)) or None); fc_out.append(None)
+            if mi < 0 or mi >= current_month_idx:
+                cost_out.append(None)
             else:
-                cost_out.append(None); fc_out.append(int(forecast_cost.get(mi,0)) or None)
+                cost_out.append(int(actual_cost.get(mi, 0)) or None)
 
-        print(f"  Sheet: {sum(1 for c in cost_out if c)} actual months, {sum(1 for c in fc_out if c)} forecast months")
-        print(f"  Sheet actual values: {[int(v) if v else None for v in cost_out]}")
-        return cost_out, [v for v in fc_out if v]
+        # Forecast cost — all months from current_month_idx to Dec, in order
+        fc_out = []
+        for mi in range(current_month_idx, 12):
+            val = int(forecast_cost.get(mi, 0)) or None
+            fc_out.append(val)
+
+        print(f"  Sheet: {sum(1 for c in cost_out if c)} actual months, {sum(1 for c in fc_out if c)} forecast months (Jun–Dec)")
+        print(f"  Sheet actual values: {cost_out}")
+        print(f"  Sheet forecast values: {fc_out}")
+        return cost_out, fc_out
     except Exception as e:
         print(f"  WARNING Sheet fetch failed: {e}")
         return None, None
