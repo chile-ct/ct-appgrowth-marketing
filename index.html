@@ -144,6 +144,7 @@ canvas { max-height: 320px; }
     <a href="#section-3" class="nav-tab">3. Activation</a>
     <a href="#section-4" class="nav-tab">4. Retention</a>
     <a href="#section-5" class="nav-tab" style="color:#f59e0b">5. Growth Performance</a>
+    <a href="#section-budget" class="nav-tab">💰 Budget</a>
   </div>
 </div>
 </div><!-- /sticky-shell -->
@@ -629,6 +630,38 @@ canvas { max-height: 320px; }
 
 
 </div><!-- /section 5 -->
+
+<!-- ===== SECTION 6: BUDGET EDITOR ===== -->
+<div class="section" id="section-budget">
+  <div class="section-title">💰 Cost Budget 2026 — App Growth</div>
+  <div class="section-subtitle">Nhập cost trực tiếp tại đây · Dữ liệu lưu trong browser · Nhấn <strong>Lưu</strong> để cập nhật tất cả charts ngay lập tức</div>
+  <div class="card" style="margin-bottom:16px">
+    <div style="overflow-x:auto">
+      <table id="budgetTable" style="border-collapse:collapse;width:100%;font-size:12px;min-width:1100px">
+        <thead>
+          <tr>
+            <th rowspan="2" style="background:#1e1b4b;color:white;padding:8px 12px;text-align:left;position:sticky;left:0;z-index:2;min-width:80px">Vertical</th>
+            <th colspan="5" style="background:#d1fae5;color:#065f46;padding:6px;text-align:center;font-weight:600;border:1px solid #a7f3d0">← actual →</th>
+            <th colspan="7" style="background:#fef3c7;color:#92400e;padding:6px;text-align:center;font-weight:600;border:1px solid #fde68a">← forecast →</th>
+          </tr>
+          <tr id="budgetMonthRow"></tr>
+        </thead>
+        <tbody id="budgetBody"></tbody>
+        <tfoot>
+          <tr id="budgetTotalRow" style="background:#f8fafc;font-weight:700">
+            <td style="padding:7px 12px;position:sticky;left:0;background:#f1f5f9;border:1px solid #e2e8f0">Total</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button onclick="saveBudget()" style="background:#4361ee;color:white;border:none;padding:8px 20px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer">💾 Lưu & cập nhật charts</button>
+      <button onclick="resetBudget()" style="background:#f3f4f6;color:#374151;border:1px solid #d1d5db;padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer">↺ Reset về default</button>
+      <span id="budgetSaveMsg" style="font-size:12px;color:#10b981;font-weight:500"></span>
+    </div>
+    <p style="margin:10px 0 0;font-size:11px;color:#9ca3af">Actual: tháng đã qua · Forecast: kế hoạch từ tháng hiện tại trở đi · Đơn vị: VND</p>
+  </div>
+</div><!-- /section-budget -->
 
 </div><!-- /container -->
 
@@ -1238,55 +1271,59 @@ function renderAllCharts() {
     L('Total NURR M1',ret.nurr_m1,C.green,true)
   ],{pct:true});
 
-  // S5 Cost charts
-  (function(){
-    const ctx=document.getElementById('chartG5Cost'); if(!ctx)return;
-    new Chart(ctx,{type:'line',data:{labels:MONTHS,datasets:[
-      L('CPA',gc.cpa,C.blue),
-      L('CAA',gc.caa,C.orange),
-      L('CRR D1',gc.crr_d1,C.green),
-      L('CRR D7',gc.crr_d7,C.purple),
-      L('CRR M1',gc.crr_m1,C.red)
-    ]},options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:12}}},
-        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y?.toLocaleString('en')}₫`}}},
-      scales:{x:{grid:{display:false},ticks:{font:{size:12}}},
-        y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11},callback:v=>v>=1000?(v/1000).toFixed(0)+'K':v}}}}});
-  })();
-  (function(){
-    const ctx=document.getElementById('chartG5CostVsUsers'); if(!ctx)return;
-    // Build cost chart: actual = dark, forecast = light (even if month is in MONTHS with null actual)
-    const allFcLabels=['Jun 2026*','Jul 2026*','Aug 2026*','Sep 2026*','Oct 2026*','Nov 2026*','Dec 2026*'];
-    const forecastLabels=allFcLabels.filter(l=>!MONTHS.includes(l));
-    const allLabels=[...MONTHS,...forecastLabels];
-    const costData=[], bgColors=[], borderColors=[];
-    // For months in D.months: actual if gc.cost[i] != null, else use forecast value with light color
-    MONTHS.forEach((m,i)=>{
-      const actual=gc.cost[i];
-      if(actual!=null){costData.push(actual);bgColors.push(C.purple+'cc');borderColors.push(C.purple);}
-      else{
+  // S5 Cost charts — wrapped in named function so Budget editor can re-render
+  window.initGrowthCharts = function() {
+    ['chartG5Cost','chartG5CostVsUsers'].forEach(id=>{
+      const inst=Object.values(Chart.instances||{}).find(c=>c.canvas?.id===id);
+      if(inst) inst.destroy();
+    });
+    (function(){
+      const ctx=document.getElementById('chartG5Cost'); if(!ctx)return;
+      new Chart(ctx,{type:'line',data:{labels:MONTHS,datasets:[
+        L('CPA',gc.cpa,C.blue),
+        L('CAA',gc.caa,C.orange),
+        L('CRR D1',gc.crr_d1,C.green),
+        L('CRR D7',gc.crr_d7,C.purple),
+        L('CRR M1',gc.crr_m1,C.red)
+      ]},options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:12}}},
+          tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y?.toLocaleString('en')}₫`}}},
+        scales:{x:{grid:{display:false},ticks:{font:{size:12}}},
+          y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11},callback:v=>v>=1000?(v/1000).toFixed(0)+'K':v}}}}});
+    })();
+    (function(){
+      const ctx=document.getElementById('chartG5CostVsUsers'); if(!ctx)return;
+      const allFcLabels=['Jun 2026*','Jul 2026*','Aug 2026*','Sep 2026*','Oct 2026*','Nov 2026*','Dec 2026*'];
+      const forecastLabels=allFcLabels.filter(l=>!MONTHS.includes(l));
+      const allLabels=[...MONTHS,...forecastLabels];
+      const costData=[], bgColors=[], borderColors=[];
+      MONTHS.forEach((m,i)=>{
+        const actual=gc.cost[i];
+        if(actual!=null){costData.push(actual);bgColors.push(C.purple+'cc');borderColors.push(C.purple);}
+        else{
+          const fi=allFcLabels.indexOf(m);
+          const fcVal=fi>=0&&gc.cost_forecast[fi]?gc.cost_forecast[fi]:null;
+          costData.push(fcVal);bgColors.push(C.purple+'44');borderColors.push(C.purple+'88');
+        }
+      });
+      forecastLabels.forEach(m=>{
         const fi=allFcLabels.indexOf(m);
-        const fcVal=fi>=0&&gc.cost_forecast[fi]?gc.cost_forecast[fi]:null;
-        costData.push(fcVal);bgColors.push(C.purple+'44');borderColors.push(C.purple+'88');
-      }
-    });
-    // Remaining forecast-only months
-    forecastLabels.forEach(m=>{
-      const fi=allFcLabels.indexOf(m);
-      costData.push(fi>=0?gc.cost_forecast[fi]:null);
-      bgColors.push(C.purple+'44');borderColors.push(C.purple+'88');
-    });
-    const usersData=[...gc.new_users,...Array(forecastLabels.length).fill(null)];
-    new Chart(ctx,{type:'bar',data:{labels:allLabels,datasets:[
-      {label:'Monthly Cost (VND)',data:costData,backgroundColor:bgColors,borderColor:borderColors,borderWidth:1,borderRadius:4,yAxisID:'y'},
-      {label:'New Users (actual)',data:usersData,type:'line',borderColor:C.blue,backgroundColor:'transparent',tension:0.4,pointRadius:4,borderWidth:2,yAxisID:'y1'}
-    ]},options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:12}}},tooltip:{callbacks:{label:c=>{const v=c.parsed.y;if(c.dataset.yAxisID==='y1')return ` ${c.dataset.label}: ${(v/1000).toFixed(0)}K`;return ` ${c.dataset.label}: ${(v/1e6).toFixed(0)}M ₫`;}}}},
-      scales:{x:{grid:{display:false},ticks:{font:{size:11},maxRotation:45}},
-        y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11},callback:v=>(v/1e6).toFixed(0)+'M'},position:'left'},
-        y1:{grid:{display:false},ticks:{font:{size:11},callback:v=>(v/1000).toFixed(0)+'K'},position:'right'}
-      }}});
-  })();
+        costData.push(fi>=0?gc.cost_forecast[fi]:null);
+        bgColors.push(C.purple+'44');borderColors.push(C.purple+'88');
+      });
+      const usersData=[...gc.new_users,...Array(forecastLabels.length).fill(null)];
+      new Chart(ctx,{type:'bar',data:{labels:allLabels,datasets:[
+        {label:'Monthly Cost (VND)',data:costData,backgroundColor:bgColors,borderColor:borderColors,borderWidth:1,borderRadius:4,yAxisID:'y'},
+        {label:'New Users (actual)',data:usersData,type:'line',borderColor:C.blue,backgroundColor:'transparent',tension:0.4,pointRadius:4,borderWidth:2,yAxisID:'y1'}
+      ]},options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:12}}},tooltip:{callbacks:{label:c=>{const v=c.parsed.y;if(c.dataset.yAxisID==='y1')return ` ${c.dataset.label}: ${(v/1000).toFixed(0)}K`;return ` ${c.dataset.label}: ${(v/1e6).toFixed(0)}M ₫`;}}}},
+        scales:{x:{grid:{display:false},ticks:{font:{size:11},maxRotation:45}},
+          y:{grid:{color:'#f3f4f6'},ticks:{font:{size:11},callback:v=>(v/1e6).toFixed(0)+'M'},position:'left'},
+          y1:{grid:{display:false},ticks:{font:{size:11},callback:v=>(v/1000).toFixed(0)+'K'},position:'right'}
+        }}});
+    })();
+  };
+  initGrowthCharts();
   makeChart('chartG5UnitEcon','bar',['CPA\n(cost/new user)','CAA\n(cost/activated)','CRR D1\n(cost/retained D1)','CRR D7\n(cost/retained D7)'],[
     B('Jan',[gc.cpa[0],gc.caa[0],gc.crr_d1[0],gc.crr_d7[0]],C.gray),
     B('Feb',[gc.cpa[1],gc.caa[1],gc.crr_d1[1],gc.crr_d7[1]],C.blue),
@@ -1723,6 +1760,23 @@ async function initDashboard() {
   await loadDashboardData();
   if (!D) { console.error('Dashboard data unavailable'); return; }
 
+  // Apply budget from localStorage if available
+  try {
+    const saved = JSON.parse(localStorage.getItem('budgetData2026'));
+    if (saved) {
+      const MALL = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const ACT = 5;
+      const totals = MALL.map((_,i) => ['gds','veh','job','pty','parent'].reduce((s,v)=>s+(saved[v]?.[i]||0),0));
+      D.growth_channel.cost = D.months.map((lbl,i) => {
+        const mi = MALL.findIndex(m => lbl.startsWith(m));
+        return (mi >= 0 && mi < ACT && totals[mi]) ? totals[mi] : null;
+      });
+      D.growth_channel.cost_forecast = totals.slice(ACT).filter(v=>v>0);
+      D.growth_channel.cpa = D.growth_channel.new_users.map((u,i)=>u&&D.growth_channel.cost[i]?Math.round(D.growth_channel.cost[i]/u):null);
+      D.growth_channel.caa = D.growth_channel.adview_activated.map((a,i)=>a&&D.growth_channel.cost[i]?Math.round(D.growth_channel.cost[i]/a):null);
+    }
+  } catch(e) {}
+
   renderCommentary('s1');
   renderCommentary('s2');
   renderCommentary('s3');
@@ -1755,6 +1809,162 @@ async function initDashboard() {
 }
 
 document.addEventListener('DOMContentLoaded', initDashboard);
+
+// ============================================================
+// BUDGET EDITOR
+// ============================================================
+(function() {
+  const VERTS = [
+    { key:'gds',    label:'GDS' },
+    { key:'veh',    label:'VEH' },
+    { key:'job',    label:'JOB' },
+    { key:'pty',    label:'PTY' },
+    { key:'parent', label:'PARENT' },
+  ];
+  const MONTHS_ALL = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const ACTUAL_COUNT = 5; // Jan–May are actual
+  const ROW_COLORS = { gds:'#eff6ff', veh:'#f0fdf4', job:'#fdf4ff', pty:'#fff7ed', parent:'#f0f9ff' };
+
+  // Default data from Google Sheet (screenshot)
+  const DEFAULTS = {
+    gds:    [0,0,0,0,0, 0,150000000,200000000,200000000,150000000,120000000,1000000000],
+    veh:    [0,0,0,0,0, 0,150000000,150000000,200000000,200000000,200000000,150000000],
+    job:    [0,0,82928660,138000000,152307739, 240000000,250000000,250000000,250000000,250000000,250000000,240000000],
+    pty:    [110313484,68323088,193787970,133804985,207558191, 250000000,250000000,300000000,300000000,300000000,200000000,150000000],
+    parent: [371221843,238873058,137113093,158093925,171261076, 250000000,300000000,400000000,400000000,400000000,400000000,200000000],
+  };
+
+  function loadData() {
+    try { return JSON.parse(localStorage.getItem('budgetData2026')) || DEFAULTS; }
+    catch(e) { return DEFAULTS; }
+  }
+
+  function fmtNum(v) {
+    if (!v) return '';
+    return Math.round(v).toLocaleString('en');
+  }
+
+  function parseNum(s) {
+    const n = parseFloat(String(s).replace(/,/g,''));
+    return isNaN(n) ? 0 : n;
+  }
+
+  function buildTable() {
+    const data = loadData();
+
+    // Month header row
+    const mRow = document.getElementById('budgetMonthRow');
+    if (!mRow) return;
+    mRow.innerHTML = MONTHS_ALL.map((m,i) => {
+      const isActual = i < ACTUAL_COUNT;
+      const bg = isActual ? '#d1fae5' : '#fef3c7';
+      const tc = isActual ? '#065f46' : '#92400e';
+      return `<th style="background:${bg};color:${tc};padding:5px 8px;border:1px solid ${isActual?'#a7f3d0':'#fde68a'};min-width:100px;text-align:center">${m}</th>`;
+    }).join('');
+
+    // Data rows
+    const tbody = document.getElementById('budgetBody');
+    if (!tbody) return;
+    tbody.innerHTML = VERTS.map(v => {
+      const vals = data[v.key] || Array(12).fill(0);
+      const cells = vals.map((val,i) => {
+        const isActual = i < ACTUAL_COUNT;
+        const bg = isActual ? '#f0fdf4' : '#fffbeb';
+        return `<td style="padding:2px 4px;border:1px solid #e5e7eb;background:${bg}">
+          <input type="text" id="b-${v.key}-${i}"
+            value="${fmtNum(val)}"
+            oninput="window._budgetUpdate()"
+            style="width:100%;border:none;background:transparent;font-size:12px;text-align:right;padding:4px;color:#1f2937;outline:none"
+            onfocus="this.select()"
+          />
+        </td>`;
+      }).join('');
+      return `<tr style="background:${ROW_COLORS[v.key]}">
+        <td style="padding:7px 12px;font-weight:600;border:1px solid #e5e7eb;position:sticky;left:0;background:${ROW_COLORS[v.key]};color:#374151">${v.label}</td>
+        ${cells}
+      </tr>`;
+    }).join('');
+
+    // Total footer row
+    const tRow = document.getElementById('budgetTotalRow');
+    if (tRow) {
+      const existing = tRow.querySelectorAll('td.total-cell');
+      if (!existing.length) {
+        MONTHS_ALL.forEach((m,i) => {
+          const isActual = i < ACTUAL_COUNT;
+          const bg = isActual ? '#dcfce7' : '#fef9c3';
+          const td = document.createElement('td');
+          td.className = 'total-cell';
+          td.id = `b-total-${i}`;
+          td.style.cssText = `padding:7px 8px;border:1px solid #e2e8f0;background:${bg};text-align:right;font-weight:700;color:#1f2937;font-size:12px`;
+          tRow.appendChild(td);
+        });
+      }
+    }
+    updateTotals();
+  }
+
+  function updateTotals() {
+    MONTHS_ALL.forEach((m,i) => {
+      let total = 0;
+      VERTS.forEach(v => {
+        const el = document.getElementById(`b-${v.key}-${i}`);
+        if (el) total += parseNum(el.value);
+      });
+      const td = document.getElementById(`b-total-${i}`);
+      if (td) td.textContent = total ? (total/1e6).toFixed(1)+'M' : '—';
+    });
+  }
+
+  window._budgetUpdate = updateTotals;
+
+  window.saveBudget = function() {
+    const newData = {};
+    VERTS.forEach(v => {
+      newData[v.key] = MONTHS_ALL.map((m,i) => parseNum(document.getElementById(`b-${v.key}-${i}`)?.value || '0'));
+    });
+    localStorage.setItem('budgetData2026', JSON.stringify(newData));
+
+    // Compute totals and update D.growth_channel
+    const totals = MONTHS_ALL.map((m,i) => VERTS.reduce((s,v) => s + (newData[v.key][i]||0), 0));
+    const gc = D.growth_channel;
+    const n = D.months.length;
+
+    // actual cost: months 0..ACTUAL_COUNT-1
+    gc.cost = D.months.map((lbl,i) => {
+      const mi = MONTHS_ALL.findIndex(m => lbl.startsWith(m));
+      if (mi < 0 || mi >= ACTUAL_COUNT) return null;
+      return totals[mi] || null;
+    });
+
+    // forecast cost: Jun–Dec (indices ACTUAL_COUNT..11)
+    gc.cost_forecast = totals.slice(ACTUAL_COUNT).filter(v => v > 0);
+
+    // Recalculate CPA/CAA
+    gc.cpa = gc.new_users.map((u,i) => u && gc.cost[i] ? Math.round(gc.cost[i]/u) : null);
+    gc.caa = gc.adview_activated.map((a,i) => a && gc.cost[i] ? Math.round(gc.cost[i]/a) : null);
+
+    // Re-render cost charts by destroying and reinitializing
+    ['chartG5Cost','chartG5CostVsUsers'].forEach(id => {
+      const inst = Object.values(Chart.instances||{}).find(c=>c.canvas?.id===id);
+      if (inst) inst.destroy();
+    });
+    // Re-run the Growth chart section
+    if (typeof initGrowthCharts === 'function') initGrowthCharts();
+    else location.reload(); // fallback
+
+    const msg = document.getElementById('budgetSaveMsg');
+    if (msg) { msg.textContent = '✓ Đã lưu — charts đang cập nhật...'; setTimeout(()=>msg.textContent='',3000); }
+  };
+
+  window.resetBudget = function() {
+    if (!confirm('Reset về default data từ Google Sheet?')) return;
+    localStorage.removeItem('budgetData2026');
+    buildTable();
+  };
+
+  document.addEventListener('DOMContentLoaded', buildTable);
+})();
 </script>
 </body>
 </html>
