@@ -275,6 +275,80 @@ def pad(arr, length, val=None):
 tot_d1=pad(D['retention']['total_d1'],n); tot_d7=pad(D['retention']['total_d7'],n)
 tot_m1=pad(D['retention']['total_m1'],n)
 
+# Null out D7/M1 for partial months — these metrics need full month data to be meaningful
+# D7 = need users from last 7 days of month to have completed their D7 window (null current month)
+# M1 = need users from ~30 days ago (null current month + previous month)
+def null_partial(arr, partial_indices, extra_indices=None):
+    """Set values to None for partial/incomplete month indices."""
+    result = list(arr)
+    for i in (partial_indices + (extra_indices or [])):
+        if i < len(result):
+            result[i] = None
+    return result
+
+current_month_i = n - 1  # last index = current (partial) month
+prev_month_i = n - 2     # second-to-last = previous month
+
+app_d7  = null_partial(app_d7,  [current_month_i])
+app_m1  = null_partial(app_m1,  [current_month_i], [prev_month_i])
+nurr_d7 = null_partial(nurr_d7 if act_rows else D['retention']['nurr_d7'], [current_month_i])
+nurr_m1 = null_partial(nurr_m1 if act_rows else D['retention']['nurr_m1'], [current_month_i], [prev_month_i])
+dir_d7  = null_partial(dir_d7,  [current_month_i])
+dir_m1  = null_partial(dir_m1,  [current_month_i], [prev_month_i])
+org_d7  = null_partial(org_d7,  [current_month_i])
+org_m1  = null_partial(org_m1,  [current_month_i], [prev_month_i])
+paid_d7 = null_partial(paid_d7, [current_month_i])
+paid_m1 = null_partial(paid_m1, [current_month_i], [prev_month_i])
+
+# Campaign-level data — latest full month only
+campaigns = []
+try:
+    # Use the last full month (one before current partial)
+    full_month = all_months[prev_month_i]
+    m_start = full_month.strftime('%Y-%m-01')
+    m_end   = (full_month.replace(day=28) + datetime.timedelta(days=4)).replace(day=1).strftime('%Y-%m-%d')
+    camp_rows = run(f"""
+    SELECT
+      campaign,
+      LOWER(campaign) as campaign_lc,
+      SUM(d0) as new_users,
+      SUM(user_20adview_7d) as activated_adview,
+      SUM(user_1lead_7d) as activated_lead,
+      SAFE_DIVIDE(SUM(user_20adview_7d), SUM(d0)) as activation_rate,
+      SAFE_DIVIDE(SUM(d1), SUM(d0)) as nurr_d1,
+      SAFE_DIVIDE(SUM(d7), SUM(d0)) as nurr_d7
+    FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
+    WHERE return_status = 'new'
+      AND campaign != 'all'
+      AND channel = 'all'
+      AND vertical_user = 'all'
+      AND visit_date >= '{m_start}' AND visit_date < '{m_end}'
+    GROUP BY 1, 2
+    HAVING SUM(d0) >= 100
+    ORDER BY new_users DESC
+    LIMIT 50
+    """)
+    for r in camp_rows:
+        lc = str(r.get('campaign_lc',''))
+        vertical = 'pty' if any(k in lc for k in ['pty','property','bds','bat dong','nha dat']) \
+                   else 'job' if any(k in lc for k in ['job','viec lam','tuyen dung','nhan su']) \
+                   else 'other'
+        campaigns.append({
+            'name': str(r['campaign']),
+            'vertical': vertical,
+            'new_users': int(r['new_users']) if r['new_users'] else 0,
+            'activated_adview': int(r['activated_adview']) if r['activated_adview'] else 0,
+            'activated_lead': int(r['activated_lead']) if r['activated_lead'] else 0,
+            'activation_rate': round(float(r['activation_rate']),4) if r['activation_rate'] else None,
+            'nurr_d1': round(float(r['nurr_d1']),4) if r['nurr_d1'] else None,
+            'nurr_d7': round(float(r['nurr_d7']),4) if r['nurr_d7'] else None,
+            'month': m_start[:7],
+        })
+    print(f"  Campaigns: {len(campaigns)} rows OK (month: {m_start[:7]})")
+except Exception as e:
+    print(f"  WARNING Campaigns skipped: {e}")
+    campaigns = D.get('campaigns', [])
+
 # Cost — sync from Google Sheets
 SHEET_ID = '1D-2eQcfDMzy42wHUF4bpwCY4cWtrJNvp-kdv9R_iFUI'
 current_month_idx = today.month - 1
@@ -359,7 +433,8 @@ out = {
         "crr_d1": [round(cost[i]/ret_d1_gc[i]) if cost[i] and ret_d1_gc[i] else None for i in range(n)],
         "crr_d7": [round(cost[i]/ret_d7_gc[i]) if cost[i] and ret_d7_gc[i] else None for i in range(n)],
         "crr_m1": [round(cost[i]/ret_m1_gc[i]) if cost[i] and ret_m1_gc[i] else None for i in range(n)],
-    }
+    },
+    "campaigns": campaigns,
 }
 
 with open(DATA_JSON, 'w') as f:

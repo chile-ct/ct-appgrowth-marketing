@@ -519,36 +519,61 @@ canvas { max-height: 320px; }
       <div class="chart-title">Monthly Cost vs New Users (bars nhạt = forecast Jun–Dec)</div>
       <div style="position:relative;height:300px"><canvas id="chartG5CostVsUsers"></canvas></div>
     </div>
-    <div class="card">
+    <div class="card" style="margin-bottom:16px">
       <div class="card-title">Growth Channel — All Metrics Summary</div>
       <div style="overflow-x:auto"><table id="g5SummaryTable"></table></div>
       <div class="note">Cost = tổng 5 dòng "app growth" từ sheet Data for Claude | ↓ = best trong kỳ | Activated combine = MAX(adview, lead)</div>
+    </div>
+    <div class="card" id="campaignOverviewCard">
+      <div class="card-title">🎯 Top Campaigns — Combined Score: New Users × Activation Rate × NURR D1</div>
+      <div style="overflow-x:auto"><table id="campaignOverviewTable"></table></div>
+      <div class="note">Score = new_users × activation_rate × nurr_d1 (normalized). Rank = best balance of volume + quality. Month: latest full month.</div>
     </div>
   </div>
 
   <!-- Tab 1: Acquisition -->
   <div class="tab-content" id="g5-1">
     <div class="chart-card" style="margin-bottom:16px"><div class="chart-title">New App Users (Growth) vs Total — % Share</div><canvas id="chartG5Acq"></canvas></div>
-    <div class="card">
+    <div class="card" style="margin-bottom:16px">
       <div class="card-title">Acquisition — Growth Channel</div>
       <div style="overflow-x:auto"><table id="g5AcqTable"></table></div>
     </div>
-    <div class="card" style="margin-top:16px" id="campaignAcqCard">
-      <div class="card-title">🎯 Active Campaigns — ranked by New Users (May 2026)</div>
+    <div class="card" style="margin-bottom:16px" id="campaignAcqCard">
+      <div class="card-title">🎯 Active Campaigns — ranked by New Users (latest full month)</div>
       <div style="overflow-x:auto"><table id="campaignAcqTable"></table></div>
+    </div>
+    <div class="charts-grid" style="margin-bottom:16px">
+      <div class="chart-card">
+        <div class="chart-title">New Users by Campaign — PTY Vertical</div>
+        <div style="position:relative;height:300px"><canvas id="chartCampPtyAcq"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">New Users by Campaign — JOB Vertical</div>
+        <div style="position:relative;height:300px"><canvas id="chartCampJobAcq"></canvas></div>
+      </div>
     </div>
   </div>
 
   <!-- Tab 2: Activation -->
   <div class="tab-content" id="g5-2">
     <div class="chart-card" style="margin-bottom:16px"><div class="chart-title">Activation Trend — Growth Channel</div><canvas id="chartG5Act"></canvas></div>
-    <div class="card">
+    <div class="card" style="margin-bottom:16px">
       <div class="card-title">Activation — Growth Channel</div>
       <div style="overflow-x:auto"><table id="g5ActTable"></table></div>
     </div>
-    <div class="card" style="margin-top:16px" id="campaignActCard">
-      <div class="card-title">🎯 Active Campaigns — ranked by Activation Rate ≥20 adview (May 2026)</div>
+    <div class="card" style="margin-bottom:16px" id="campaignActCard">
+      <div class="card-title">🎯 Active Campaigns — ranked by Activation Rate ≥20 adview (latest full month)</div>
       <div style="overflow-x:auto"><table id="campaignActTable"></table></div>
+    </div>
+    <div class="charts-grid" style="margin-bottom:16px">
+      <div class="chart-card">
+        <div class="chart-title">Activation Rate by Campaign — PTY Vertical</div>
+        <div style="position:relative;height:300px"><canvas id="chartCampPtyAct"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Activation Rate by Campaign — JOB Vertical</div>
+        <div style="position:relative;height:300px"><canvas id="chartCampJobAct"></canvas></div>
+      </div>
     </div>
   </div>
 
@@ -560,7 +585,7 @@ canvas { max-height: 320px; }
       <div style="overflow-x:auto"><table id="g5NurrTable"></table></div>
     </div>
     <div class="card" style="margin-top:16px" id="campaignRetCard">
-      <div class="card-title">🎯 Active Campaigns — ranked by NURR D1 (May 2026)</div>
+      <div class="card-title">🎯 Active Campaigns — ranked by NURR D1 (latest full month)</div>
       <div style="overflow-x:auto"><table id="campaignRetTable"></table></div>
     </div>
   </div>
@@ -1325,27 +1350,102 @@ function selectExecMonth(m) {
 // INIT — load data then render everything
 // ============================================================
 function renderCampaignTables() {
-  if (!D || !D.campaigns) return;
+  if (!D || !D.campaigns || !D.campaigns.length) {
+    // No campaign data yet — show placeholder
+    const msg = `<thead><tr><th>Campaign data will appear after next auto-update (daily 11 AM)</th></tr></thead><tbody></tbody>`;
+    ['campaignAcqTable','campaignActTable','campaignRetTable','campaignOverviewTable'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.innerHTML=msg;
+    });
+    return;
+  }
   const c = D.campaigns;
   const fmtN = v => v==null?'—':v.toLocaleString('en');
   const fmtP = v => v==null?'—':(v*100).toFixed(1)+'%';
+  const month = c[0]?.month || '';
 
-  const thead = `<tr><th style="text-align:left">Campaign</th><th>New Users</th><th>Activated (adview)</th><th>Activation Rate</th><th>NURR D1</th></tr>`;
+  // Update card titles with actual month
+  ['campaignAcqCard','campaignActCard','campaignRetCard','campaignOverviewCard'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    const t=el.querySelector('.card-title');
+    if(t) t.textContent = t.textContent.replace('latest full month', month);
+  });
 
-  function tableHTML(sortedCampaigns) {
-    const rows = sortedCampaigns.slice(0,12).map(r =>
-      `<tr><td style="font-size:11px;max-width:250px;word-break:break-word">${r.name}</td><td>${fmtN(r.new_users)}</td><td>${fmtN(r.activated_adview)}</td><td style="color:${r.activation_rate>0.30?'#10b981':'#374151'};font-weight:${r.activation_rate>0.30?'700':'400'}">${fmtP(r.activation_rate)}</td><td style="color:${r.nurr_d1>0.40?'#10b981':'#374151'};font-weight:${r.nurr_d1>0.40?'700':'400'}">${fmtP(r.nurr_d1)}</td></tr>`
-    ).join('');
+  const thead = `<tr><th style="text-align:left">Campaign</th><th>New Users</th><th>Activated (adview)</th><th>Activation Rate</th><th>NURR D1</th><th>NURR D7</th></tr>`;
+
+  function tableHTML(sortedCampaigns, limit=15) {
+    const rows = sortedCampaigns.slice(0,limit).map(r => {
+      const actColor = r.activation_rate>0.30?'#10b981':r.activation_rate>0.20?'#374151':'#ef4444';
+      const nurrColor = r.nurr_d1>0.40?'#10b981':r.nurr_d1>0.30?'#374151':'#ef4444';
+      return `<tr>
+        <td style="font-size:11px;max-width:260px;word-break:break-word">${r.name}</td>
+        <td>${fmtN(r.new_users)}</td>
+        <td>${fmtN(r.activated_adview)}</td>
+        <td style="color:${actColor};font-weight:${r.activation_rate>0.30?'700':'400'}">${fmtP(r.activation_rate)}</td>
+        <td style="color:${nurrColor};font-weight:${r.nurr_d1>0.40?'700':'400'}">${fmtP(r.nurr_d1)}</td>
+        <td>${fmtP(r.nurr_d7)}</td>
+      </tr>`;
+    }).join('');
     return `<thead>${thead}</thead><tbody>${rows}</tbody>`;
   }
 
-  const byUsers = [...c].sort((a,b)=>b.new_users-a.new_users);
-  const byAct = [...c].sort((a,b)=>b.activation_rate-a.activation_rate);
-  const byNURR = [...c].sort((a,b)=>b.nurr_d1-a.nurr_d1);
+  // Combined score: normalize each metric 0-1 then average
+  const maxUsers = Math.max(...c.map(r=>r.new_users||0));
+  const maxAct   = Math.max(...c.map(r=>r.activation_rate||0));
+  const maxNurr  = Math.max(...c.map(r=>r.nurr_d1||0));
+  const scored = c.map(r => ({
+    ...r,
+    score: ((r.new_users/maxUsers)*0.4 + ((r.activation_rate||0)/maxAct)*0.35 + ((r.nurr_d1||0)/maxNurr)*0.25)
+  }));
 
-  const t1=document.getElementById('campaignAcqTable'); if(t1) t1.innerHTML=tableHTML(byUsers);
-  const t2=document.getElementById('campaignActTable'); if(t2) t2.innerHTML=tableHTML(byAct);
-  const t3=document.getElementById('campaignRetTable'); if(t3) t3.innerHTML=tableHTML(byNURR);
+  const byScore = [...scored].sort((a,b)=>b.score-a.score);
+  const byUsers = [...c].sort((a,b)=>b.new_users-a.new_users);
+  const byAct   = [...c].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0));
+  const byNURR  = [...c].sort((a,b)=>(b.nurr_d1||0)-(a.nurr_d1||0));
+
+  const t1=document.getElementById('campaignAcqTable');     if(t1) t1.innerHTML=tableHTML(byUsers);
+  const t2=document.getElementById('campaignActTable');     if(t2) t2.innerHTML=tableHTML(byAct);
+  const t3=document.getElementById('campaignRetTable');     if(t3) t3.innerHTML=tableHTML(byNURR);
+
+  // Combined ranking table (Overview tab) — extra score column
+  const t0=document.getElementById('campaignOverviewTable');
+  if(t0){
+    const scoreHead = `<tr><th style="text-align:left">Campaign</th><th>New Users</th><th>Act. Rate</th><th>NURR D1</th><th>Score</th><th>Vertical</th></tr>`;
+    const scoreRows = byScore.slice(0,15).map((r,i)=>`<tr>
+      <td style="font-size:11px;max-width:240px;word-break:break-word">${i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':''} ${r.name}</td>
+      <td>${fmtN(r.new_users)}</td>
+      <td>${fmtP(r.activation_rate)}</td>
+      <td>${fmtP(r.nurr_d1)}</td>
+      <td style="font-weight:700;color:#4361ee">${(r.score*100).toFixed(1)}</td>
+      <td><span style="font-size:10px;padding:2px 6px;border-radius:4px;background:${r.vertical==='pty'?'#dbeafe':r.vertical==='job'?'#dcfce7':'#f3f4f6'};color:${r.vertical==='pty'?'#1d4ed8':r.vertical==='job'?'#15803d':'#6b7280'}">${r.vertical.toUpperCase()}</span></td>
+    </tr>`).join('');
+    t0.innerHTML=`<thead>${scoreHead}</thead><tbody>${scoreRows}</tbody>`;
+  }
+
+  // PTY/JOB vertical charts
+  const ptyC = byUsers.filter(r=>r.vertical==='pty').slice(0,10);
+  const jobC = byUsers.filter(r=>r.vertical==='job').slice(0,10);
+
+  function shortName(n) { return n.length>30?n.substring(0,28)+'…':n; }
+
+  function makeHBar(canvasId, campaigns, valueKey, title, fmtFn, color) {
+    const ctx = document.getElementById(canvasId); if(!ctx) return;
+    const existing = Object.values(Chart.instances||{}).find(c=>c.canvas?.id===canvasId);
+    if(existing) existing.destroy();
+    if(!campaigns.length){ ctx.parentElement.innerHTML=`<div style="text-align:center;color:#9ca3af;padding:40px;font-size:12px">No ${canvasId.includes('Pty')?'PTY':'JOB'} campaigns found</div>`; return; }
+    const labels = campaigns.map(r=>shortName(r.name));
+    const data   = campaigns.map(r=>r[valueKey]||0);
+    new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:title,data,backgroundColor:color+'cc',borderColor:color,borderWidth:1,borderRadius:3}]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${fmtFn(c.parsed.x)}`}}},
+        scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>fmtFn(v)}},
+          y:{grid:{display:false},ticks:{font:{size:10}}}}}});
+  }
+
+  makeHBar('chartCampPtyAcq', ptyC, 'new_users',       'New Users',       v=>v>=1000?(v/1000).toFixed(1)+'K':v, C.blue);
+  makeHBar('chartCampJobAcq', jobC, 'new_users',       'New Users',       v=>v>=1000?(v/1000).toFixed(1)+'K':v, C.green);
+  makeHBar('chartCampPtyAct', [...ptyC].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)), 'activation_rate', 'Activation Rate', v=>(v*100).toFixed(1)+'%', C.orange);
+  makeHBar('chartCampJobAct', [...jobC].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)), 'activation_rate', 'Activation Rate', v=>(v*100).toFixed(1)+'%', C.purple);
 }
 
 // ── Growth Channel Tables: dynamic from D + MoM delta ────────────────────────
