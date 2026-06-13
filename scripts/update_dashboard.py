@@ -215,9 +215,14 @@ def fetch_sheet_cost(spreadsheet_id, months_list, current_month_idx):
         print(f"  Sheet forecast values: {fc_out}")
         return cost_out, fc_out
     except Exception as e:
-        import traceback
-        print(f"  WARNING Sheet fetch failed: {type(e).__name__}: {e}")
-        traceback.print_exc()
+        import traceback, sys
+        print(f"  WARNING Sheet fetch failed: {type(e).__name__}: {e}", flush=True)
+        # Print 403 response body if available
+        if hasattr(e, 'read'):
+            try: print(f"  403 body: {e.read().decode()}", flush=True)
+            except: pass
+        traceback.print_exc(file=sys.stdout)
+        sys.stdout.flush()
         return None, None
 
 
