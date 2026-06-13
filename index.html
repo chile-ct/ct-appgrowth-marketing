@@ -1918,6 +1918,39 @@ document.addEventListener('DOMContentLoaded', initDashboard);
 
   window._budgetUpdate = updateTotals;
 
+  // Paste TSV from Google Sheets — intercept on any input in the table
+  document.addEventListener('paste', function(e) {
+    const focused = document.activeElement;
+    if (!focused || !focused.id.startsWith('b-')) return; // only inside budget table
+
+    const parts = focused.id.split('-'); // b-{vert}-{colIdx}
+    const startVert = parts[1] === 'parent' ? 'parent' : parts[1];
+    const startCol = parseInt(parts[2]);
+    const startRow = VERTS.findIndex(v => v.key === startVert);
+    if (startRow < 0) return;
+
+    const text = (e.clipboardData || window.clipboardData).getData('text');
+    if (!text || !text.includes('\t')) return; // not a multi-cell paste
+
+    e.preventDefault();
+    const rows = text.trim().split(/\r?\n/).map(r => r.split('\t'));
+
+    rows.forEach((cols, ri) => {
+      const vRow = startRow + ri;
+      if (vRow >= VERTS.length) return;
+      const vert = VERTS[vRow].key;
+      cols.forEach((val, ci) => {
+        const col = startCol + ci;
+        if (col >= 12) return;
+        const el = document.getElementById(`b-${vert}-${col}`);
+        if (!el) return;
+        const num = parseFloat(String(val).replace(/,/g, '').replace(/\s/g, ''));
+        el.value = isNaN(num) ? '' : fmtNum(num);
+      });
+    });
+    updateTotals();
+  });
+
   window.saveBudget = function() {
     const newData = {};
     VERTS.forEach(v => {
