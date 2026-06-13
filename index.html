@@ -532,8 +532,10 @@ canvas { max-height: 320px; }
     </div>
     <div class="card" id="campaignOverviewCard">
       <div class="card-title">🎯 Top Campaigns — Combined Score: New Users × Activation Rate × NURR D1</div>
+      <div id="campFilter-overview" style="margin-bottom:10px"></div>
       <div style="overflow-x:auto"><table id="campaignOverviewTable"></table></div>
-      <div class="note">Score = new_users × activation_rate × nurr_d1 (normalized). Rank = best balance of volume + quality. Month: latest full month.</div>
+      <div id="campPage-overview" style="margin-top:10px"></div>
+      <div class="note">Score = new_users × activation_rate × nurr_d1 (normalized). Rank = best balance of volume + quality.</div>
     </div>
   </div>
 
@@ -567,8 +569,10 @@ canvas { max-height: 320px; }
       <div style="overflow-x:auto"><table id="g5AcqTable"></table></div>
     </div>
     <div class="card" style="margin-bottom:16px" id="campaignAcqCard">
-      <div class="card-title">🎯 Active Campaigns — ranked by New Users (latest full month)</div>
+      <div class="card-title">🎯 Active Campaigns — ranked by New Users</div>
+      <div id="campFilter-acq" style="margin-bottom:10px"></div>
       <div style="overflow-x:auto"><table id="campaignAcqTable"></table></div>
+      <div id="campPage-acq" style="margin-top:10px"></div>
     </div>
   </div>
 
@@ -602,8 +606,10 @@ canvas { max-height: 320px; }
       <div style="overflow-x:auto"><table id="g5ActTable"></table></div>
     </div>
     <div class="card" style="margin-bottom:16px" id="campaignActCard">
-      <div class="card-title">🎯 Active Campaigns — ranked by Activation Rate ≥20 adview (latest full month)</div>
+      <div class="card-title">🎯 Active Campaigns — ranked by Activation Rate ≥20 adview</div>
+      <div id="campFilter-act" style="margin-bottom:10px"></div>
       <div style="overflow-x:auto"><table id="campaignActTable"></table></div>
+      <div id="campPage-act" style="margin-top:10px"></div>
     </div>
   </div>
 
@@ -615,8 +621,10 @@ canvas { max-height: 320px; }
       <div style="overflow-x:auto"><table id="g5NurrTable"></table></div>
     </div>
     <div class="card" style="margin-top:16px" id="campaignRetCard">
-      <div class="card-title">🎯 Active Campaigns — ranked by NURR D1 (latest full month)</div>
+      <div class="card-title">🎯 Active Campaigns — ranked by NURR D1</div>
+      <div id="campFilter-ret" style="margin-bottom:10px"></div>
       <div style="overflow-x:auto"><table id="campaignRetTable"></table></div>
+      <div id="campPage-ret" style="margin-top:10px"></div>
     </div>
   </div>
 
@@ -1422,78 +1430,150 @@ function selectExecMonth(m) {
 // ============================================================
 // INIT — load data then render everything
 // ============================================================
+// ── Campaign table state (filters + pagination, shared across all 4 tables) ──
+const _campState = {};
+function _getCampState(id) {
+  if (!_campState[id]) _campState[id] = { month: 'all', vertical: 'all', page: 0 };
+  return _campState[id];
+}
+
+function _campVertBadge(v) {
+  const cfg = {pty:['#dbeafe','#1d4ed8'],job:['#dcfce7','#15803d'],veh:['#ffedd5','#c2410c'],gds:['#f3e8ff','#7c3aed'],other:['#f3f4f6','#6b7280']};
+  const [bg,col] = cfg[v]||cfg.other;
+  return `<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:${bg};color:${col}">${v.toUpperCase()}</span>`;
+}
+
+function renderCampFilterBar(containerId, tableId, months) {
+  const el = document.getElementById(containerId); if (!el) return;
+  const st = _getCampState(tableId);
+  const VERTS = ['all','pty','job','veh','gds','other'];
+  const vertLabel = {all:'All Verticals',pty:'PTY',job:'JOB',veh:'VEH',gds:'GDS',other:'Other'};
+  const mChips = ['all',...months].map(m => {
+    const active = st.month === m;
+    return `<button onclick="campFilter('${tableId}','month','${m}')" style="padding:3px 10px;border-radius:10px;border:1.5px solid ${active?'#4361ee':'#d1d5db'};background:${active?'#4361ee':'#f9fafb'};color:${active?'white':'#6b7280'};font-size:11px;font-weight:600;cursor:pointer">${m==='all'?'All Months':m}</button>`;
+  }).join('');
+  const vChips = VERTS.map(v => {
+    const active = st.vertical === v;
+    return `<button onclick="campFilter('${tableId}','vertical','${v}')" style="padding:3px 10px;border-radius:10px;border:1.5px solid ${active?'#4361ee':'#d1d5db'};background:${active?'#4361ee':'#f9fafb'};color:${active?'white':'#6b7280'};font-size:11px;font-weight:600;cursor:pointer">${vertLabel[v]}</button>`;
+  }).join('');
+  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:6px">
+    <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center"><span style="font-size:10px;color:#9ca3af;min-width:60px">Tháng:</span>${mChips}</div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center"><span style="font-size:10px;color:#9ca3af;min-width:60px">Vertical:</span>${vChips}</div>
+  </div>`;
+}
+
+function renderCampPager(containerId, tableId, total, page, pageSize) {
+  const el = document.getElementById(containerId); if (!el) return;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const start = page * pageSize + 1, end = Math.min((page+1)*pageSize, total);
+  const btnStyle = (disabled, label) =>
+    `<button onclick="campPage('${tableId}',${disabled?page:label==='‹'?page-1:page+1})" style="padding:4px 12px;border-radius:6px;border:1px solid #d1d5db;background:${disabled?'#f9fafb':'white'};color:${disabled?'#d1d5db':'#374151'};cursor:${disabled?'default':'pointer'};font-size:12px" ${disabled?'disabled':''}>${label}</button>`;
+  el.innerHTML = total===0 ? '' : `<div style="display:flex;align-items:center;gap:10px;font-size:12px;color:#6b7280">
+    ${btnStyle(page===0,'‹')}
+    <span>${start}–${end} / ${total} campaigns &nbsp;(trang ${page+1}/${totalPages})</span>
+    ${btnStyle(page>=totalPages-1,'›')}
+  </div>`;
+}
+
+window.campFilter = function(tableId, key, val) {
+  const st = _getCampState(tableId); st[key] = val; st.page = 0;
+  renderOneCampTable(tableId);
+};
+window.campPage = function(tableId, pg) {
+  _getCampState(tableId).page = pg;
+  renderOneCampTable(tableId);
+};
+
+function renderOneCampTable(tableId) {
+  if (!D || !D.campaigns) return;
+  const st = _getCampState(tableId);
+  const PAGE = 10;
+  const fmtN = v => v==null?'—':v.toLocaleString('en');
+  const fmtP = v => v==null?'—':(v*100).toFixed(1)+'%';
+
+  const allMonths = [...new Set((D.campaigns||[]).map(r=>r.month))].sort();
+
+  // Filter — always exclude (none)
+  let rows = (D.campaigns||[]).filter(r => r.name !== '(none)' && r.name !== 'all');
+  if (st.month !== 'all') rows = rows.filter(r => r.month === st.month);
+  if (st.vertical !== 'all') rows = rows.filter(r => r.vertical === st.vertical);
+
+  // Sort by table type
+  if (tableId === 'overview') {
+    const mU=Math.max(...rows.map(r=>r.new_users||0))||1;
+    const mA=Math.max(...rows.map(r=>r.activation_rate||0))||1;
+    const mN=Math.max(...rows.map(r=>r.nurr_d1||0))||1;
+    rows = rows.map(r=>({...r,score:((r.new_users/mU)*0.4+((r.activation_rate||0)/mA)*0.35+((r.nurr_d1||0)/mN)*0.25)}))
+               .sort((a,b)=>b.score-a.score);
+  } else if (tableId === 'acq') {
+    rows.sort((a,b)=>b.new_users-a.new_users);
+  } else if (tableId === 'act') {
+    rows.sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0));
+  } else {
+    rows.sort((a,b)=>(b.nurr_d1||0)-(a.nurr_d1||0));
+  }
+
+  const total = rows.length;
+  const page = Math.min(st.page, Math.max(0, Math.ceil(total/PAGE)-1));
+  st.page = page;
+  const pageRows = rows.slice(page*PAGE, (page+1)*PAGE);
+  const globalOffset = page * PAGE;
+
+  // Render filter bar
+  renderCampFilterBar(`campFilter-${tableId}`, tableId, allMonths);
+
+  // Render table
+  const tableEl = document.getElementById(`campaign${tableId.charAt(0).toUpperCase()+tableId.slice(1)}Table`);
+  if (tableEl) {
+    if (tableId === 'overview') {
+      const head = `<tr><th style="text-align:left">#</th><th style="text-align:left">Campaign</th><th>New Users</th><th>Act. Rate</th><th>NURR D1</th><th>Score</th><th>Vertical</th><th>Tháng</th></tr>`;
+      const body = pageRows.map((r,i)=>{
+        const rank = globalOffset+i+1;
+        const medal = rank===1?'🥇 ':rank===2?'🥈 ':rank===3?'🥉 ':'';
+        return `<tr>
+          <td style="color:#9ca3af;font-size:11px">${rank}</td>
+          <td style="font-size:11px;max-width:240px;word-break:break-word">${medal}${r.name}</td>
+          <td>${fmtN(r.new_users)}</td>
+          <td>${fmtP(r.activation_rate)}</td>
+          <td>${fmtP(r.nurr_d1)}</td>
+          <td style="font-weight:700;color:#4361ee">${(r.score*100).toFixed(1)}</td>
+          <td>${_campVertBadge(r.vertical||'other')}</td>
+          <td style="font-size:11px;color:#6b7280">${r.month||''}</td>
+        </tr>`;
+      }).join('');
+      tableEl.innerHTML = `<thead>${head}</thead><tbody>${body||'<tr><td colspan="8" style="text-align:center;color:#9ca3af;padding:20px">Không có campaign nào</td></tr>'}</tbody>`;
+    } else {
+      const actColor = v => v>0.30?'#10b981':v>0.20?'#374151':'#ef4444';
+      const nurrColor = v => v>0.40?'#10b981':v>0.30?'#374151':'#ef4444';
+      const head = `<tr><th style="text-align:left">#</th><th style="text-align:left">Campaign</th><th>New Users</th><th>Activated</th><th>Act. Rate</th><th>NURR D1</th><th>NURR D7</th><th>Vertical</th><th>Tháng</th></tr>`;
+      const body = pageRows.map((r,i)=>`<tr>
+        <td style="color:#9ca3af;font-size:11px">${globalOffset+i+1}</td>
+        <td style="font-size:11px;max-width:220px;word-break:break-word">${r.name}</td>
+        <td>${fmtN(r.new_users)}</td>
+        <td>${fmtN(r.activated_adview)}</td>
+        <td style="color:${actColor(r.activation_rate||0)};font-weight:${(r.activation_rate||0)>0.30?'700':'400'}">${fmtP(r.activation_rate)}</td>
+        <td style="color:${nurrColor(r.nurr_d1||0)};font-weight:${(r.nurr_d1||0)>0.40?'700':'400'}">${fmtP(r.nurr_d1)}</td>
+        <td>${fmtP(r.nurr_d7)}</td>
+        <td>${_campVertBadge(r.vertical||'other')}</td>
+        <td style="font-size:11px;color:#6b7280">${r.month||''}</td>
+      </tr>`).join('');
+      tableEl.innerHTML = `<thead>${head}</thead><tbody>${body||'<tr><td colspan="9" style="text-align:center;color:#9ca3af;padding:20px">Không có campaign nào</td></tr>'}</tbody>`;
+    }
+  }
+
+  // Render pagination
+  renderCampPager(`campPage-${tableId}`, tableId, total, page, PAGE);
+}
+
 function renderCampaignTables() {
   if (!D || !D.campaigns || !D.campaigns.length) {
-    // No campaign data yet — show placeholder
-    const msg = `<thead><tr><th>Campaign data will appear after next auto-update (daily 11 AM)</th></tr></thead><tbody></tbody>`;
+    const msg = `<thead><tr><th>Campaign data sẽ xuất hiện sau lần update tiếp theo (hàng ngày 11 AM)</th></tr></thead><tbody></tbody>`;
     ['campaignAcqTable','campaignActTable','campaignRetTable','campaignOverviewTable'].forEach(id=>{
       const el=document.getElementById(id); if(el) el.innerHTML=msg;
     });
     return;
   }
-  const c = D.campaigns;
-  const fmtN = v => v==null?'—':v.toLocaleString('en');
-  const fmtP = v => v==null?'—':(v*100).toFixed(1)+'%';
-  const month = c[0]?.month || '';
-
-  // Update card titles with actual month
-  ['campaignAcqCard','campaignActCard','campaignRetCard','campaignOverviewCard'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(!el) return;
-    const t=el.querySelector('.card-title');
-    if(t) t.textContent = t.textContent.replace('latest full month', month);
-  });
-
-  const thead = `<tr><th style="text-align:left">Campaign</th><th>New Users</th><th>Activated (adview)</th><th>Activation Rate</th><th>NURR D1</th><th>NURR D7</th></tr>`;
-
-  function tableHTML(sortedCampaigns, limit=15) {
-    const rows = sortedCampaigns.slice(0,limit).map(r => {
-      const actColor = r.activation_rate>0.30?'#10b981':r.activation_rate>0.20?'#374151':'#ef4444';
-      const nurrColor = r.nurr_d1>0.40?'#10b981':r.nurr_d1>0.30?'#374151':'#ef4444';
-      return `<tr>
-        <td style="font-size:11px;max-width:260px;word-break:break-word">${r.name}</td>
-        <td>${fmtN(r.new_users)}</td>
-        <td>${fmtN(r.activated_adview)}</td>
-        <td style="color:${actColor};font-weight:${r.activation_rate>0.30?'700':'400'}">${fmtP(r.activation_rate)}</td>
-        <td style="color:${nurrColor};font-weight:${r.nurr_d1>0.40?'700':'400'}">${fmtP(r.nurr_d1)}</td>
-        <td>${fmtP(r.nurr_d7)}</td>
-      </tr>`;
-    }).join('');
-    return `<thead>${thead}</thead><tbody>${rows}</tbody>`;
-  }
-
-  // Combined score: normalize each metric 0-1 then average
-  const maxUsers = Math.max(...c.map(r=>r.new_users||0));
-  const maxAct   = Math.max(...c.map(r=>r.activation_rate||0));
-  const maxNurr  = Math.max(...c.map(r=>r.nurr_d1||0));
-  const scored = c.map(r => ({
-    ...r,
-    score: ((r.new_users/maxUsers)*0.4 + ((r.activation_rate||0)/maxAct)*0.35 + ((r.nurr_d1||0)/maxNurr)*0.25)
-  }));
-
-  const byScore = [...scored].sort((a,b)=>b.score-a.score);
-  const byUsers = [...c].filter(r=>r.name!=='(none)').sort((a,b)=>b.new_users-a.new_users);
-  const byAct   = [...c].filter(r=>r.name!=='(none)').sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0));
-  const byNURR  = [...c].filter(r=>r.name!=='(none)').sort((a,b)=>(b.nurr_d1||0)-(a.nurr_d1||0));
-
-  const t1=document.getElementById('campaignAcqTable');     if(t1) t1.innerHTML=tableHTML(byUsers);
-  const t2=document.getElementById('campaignActTable');     if(t2) t2.innerHTML=tableHTML(byAct);
-  const t3=document.getElementById('campaignRetTable');     if(t3) t3.innerHTML=tableHTML(byNURR);
-
-  // Combined ranking table (Overview tab) — extra score column
-  const t0=document.getElementById('campaignOverviewTable');
-  if(t0){
-    const scoreHead = `<tr><th style="text-align:left">Campaign</th><th>New Users</th><th>Act. Rate</th><th>NURR D1</th><th>Score</th><th>Vertical</th></tr>`;
-    const scoreRows = byScore.slice(0,15).map((r,i)=>`<tr>
-      <td style="font-size:11px;max-width:240px;word-break:break-word">${i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':''} ${r.name}</td>
-      <td>${fmtN(r.new_users)}</td>
-      <td>${fmtP(r.activation_rate)}</td>
-      <td>${fmtP(r.nurr_d1)}</td>
-      <td style="font-weight:700;color:#4361ee">${(r.score*100).toFixed(1)}</td>
-      <td><span style="font-size:10px;padding:2px 6px;border-radius:4px;background:${r.vertical==='pty'?'#dbeafe':r.vertical==='job'?'#dcfce7':'#f3f4f6'};color:${r.vertical==='pty'?'#1d4ed8':r.vertical==='job'?'#15803d':'#6b7280'}">${r.vertical.toUpperCase()}</span></td>
-    </tr>`).join('');
-    t0.innerHTML=`<thead>${scoreHead}</thead><tbody>${scoreRows}</tbody>`;
-  }
+  ['overview','acq','act','ret'].forEach(id => renderOneCampTable(id));
 
   const vertColors = {pty:C.blue, job:C.green, veh:C.orange, gds:C.purple};
   const fmtUsers = v=>v>=1000?(v/1000).toFixed(1)+'K':String(v);
