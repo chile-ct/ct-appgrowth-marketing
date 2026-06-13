@@ -636,11 +636,11 @@ canvas { max-height: 320px; }
   <div class="section-title">💰 Cost Budget 2026 — App Growth</div>
   <div class="section-subtitle">Nhập cost trực tiếp tại đây · Dữ liệu lưu trong browser · Nhấn <strong>Lưu</strong> để cập nhật tất cả charts ngay lập tức</div>
   <div class="card" style="margin-bottom:16px">
-    <div style="overflow-x:auto">
-      <table id="budgetTable" style="border-collapse:collapse;width:100%;font-size:12px;min-width:1100px">
+    <div>
+      <table id="budgetTable" style="border-collapse:collapse;width:100%;font-size:11px;table-layout:fixed">
         <thead>
           <tr>
-            <th rowspan="2" style="background:#1e1b4b;color:white;padding:8px 12px;text-align:left;position:sticky;left:0;z-index:2;min-width:80px">Vertical</th>
+            <th rowspan="2" style="background:#1e1b4b;color:white;padding:6px 8px;text-align:left;position:sticky;left:0;z-index:2;width:60px">Vertical</th>
             <th colspan="5" style="background:#d1fae5;color:#065f46;padding:6px;text-align:center;font-weight:600;border:1px solid #a7f3d0">← actual →</th>
             <th colspan="7" style="background:#fef3c7;color:#92400e;padding:6px;text-align:center;font-weight:600;border:1px solid #fde68a">← forecast →</th>
           </tr>
@@ -649,7 +649,7 @@ canvas { max-height: 320px; }
         <tbody id="budgetBody"></tbody>
         <tfoot>
           <tr id="budgetTotalRow" style="background:#f8fafc;font-weight:700">
-            <td style="padding:7px 12px;position:sticky;left:0;background:#f1f5f9;border:1px solid #e2e8f0">Total</td>
+            <td style="padding:5px 6px;position:sticky;left:0;background:#f1f5f9;border:1px solid #e2e8f0;width:60px">Total</td>
           </tr>
         </tfoot>
       </table>
@@ -1859,7 +1859,7 @@ document.addEventListener('DOMContentLoaded', initDashboard);
       const isActual = i < ACTUAL_COUNT;
       const bg = isActual ? '#d1fae5' : '#fef3c7';
       const tc = isActual ? '#065f46' : '#92400e';
-      return `<th style="background:${bg};color:${tc};padding:5px 8px;border:1px solid ${isActual?'#a7f3d0':'#fde68a'};min-width:100px;text-align:center">${m}</th>`;
+      return `<th style="background:${bg};color:${tc};padding:4px 2px;border:1px solid ${isActual?'#a7f3d0':'#fde68a'};text-align:center">${m}</th>`;
     }).join('');
 
     // Data rows
@@ -1870,17 +1870,17 @@ document.addEventListener('DOMContentLoaded', initDashboard);
       const cells = vals.map((val,i) => {
         const isActual = i < ACTUAL_COUNT;
         const bg = isActual ? '#f0fdf4' : '#fffbeb';
-        return `<td style="padding:2px 4px;border:1px solid #e5e7eb;background:${bg}">
+        return `<td style="padding:1px 2px;border:1px solid #e5e7eb;background:${bg}">
           <input type="text" id="b-${v.key}-${i}"
             value="${fmtNum(val)}"
             oninput="window._budgetUpdate()"
-            style="width:100%;border:none;background:transparent;font-size:12px;text-align:right;padding:4px;color:#1f2937;outline:none"
+            style="width:100%;border:none;background:transparent;font-size:11px;text-align:right;padding:3px 2px;color:#1f2937;outline:none"
             onfocus="this.select()"
           />
         </td>`;
       }).join('');
       return `<tr style="background:${ROW_COLORS[v.key]}">
-        <td style="padding:7px 12px;font-weight:600;border:1px solid #e5e7eb;position:sticky;left:0;background:${ROW_COLORS[v.key]};color:#374151">${v.label}</td>
+        <td style="padding:5px 6px;font-weight:600;border:1px solid #e5e7eb;position:sticky;left:0;background:${ROW_COLORS[v.key]};color:#374151;width:60px">${v.label}</td>
         ${cells}
       </tr>`;
     }).join('');
@@ -1896,7 +1896,7 @@ document.addEventListener('DOMContentLoaded', initDashboard);
           const td = document.createElement('td');
           td.className = 'total-cell';
           td.id = `b-total-${i}`;
-          td.style.cssText = `padding:7px 8px;border:1px solid #e2e8f0;background:${bg};text-align:right;font-weight:700;color:#1f2937;font-size:12px`;
+          td.style.cssText = `padding:5px 4px;border:1px solid #e2e8f0;background:${bg};text-align:right;font-weight:700;color:#1f2937;font-size:11px`;
           tRow.appendChild(td);
         });
       }
