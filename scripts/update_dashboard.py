@@ -132,14 +132,27 @@ def fetch_sheet_cost(spreadsheet_id, months_list, current_month_idx):
         import gspread
         import google.auth
         from google.auth.transport.requests import Request
+        import json as _json, os as _os
 
-        creds, _ = google.auth.default(scopes=[
-            'https://www.googleapis.com/auth/spreadsheets.readonly',
-            'https://www.googleapis.com/auth/drive.readonly'
-        ])
-        creds.refresh(Request())
+        # Load credentials from the JSON file directly to get proper type
+        creds_path = _os.environ.get('GOOGLE_APPLICATION_CREDENTIALS','')
+        creds_data = _json.load(open(creds_path)) if creds_path else {}
+        cred_type = creds_data.get('type','')
 
-        gc = gspread.authorize(creds)
+        if cred_type == 'service_account':
+            from google.oauth2 import service_account
+            scopes = ['https://www.googleapis.com/auth/spreadsheets.readonly',
+                      'https://www.googleapis.com/auth/drive.readonly']
+            creds = service_account.Credentials.from_service_account_info(creds_data, scopes=scopes)
+        else:
+            # authorized_user or other — use default and refresh
+            creds, _ = google.auth.default(scopes=[
+                'https://www.googleapis.com/auth/spreadsheets',
+                'https://www.googleapis.com/auth/drive',
+            ])
+            creds.refresh(Request())
+
+        gc = gspread.Client(auth=creds)
         sh = gc.open_by_key(spreadsheet_id)
         try:
             ws = sh.worksheet("FC & Actual cost")
@@ -204,7 +217,9 @@ def fetch_sheet_cost(spreadsheet_id, months_list, current_month_idx):
         print(f"  Sheet forecast values: {fc_out}")
         return cost_out, fc_out
     except Exception as e:
-        print(f"  WARNING Sheet fetch failed: {e}")
+        import traceback
+        print(f"  WARNING Sheet fetch failed: {type(e).__name__}: {e}")
+        traceback.print_exc()
         return None, None
 
 
