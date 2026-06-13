@@ -637,7 +637,7 @@ canvas { max-height: 320px; }
   <div class="section-subtitle">Nhập cost trực tiếp tại đây · Dữ liệu lưu trong browser · Nhấn <strong>Lưu</strong> để cập nhật tất cả charts ngay lập tức</div>
   <div class="card" style="margin-bottom:16px">
     <div id="budgetPasteZone">
-      <table id="budgetTable" style="border-collapse:collapse;width:100%;font-size:11px;table-layout:fixed">
+      <table id="budgetTable" onpaste="window.budgetPaste(event)" style="border-collapse:collapse;width:100%;font-size:11px;table-layout:fixed">
         <thead>
           <tr>
             <th rowspan="2" style="background:#1e1b4b;color:white;padding:6px 8px;text-align:left;position:sticky;left:0;z-index:2;width:60px">Vertical</th>
@@ -1872,7 +1872,7 @@ document.addEventListener('DOMContentLoaded', initDashboard);
     // Data rows
     const tbody = document.getElementById('budgetBody');
     if (!tbody) return;
-    tbody.innerHTML = VERTS.map(v => {
+    tbody.innerHTML = VERTS.map((v, ri) => {
       const vals = data[v.key] || Array(12).fill(0);
       const cells = vals.map((val,i) => {
         const isActual = i < ACTUAL_COUNT;
@@ -1882,7 +1882,7 @@ document.addEventListener('DOMContentLoaded', initDashboard);
             value="${fmtNum(val)}"
             oninput="window._budgetUpdate()"
             style="width:100%;border:none;background:transparent;font-size:11px;text-align:right;padding:3px 2px;color:#1f2937;outline:none"
-            onfocus="window._budgetFocused=this.id;this.select()"
+            onfocus="window._bf={row:${ri},col:${i},vert:'${v.key}'};this.select()"
           />
         </td>`;
       }).join('');
@@ -1938,22 +1938,27 @@ document.addEventListener('DOMContentLoaded', initDashboard);
     return isNaN(n) ? 0 : n;
   }
 
-  // Fill table from TSV text (tab-separated rows)
-  function applyTSV(text) {
-    const rows = text.trim().split(/\r?\n/).map(r => r.split('\t').map(c => c.trim()));
-    if (!rows.length) return 0;
+  // Fill table from TSV — startRow/startCol from focused cell
+  function applyTSV(text, startRow, startCol) {
+    startRow = startRow || 0;
+    startCol = startCol || 0;
+    const rows = text.split(/\r?\n/).map(r => r.split('\t'));
+    // Remove empty trailing rows
+    while (rows.length && rows[rows.length-1].every(c => !c.trim())) rows.pop();
     let filled = 0;
     rows.forEach((cols, ri) => {
-      if (ri >= VERTS.length) return;
-      const vert = VERTS[ri].key;
+      const vIdx = startRow + ri;
+      if (vIdx >= VERTS.length) return;
+      const vert = VERTS[vIdx].key;
       cols.forEach((val, ci) => {
-        if (ci >= 12) return;
-        const el = document.getElementById(`b-${vert}-${ci}`);
+        const colIdx = startCol + ci;
+        if (colIdx >= 12) return;
+        const el = document.getElementById('b-' + vert + '-' + colIdx);
         if (!el) return;
-        const num = parsePasteCell(val);
+        const num = parsePasteCell(val.trim());
         el.value = num ? fmtNum(num) : '';
         el.style.background = '#bbf7d0';
-        setTimeout(() => el.style.background = '', 700);
+        setTimeout(function(){ el.style.background = ''; }, 800);
         filled++;
       });
     });
@@ -1961,45 +1966,28 @@ document.addEventListener('DOMContentLoaded', initDashboard);
     return filled;
   }
 
-  // Button: read clipboard via Clipboard API — most reliable approach
-  window.pasteFromClipboard = function() {
-    if (!navigator.clipboard || !navigator.clipboard.readText) {
-      const msg = document.getElementById('budgetSaveMsg');
-      if (msg) msg.textContent = '⚠️ Trình duyệt không hỗ trợ, hãy dùng Ctrl+V vào ô bất kỳ';
-      return;
-    }
-    navigator.clipboard.readText().then(function(text) {
-      const msg = document.getElementById('budgetSaveMsg');
-      if (!text || !text.includes('\t')) {
-        if (msg) { msg.textContent = '⚠️ Clipboard không có dữ liệu dạng bảng (tab-separated)'; setTimeout(() => msg.textContent='',4000); }
-        return;
-      }
-      const filled = applyTSV(text);
-      if (msg) { msg.textContent = '✓ Đã paste ' + filled + ' ô'; setTimeout(() => msg.textContent='',3000); }
-    }).catch(function(err) {
-      const msg = document.getElementById('budgetSaveMsg');
-      if (msg) { msg.textContent = '⚠️ Không đọc được clipboard: ' + err.message; setTimeout(() => msg.textContent='',5000); }
-    });
+  // Main paste handler — attached to <table onpaste="..."> and also textarea
+  window.budgetPaste = function(e) {
+    var text = e.clipboardData.getData('text');
+    console.log('[budgetPaste] fired | rows:', text.split('\n').length, '| cols:', (text.split('\n')[0]||'').split('\t').length, '| preview:', text.slice(0,60));
+    if (!text || (!text.includes('\t') && !text.includes('\n'))) return;
+    e.preventDefault();
+    var startRow = window._bf ? window._bf.row : 0;
+    var startCol = window._bf ? window._bf.col : 0;
+    console.log('[budgetPaste] startRow:', startRow, 'startCol:', startCol);
+    var filled = applyTSV(text, startRow, startCol);
+    var msg = document.getElementById('budgetSaveMsg');
+    if (msg) { msg.textContent = '✓ Đã paste ' + filled + ' ô'; setTimeout(function(){ msg.textContent=''; }, 3000); }
   };
 
-  // Attach paste to wrapper div via bubbling — same pattern as ct-demand-marketing
-  // Apply button reads from textarea — 100% reliable, no clipboard API needed
+  // Textarea Apply button (fallback)
   window.applyPasteArea = function() {
-    const ta = document.getElementById('pasteArea');
-    if (!ta) return;
-    const text = ta.value;
-    const msg = document.getElementById('budgetSaveMsg');
-    if (!text.trim()) {
-      if (msg) { msg.textContent = '⚠️ Textarea trống, hãy paste dữ liệu vào trước'; setTimeout(() => msg.textContent='',3000); }
-      return;
-    }
-    if (!text.includes('\t')) {
-      if (msg) { msg.textContent = '⚠️ Dữ liệu không đúng định dạng (cần copy từ Google Sheets)'; setTimeout(() => msg.textContent='',4000); }
-      return;
-    }
-    const filled = applyTSV(text);
+    var ta = document.getElementById('pasteArea');
+    if (!ta || !ta.value.trim()) return;
+    var filled = applyTSV(ta.value, 0, 0);
     ta.value = '';
-    if (msg) { msg.textContent = '✓ Đã apply ' + filled + ' ô'; setTimeout(() => msg.textContent='',3000); }
+    var msg = document.getElementById('budgetSaveMsg');
+    if (msg) { msg.textContent = '✓ Đã apply ' + filled + ' ô'; setTimeout(function(){ msg.textContent=''; }, 3000); }
   };
 
   window.saveBudget = function() {
