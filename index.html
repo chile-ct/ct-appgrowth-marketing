@@ -1481,17 +1481,17 @@ function renderCampaignTables() {
           y:{grid:{display:false},ticks:{font:{size:10}}}}}});
   }
 
-  const fmtUsers = v=>v>=1000?(v/1000).toFixed(1)+'K':v;
-  const fmtRate  = v=>(v*100).toFixed(1)+'%';
-  const byAct    = arr=>[...arr].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0));
-  makeHBar('chartCampPtyAcq', ptyC,       'new_users',       'New Users',       fmtUsers, C.blue);
-  makeHBar('chartCampJobAcq', jobC,       'new_users',       'New Users',       fmtUsers, C.green);
-  makeHBar('chartCampVehAcq', vehC,       'new_users',       'New Users',       fmtUsers, C.orange);
-  makeHBar('chartCampGdsAcq', gdsC,       'new_users',       'New Users',       fmtUsers, C.purple);
-  makeHBar('chartCampPtyAct', byAct(ptyC), 'activation_rate', 'Activation Rate', fmtRate,  C.orange);
-  makeHBar('chartCampJobAct', byAct(jobC), 'activation_rate', 'Activation Rate', fmtRate,  C.purple);
-  makeHBar('chartCampVehAct', byAct(vehC), 'activation_rate', 'Activation Rate', fmtRate,  C.blue);
-  makeHBar('chartCampGdsAct', byAct(gdsC), 'activation_rate', 'Activation Rate', fmtRate,  C.green);
+  const fmtUsers  = v=>v>=1000?(v/1000).toFixed(1)+'K':v;
+  const fmtRate   = v=>(v*100).toFixed(1)+'%';
+  const sortByAct = arr=>[...arr].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0));
+  makeHBar('chartCampPtyAcq', ptyC,            'new_users',       'New Users',       fmtUsers, C.blue);
+  makeHBar('chartCampJobAcq', jobC,            'new_users',       'New Users',       fmtUsers, C.green);
+  makeHBar('chartCampVehAcq', vehC,            'new_users',       'New Users',       fmtUsers, C.orange);
+  makeHBar('chartCampGdsAcq', gdsC,            'new_users',       'New Users',       fmtUsers, C.purple);
+  makeHBar('chartCampPtyAct', sortByAct(ptyC), 'activation_rate', 'Activation Rate', fmtRate,  C.orange);
+  makeHBar('chartCampJobAct', sortByAct(jobC), 'activation_rate', 'Activation Rate', fmtRate,  C.purple);
+  makeHBar('chartCampVehAct', sortByAct(vehC), 'activation_rate', 'Activation Rate', fmtRate,  C.blue);
+  makeHBar('chartCampGdsAct', sortByAct(gdsC), 'activation_rate', 'Activation Rate', fmtRate,  C.green);
 
   // Vertical mix stacked bar — monthly trend from vertical_monthly in data.json
   const vm = D.vertical_monthly;
