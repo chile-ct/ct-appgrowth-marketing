@@ -1874,6 +1874,7 @@ document.addEventListener('DOMContentLoaded', initDashboard);
           <input type="text" id="b-${v.key}-${i}"
             value="${fmtNum(val)}"
             oninput="window._budgetUpdate()"
+            onpaste="window.handleBudgetPaste(event, this.id)"
             style="width:100%;border:none;background:transparent;font-size:11px;text-align:right;padding:3px 2px;color:#1f2937;outline:none"
             onfocus="this.select()"
           />
@@ -1918,47 +1919,38 @@ document.addEventListener('DOMContentLoaded', initDashboard);
 
   window._budgetUpdate = updateTotals;
 
-  // Paste TSV from Google Sheets — capturing phase to intercept before browser default
-  document.addEventListener('paste', function(e) {
-    const focused = document.activeElement;
-    if (!focused || !focused.id.startsWith('b-')) return;
+  // Parse number — handle "110,313,484" or "110.313.484" or "110313484"
+  function parsePasteCell(s) {
+    if (!s) return 0;
+    s = s.replace(/[₫đ\s]/g, '');
+    if (/\.\d{3}(\.|$)/.test(s) && !s.includes(',')) {
+      s = s.replace(/\./g, '');
+    } else {
+      s = s.replace(/,/g, '');
+    }
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+  }
 
+  // Core paste handler — called from onpaste on each input (most reliable)
+  window.handleBudgetPaste = function(e, anchorId) {
     const text = (e.clipboardData || window.clipboardData).getData('text');
-    if (!text || !text.includes('\t')) return;
+    if (!text || !text.includes('\t')) return; // single-cell paste → let browser handle normally
 
     e.preventDefault();
     e.stopPropagation();
 
-    const rows = text.trim().split(/\r?\n/).map(r =>
-      r.split('\t').map(cell => cell.trim())
-    );
+    const rows = text.trim().split(/\r?\n/).map(r => r.split('\t').map(c => c.trim()));
 
-    // Parse number — handle "110,313,484" or "110.313.484" or "110313484"
-    function parseCell(s) {
-      if (!s) return 0;
-      // Remove currency symbols, spaces
-      s = s.replace(/[₫đ\s]/g, '');
-      // If dots are used as thousand separators (e.g. 110.313.484), convert
-      // Heuristic: if there are dots AND no comma, and last group after dot is 3 digits → thousands
-      if (/\.\d{3}(\.|$)/.test(s) && !s.includes(',')) {
-        s = s.replace(/\./g, '');
-      } else {
-        s = s.replace(/,/g, '');
-      }
-      const n = parseFloat(s);
-      return isNaN(n) ? 0 : n;
-    }
-
-    // Determine start position from focused cell
-    const parts = focused.id.split('-');
-    // id format: b-{vert}-{col} — but 'parent' makes parts=['b','parent','0']
-    const vertKey = parts.slice(1, parts.length - 1).join('-'); // handles 'parent'
-    const startCol = parseInt(parts[parts.length - 1]);
+    const id = anchorId || (e.target && e.target.id) || '';
+    const parts = id.split('-');
+    const vertKey = parts.slice(1, parts.length - 1).join('-');
+    const startCol = parseInt(parts[parts.length - 1]) || 0;
     let startRow = VERTS.findIndex(v => v.key === vertKey);
     if (startRow < 0) startRow = 0;
 
-    // If paste has all 5 rows, always start from row 0 col 0 for convenience
-    if (rows.length === VERTS.length && startCol === 0) startRow = 0;
+    // If 5 rows pasted, always fill from GDS row 0 regardless of anchor
+    if (rows.length === VERTS.length) { startRow = 0; }
 
     let filled = 0;
     rows.forEach((cols, ri) => {
@@ -1970,19 +1962,25 @@ document.addEventListener('DOMContentLoaded', initDashboard);
         if (col >= 12) return;
         const el = document.getElementById(`b-${vert}-${col}`);
         if (!el) return;
-        const num = parseCell(val);
+        const num = parsePasteCell(val);
         el.value = num ? fmtNum(num) : '';
-        // Flash highlight
         el.style.background = '#bbf7d0';
-        setTimeout(() => el.style.background = '', 600);
+        setTimeout(() => el.style.background = '', 700);
         filled++;
       });
     });
 
     updateTotals();
     const msg = document.getElementById('budgetSaveMsg');
-    if (msg) { msg.textContent = `✓ Đã paste ${filled} ô`; setTimeout(()=>msg.textContent='',3000); }
-  }, true); // true = capturing phase
+    if (msg) { msg.textContent = `✓ Đã paste ${filled} ô`; setTimeout(() => msg.textContent = '', 3000); }
+  };
+
+  // Fallback: document-level capturing phase (handles edge cases)
+  document.addEventListener('paste', function(e) {
+    const focused = document.activeElement;
+    if (!focused || !focused.id.startsWith('b-')) return;
+    window.handleBudgetPaste(e, focused.id);
+  }, true);
 
   window.saveBudget = function() {
     const newData = {};
