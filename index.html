@@ -1881,8 +1881,9 @@ document.addEventListener('DOMContentLoaded', initDashboard);
           <input type="text" id="b-${v.key}-${i}"
             value="${fmtNum(val)}"
             oninput="window._budgetUpdate()"
+            onpaste="window.budgetPaste(event,${ri},${i})"
             style="width:100%;border:none;background:transparent;font-size:11px;text-align:right;padding:3px 2px;color:#1f2937;outline:none"
-            onfocus="window._bf={row:${ri},col:${i},vert:'${v.key}'};this.select()"
+            onfocus="this.select()"
           />
         </td>`;
       }).join('');
@@ -1966,16 +1967,13 @@ document.addEventListener('DOMContentLoaded', initDashboard);
     return filled;
   }
 
-  // Main paste handler — attached to <table onpaste="..."> and also textarea
-  window.budgetPaste = function(e) {
+  // Paste handler — called directly from onpaste on each input
+  window.budgetPaste = function(e, startRow, startCol) {
     var text = e.clipboardData.getData('text');
-    console.log('[budgetPaste] fired | rows:', text.split('\n').length, '| cols:', (text.split('\n')[0]||'').split('\t').length, '| preview:', text.slice(0,60));
-    if (!text || (!text.includes('\t') && !text.includes('\n'))) return;
+    if (!text) return;
     e.preventDefault();
-    var startRow = window._bf ? window._bf.row : 0;
-    var startCol = window._bf ? window._bf.col : 0;
-    console.log('[budgetPaste] startRow:', startRow, 'startCol:', startCol);
-    var filled = applyTSV(text, startRow, startCol);
+    e.stopPropagation();
+    var filled = applyTSV(text, startRow || 0, startCol || 0);
     var msg = document.getElementById('budgetSaveMsg');
     if (msg) { msg.textContent = '✓ Đã paste ' + filled + ' ô'; setTimeout(function(){ msg.textContent=''; }, 3000); }
   };
