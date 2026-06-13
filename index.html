@@ -533,14 +533,13 @@ canvas { max-height: 320px; }
 
   <!-- Tab 1: Acquisition -->
   <div class="tab-content" id="g5-1">
-    <div class="chart-card" style="margin-bottom:16px"><div class="chart-title">New App Users (Growth) vs Total — % Share</div><canvas id="chartG5Acq"></canvas></div>
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-title">Acquisition — Growth Channel</div>
-      <div style="overflow-x:auto"><table id="g5AcqTable"></table></div>
-    </div>
-    <div class="card" style="margin-bottom:16px" id="campaignAcqCard">
-      <div class="card-title">🎯 Active Campaigns — ranked by New Users (latest full month)</div>
-      <div style="overflow-x:auto"><table id="campaignAcqTable"></table></div>
+    <div class="charts-grid" style="margin-bottom:16px">
+      <div class="chart-card"><div class="chart-title">New App Users (Growth) vs Total — % Share</div><canvas id="chartG5Acq"></canvas></div>
+      <div class="chart-card">
+        <div class="chart-title">New Users by Vertical — <span id="verticalAcqMonth">latest full month</span></div>
+        <div style="position:relative;height:260px"><canvas id="chartVerticalMixAcq"></canvas></div>
+        <div class="note" style="margin-top:8px">Tính từ campaigns được tag vertical (PTY/JOB/VEH/GDS). Untagged "(none)" không tính.</div>
+      </div>
     </div>
     <div class="charts-grid" style="margin-bottom:16px">
       <div class="chart-card">
@@ -552,18 +551,25 @@ canvas { max-height: 320px; }
         <div style="position:relative;height:300px"><canvas id="chartCampJobAcq"></canvas></div>
       </div>
     </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Acquisition — Growth Channel</div>
+      <div style="overflow-x:auto"><table id="g5AcqTable"></table></div>
+    </div>
+    <div class="card" style="margin-bottom:16px" id="campaignAcqCard">
+      <div class="card-title">🎯 Active Campaigns — ranked by New Users (latest full month)</div>
+      <div style="overflow-x:auto"><table id="campaignAcqTable"></table></div>
+    </div>
   </div>
 
   <!-- Tab 2: Activation -->
   <div class="tab-content" id="g5-2">
-    <div class="chart-card" style="margin-bottom:16px"><div class="chart-title">Activation Trend — Growth Channel</div><canvas id="chartG5Act"></canvas></div>
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-title">Activation — Growth Channel</div>
-      <div style="overflow-x:auto"><table id="g5ActTable"></table></div>
-    </div>
-    <div class="card" style="margin-bottom:16px" id="campaignActCard">
-      <div class="card-title">🎯 Active Campaigns — ranked by Activation Rate ≥20 adview (latest full month)</div>
-      <div style="overflow-x:auto"><table id="campaignActTable"></table></div>
+    <div class="charts-grid" style="margin-bottom:16px">
+      <div class="chart-card"><div class="chart-title">Activation Trend — Growth Channel</div><canvas id="chartG5Act"></canvas></div>
+      <div class="chart-card">
+        <div class="chart-title">Activated (≥20 adview D7) by Vertical — <span id="verticalActMonth">latest full month</span></div>
+        <div style="position:relative;height:260px"><canvas id="chartVerticalMixAct"></canvas></div>
+        <div class="note" style="margin-top:8px">Tính từ campaigns được tag vertical (PTY/JOB/VEH/GDS). Untagged "(none)" không tính.</div>
+      </div>
     </div>
     <div class="charts-grid" style="margin-bottom:16px">
       <div class="chart-card">
@@ -574,6 +580,14 @@ canvas { max-height: 320px; }
         <div class="chart-title">Activation Rate by Campaign — JOB Vertical</div>
         <div style="position:relative;height:300px"><canvas id="chartCampJobAct"></canvas></div>
       </div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Activation — Growth Channel</div>
+      <div style="overflow-x:auto"><table id="g5ActTable"></table></div>
+    </div>
+    <div class="card" style="margin-bottom:16px" id="campaignActCard">
+      <div class="card-title">🎯 Active Campaigns — ranked by Activation Rate ≥20 adview (latest full month)</div>
+      <div style="overflow-x:auto"><table id="campaignActTable"></table></div>
     </div>
   </div>
 
@@ -1446,6 +1460,50 @@ function renderCampaignTables() {
   makeHBar('chartCampJobAcq', jobC, 'new_users',       'New Users',       v=>v>=1000?(v/1000).toFixed(1)+'K':v, C.green);
   makeHBar('chartCampPtyAct', [...ptyC].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)), 'activation_rate', 'Activation Rate', v=>(v*100).toFixed(1)+'%', C.orange);
   makeHBar('chartCampJobAct', [...jobC].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)), 'activation_rate', 'Activation Rate', v=>(v*100).toFixed(1)+'%', C.purple);
+
+  // Vertical mix donut charts (exclude "other" untagged campaigns)
+  const VERT_LABELS = ['PTY', 'JOB', 'VEH', 'GDS', 'Other'];
+  const VERT_COLORS = ['#3b82f6','#22c55e','#f97316','#a855f7','#9ca3af'];
+  const tagged = c.filter(r => r.vertical !== 'other');
+  const vertNewUsers   = ['pty','job','veh','gds','other'].map(v => c.filter(r=>r.vertical===v).reduce((s,r)=>s+(r.new_users||0),0));
+  const vertActivated  = ['pty','job','veh','gds','other'].map(v => c.filter(r=>r.vertical===v).reduce((s,r)=>s+(r.activated_adview||0),0));
+  const campMonth = month || '';
+
+  function makeDonut(canvasId, labelSpanId, data, labels, colors, monthLabel) {
+    const ctx = document.getElementById(canvasId); if(!ctx) return;
+    const existing = Object.values(Chart.instances||{}).find(ch=>ch.canvas?.id===canvasId);
+    if(existing) existing.destroy();
+    const total = data.reduce((s,v)=>s+v,0);
+    if(!total){ ctx.parentElement.style.display='none'; return; }
+    const span = document.getElementById(labelSpanId);
+    if(span) span.textContent = monthLabel;
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{ data, backgroundColor: colors.map(c=>c+'cc'), borderColor: colors, borderWidth: 2, hoverOffset: 6 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right', labels: { font: { size: 11 }, padding: 10, boxWidth: 12 } },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const v = ctx.parsed;
+                const pct = total ? ((v/total)*100).toFixed(1) : 0;
+                return ` ${ctx.label}: ${v>=1000?(v/1000).toFixed(1)+'K':v} (${pct}%)`;
+              }
+            }
+          }
+        },
+        cutout: '62%'
+      }
+    });
+  }
+
+  makeDonut('chartVerticalMixAcq', 'verticalAcqMonth', vertNewUsers,  VERT_LABELS, VERT_COLORS, campMonth);
+  makeDonut('chartVerticalMixAct', 'verticalActMonth', vertActivated, VERT_LABELS, VERT_COLORS, campMonth);
 }
 
 // ── Growth Channel Tables: dynamic from D + MoM delta ────────────────────────
