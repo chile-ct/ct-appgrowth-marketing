@@ -655,6 +655,7 @@ canvas { max-height: 320px; }
       </table>
     </div>
     <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button onclick="pasteFromClipboard()" style="background:#0ea5e9;color:white;border:none;padding:8px 18px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer">📋 Paste từ Sheets</button>
       <button onclick="saveBudget()" style="background:#4361ee;color:white;border:none;padding:8px 20px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer">💾 Lưu & cập nhật charts</button>
       <button onclick="resetBudget()" style="background:#f3f4f6;color:#374151;border:1px solid #d1d5db;padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer">↺ Reset về default</button>
       <span id="budgetSaveMsg" style="font-size:12px;color:#10b981;font-weight:500"></span>
@@ -1932,37 +1933,17 @@ document.addEventListener('DOMContentLoaded', initDashboard);
     return isNaN(n) ? 0 : n;
   }
 
-  // Core paste handler — called from onpaste on each input (most reliable)
-  window.handleBudgetPaste = function(e, anchorId) {
-    const text = (e.clipboardData || window.clipboardData).getData('text');
-    // DEBUG — remove after confirming paste works
-    alert('DEBUG paste:\nanchorId=' + anchorId + '\nhasTab=' + text.includes('\t') + '\nlen=' + text.length + '\nfirst80=' + text.slice(0,80));
-    if (!text || !text.includes('\t')) return; // single-cell paste → let browser handle normally
-
-    e.preventDefault();
-    e.stopPropagation();
-
+  // Fill table from TSV text (tab-separated rows)
+  function applyTSV(text) {
     const rows = text.trim().split(/\r?\n/).map(r => r.split('\t').map(c => c.trim()));
-
-    const id = anchorId || (e.target && e.target.id) || '';
-    const parts = id.split('-');
-    const vertKey = parts.slice(1, parts.length - 1).join('-');
-    const startCol = parseInt(parts[parts.length - 1]) || 0;
-    let startRow = VERTS.findIndex(v => v.key === vertKey);
-    if (startRow < 0) startRow = 0;
-
-    // If 5 rows pasted, always fill from GDS row 0 regardless of anchor
-    if (rows.length === VERTS.length) { startRow = 0; }
-
+    if (!rows.length) return 0;
     let filled = 0;
     rows.forEach((cols, ri) => {
-      const vIdx = startRow + ri;
-      if (vIdx >= VERTS.length) return;
-      const vert = VERTS[vIdx].key;
+      if (ri >= VERTS.length) return;
+      const vert = VERTS[ri].key;
       cols.forEach((val, ci) => {
-        const col = startCol + ci;
-        if (col >= 12) return;
-        const el = document.getElementById(`b-${vert}-${col}`);
+        if (ci >= 12) return;
+        const el = document.getElementById(`b-${vert}-${ci}`);
         if (!el) return;
         const num = parsePasteCell(val);
         el.value = num ? fmtNum(num) : '';
@@ -1971,13 +1952,41 @@ document.addEventListener('DOMContentLoaded', initDashboard);
         filled++;
       });
     });
-
     updateTotals();
-    const msg = document.getElementById('budgetSaveMsg');
-    if (msg) { msg.textContent = `✓ Đã paste ${filled} ô`; setTimeout(() => msg.textContent = '', 3000); }
+    return filled;
+  }
+
+  // Button: read clipboard via Clipboard API — most reliable approach
+  window.pasteFromClipboard = function() {
+    if (!navigator.clipboard || !navigator.clipboard.readText) {
+      const msg = document.getElementById('budgetSaveMsg');
+      if (msg) msg.textContent = '⚠️ Trình duyệt không hỗ trợ, hãy dùng Ctrl+V vào ô bất kỳ';
+      return;
+    }
+    navigator.clipboard.readText().then(function(text) {
+      const msg = document.getElementById('budgetSaveMsg');
+      if (!text || !text.includes('\t')) {
+        if (msg) { msg.textContent = '⚠️ Clipboard không có dữ liệu dạng bảng (tab-separated)'; setTimeout(() => msg.textContent='',4000); }
+        return;
+      }
+      const filled = applyTSV(text);
+      if (msg) { msg.textContent = '✓ Đã paste ' + filled + ' ô'; setTimeout(() => msg.textContent='',3000); }
+    }).catch(function(err) {
+      const msg = document.getElementById('budgetSaveMsg');
+      if (msg) { msg.textContent = '⚠️ Không đọc được clipboard: ' + err.message; setTimeout(() => msg.textContent='',5000); }
+    });
   };
 
-  // Fallback: document-level capturing phase (handles edge cases)
+  // Also keep Cmd+V / Ctrl+V paste via event (fallback)
+  window.handleBudgetPaste = function(e, anchorId) {
+    const text = (e.clipboardData || window.clipboardData).getData('text');
+    if (!text || !text.includes('\t')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const filled = applyTSV(text);
+    const msg = document.getElementById('budgetSaveMsg');
+    if (msg) { msg.textContent = '✓ Đã paste ' + filled + ' ô'; setTimeout(() => msg.textContent='',3000); }
+  };
   document.addEventListener('paste', function(e) {
     const focused = document.activeElement;
     if (!focused || !focused.id.startsWith('b-')) return;
