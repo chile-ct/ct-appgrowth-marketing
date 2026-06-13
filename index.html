@@ -636,7 +636,7 @@ canvas { max-height: 320px; }
   <div class="section-title">💰 Cost Budget 2026 — App Growth</div>
   <div class="section-subtitle">Nhập cost trực tiếp tại đây · Dữ liệu lưu trong browser · Nhấn <strong>Lưu</strong> để cập nhật tất cả charts ngay lập tức</div>
   <div class="card" style="margin-bottom:16px">
-    <div>
+    <div id="budgetPasteZone">
       <table id="budgetTable" style="border-collapse:collapse;width:100%;font-size:11px;table-layout:fixed">
         <thead>
           <tr>
@@ -1875,9 +1875,8 @@ document.addEventListener('DOMContentLoaded', initDashboard);
           <input type="text" id="b-${v.key}-${i}"
             value="${fmtNum(val)}"
             oninput="window._budgetUpdate()"
-            onpaste="window.handleBudgetPaste(event, this.id)"
             style="width:100%;border:none;background:transparent;font-size:11px;text-align:right;padding:3px 2px;color:#1f2937;outline:none"
-            onfocus="this.select()"
+            onfocus="window._budgetFocused=this.id;this.select()"
           />
         </td>`;
       }).join('');
@@ -1977,21 +1976,19 @@ document.addEventListener('DOMContentLoaded', initDashboard);
     });
   };
 
-  // Also keep Cmd+V / Ctrl+V paste via event (fallback)
-  window.handleBudgetPaste = function(e, anchorId) {
-    const text = (e.clipboardData || window.clipboardData).getData('text');
-    if (!text || !text.includes('\t')) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const filled = applyTSV(text);
-    const msg = document.getElementById('budgetSaveMsg');
-    if (msg) { msg.textContent = '✓ Đã paste ' + filled + ' ô'; setTimeout(() => msg.textContent='',3000); }
-  };
-  document.addEventListener('paste', function(e) {
-    const focused = document.activeElement;
-    if (!focused || !focused.id.startsWith('b-')) return;
-    window.handleBudgetPaste(e, focused.id);
-  }, true);
+  // Attach paste to wrapper div via bubbling — same pattern as ct-demand-marketing
+  window._budgetFocused = null;
+  const pasteZone = document.getElementById('budgetPasteZone');
+  if (pasteZone) {
+    pasteZone.addEventListener('paste', function(e) {
+      const text = e.clipboardData.getData('text');
+      if (!text || !text.includes('\t')) return;
+      e.preventDefault();
+      const filled = applyTSV(text);
+      const msg = document.getElementById('budgetSaveMsg');
+      if (msg) { msg.textContent = '✓ Đã paste ' + filled + ' ô'; setTimeout(() => msg.textContent='',3000); }
+    });
+  }
 
   window.saveBudget = function() {
     const newData = {};
