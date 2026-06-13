@@ -1528,40 +1528,38 @@ function renderOneCampTable(tableId) {
     if (tableId === 'overview') {
       const tdL = `style="text-align:left"`;
       const tdN = `style="text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px;font-size:11px"`;
-      const head = `<tr><th style="text-align:left">#</th><th style="text-align:left">Campaign</th><th style="text-align:left">New Users</th><th style="text-align:left">Act. Rate</th><th style="text-align:left">NURR D1</th><th style="text-align:left">Score</th><th style="text-align:left">Vertical</th><th style="text-align:left">Tháng</th></tr>`;
+      const head = `<tr><th style="text-align:left">#</th><th style="text-align:left">Campaign</th><th style="text-align:left">Vertical</th><th style="text-align:left">New Users</th><th style="text-align:left">Act. Rate</th><th style="text-align:left">NURR D1</th><th style="text-align:left">Score</th></tr>`;
       const body = pageRows.map((r,i)=>{
         const rank = globalOffset+i+1;
         const medal = rank===1?'🥇 ':rank===2?'🥈 ':rank===3?'🥉 ':'';
         return `<tr>
           <td ${tdL} style="color:#9ca3af;font-size:11px;text-align:left">${rank}</td>
           <td ${tdN} title="${r.name}">${medal}${r.name}</td>
+          <td ${tdL}>${_campVertBadge(r.vertical||'other')}</td>
           <td ${tdL}>${fmtN(r.new_users)}</td>
           <td ${tdL}>${fmtP(r.activation_rate)}</td>
           <td ${tdL}>${fmtP(r.nurr_d1)}</td>
           <td ${tdL} style="font-weight:700;color:#4361ee;text-align:left">${(r.score*100).toFixed(1)}</td>
-          <td ${tdL}>${_campVertBadge(r.vertical||'other')}</td>
-          <td ${tdL} style="font-size:11px;color:#6b7280;text-align:left">${r.month||''}</td>
         </tr>`;
       }).join('');
-      tableEl.innerHTML = `<thead>${head}</thead><tbody>${body||'<tr><td colspan="8" style="text-align:center;color:#9ca3af;padding:20px">Không có campaign nào</td></tr>'}</tbody>`;
+      tableEl.innerHTML = `<thead>${head}</thead><tbody>${body||'<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:20px">Không có campaign nào</td></tr>'}</tbody>`;
     } else {
       const actColor = v => v>0.30?'#10b981':v>0.20?'#374151':'#ef4444';
       const nurrColor = v => v>0.40?'#10b981':v>0.30?'#374151':'#ef4444';
       const tdL = `style="text-align:left"`;
       const tdN = `style="text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px;font-size:11px"`;
-      const head = `<tr><th style="text-align:left">#</th><th style="text-align:left">Campaign</th><th style="text-align:left">New Users</th><th style="text-align:left">Activated</th><th style="text-align:left">Act. Rate</th><th style="text-align:left">NURR D1</th><th style="text-align:left">NURR D7</th><th style="text-align:left">Vertical</th><th style="text-align:left">Tháng</th></tr>`;
+      const head = `<tr><th style="text-align:left">#</th><th style="text-align:left">Campaign</th><th style="text-align:left">Vertical</th><th style="text-align:left">New Users</th><th style="text-align:left">Activated</th><th style="text-align:left">Act. Rate</th><th style="text-align:left">NURR D1</th><th style="text-align:left">NURR D7</th></tr>`;
       const body = pageRows.map((r,i)=>`<tr>
         <td ${tdL} style="color:#9ca3af;font-size:11px;text-align:left">${globalOffset+i+1}</td>
         <td ${tdN} title="${r.name}">${r.name}</td>
+        <td ${tdL}>${_campVertBadge(r.vertical||'other')}</td>
         <td ${tdL}>${fmtN(r.new_users)}</td>
         <td ${tdL}>${fmtN(r.activated_adview)}</td>
         <td ${tdL} style="color:${actColor(r.activation_rate||0)};font-weight:${(r.activation_rate||0)>0.30?'700':'400'};text-align:left">${fmtP(r.activation_rate)}</td>
         <td ${tdL} style="color:${nurrColor(r.nurr_d1||0)};font-weight:${(r.nurr_d1||0)>0.40?'700':'400'};text-align:left">${fmtP(r.nurr_d1)}</td>
         <td ${tdL}>${fmtP(r.nurr_d7)}</td>
-        <td ${tdL}>${_campVertBadge(r.vertical||'other')}</td>
-        <td ${tdL} style="font-size:11px;color:#6b7280;text-align:left">${r.month||''}</td>
       </tr>`).join('');
-      tableEl.innerHTML = `<thead>${head}</thead><tbody>${body||'<tr><td colspan="9" style="text-align:center;color:#9ca3af;padding:20px">Không có campaign nào</td></tr>'}</tbody>`;
+      tableEl.innerHTML = `<thead>${head}</thead><tbody>${body||'<tr><td colspan="8" style="text-align:center;color:#9ca3af;padding:20px">Không có campaign nào</td></tr>'}</tbody>`;
     }
   }
 
