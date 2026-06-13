@@ -1,6 +1,7 @@
 """
 App Growth Dashboard — Auto Update Script
 Queries BigQuery directly. No Claude/Anthropic API. $0 token cost.
+Cost data is managed manually via the Budget tab in the dashboard (localStorage).
 """
 import json, os, datetime
 from google.cloud import bigquery
@@ -147,108 +148,6 @@ all_months = sorted(set(to_date(r['month']) for r in mau_rows))
 months_labels = [month_label(m, today) for m in all_months]
 partial = [m for m in months_labels if m.endswith("*")]
 n = len(all_months)
-
-# ── Google Sheets cost sync ───────────────────────────────────────────────────
-def fetch_sheet_cost(spreadsheet_id, months_list, current_month_idx):
-    """Read FC & Actual cost sheet via Sheets REST API, extract app growth rows."""
-    try:
-        import google.auth
-        from google.auth.transport.requests import Request
-        import urllib.request as _req, json as _json, os as _os
-
-        # Get credentials and refresh token
-        creds_path = _os.environ.get('GOOGLE_APPLICATION_CREDENTIALS','')
-        creds_data = _json.load(open(creds_path)) if creds_path else {}
-        cred_type = creds_data.get('type','')
-
-        if cred_type == 'service_account':
-            from google.oauth2 import service_account
-            scopes = ['https://www.googleapis.com/auth/spreadsheets.readonly']
-            creds = service_account.Credentials.from_service_account_info(creds_data, scopes=scopes)
-        else:
-            creds, _ = google.auth.default(scopes=['https://www.googleapis.com/auth/spreadsheets.readonly'])
-        creds.refresh(Request())
-
-        # Call Sheets REST API directly — set x-goog-user-project to fix quota error
-        quota_project = creds_data.get('quota_project_id') or 'chotot-dwh'
-        sheet_range = 'FC%20%26%20Actual%20cost'
-        url = f'https://sheets.googleapis.com/v4/spreadsheets/{spreadsheet_id}/values/{sheet_range}'
-        request = _req.Request(url, headers={
-            'Authorization': f'Bearer {creds.token}',
-            'x-goog-user-project': quota_project,
-        })
-        with _req.urlopen(request) as resp:
-            data = _json.loads(resp.read())
-        rows = data.get('values', [])
-        print(f"  Sheet: fetched {len(rows)} rows via REST API")
-        # Find header row with month names
-        month_abbr = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-        header_idx, col_map, act_col = 0, {}, 2
-        for idx, row in enumerate(rows):
-            hits = sum(1 for c in row if any(c.strip().startswith(m) for m in month_abbr))
-            if hits >= 3:
-                header_idx = idx
-                for ci, cell in enumerate(row):
-                    for mi, ma in enumerate(month_abbr):
-                        if cell.strip().startswith(ma) and mi not in col_map:
-                            col_map[mi] = ci
-                    if 'activit' in cell.lower():
-                        act_col = ci
-                break
-
-        actual_cost, forecast_cost = {}, {}
-        for row in rows[header_idx+1:]:
-            if len(row) <= act_col: continue
-            if 'app growth' not in row[act_col].lower(): continue
-            for mi, ci in col_map.items():
-                if ci >= len(row): continue
-                val_str = row[ci].replace(',','').replace(' ','').strip()
-                if not val_str: continue
-                try:
-                    val = float(val_str)
-                    if mi < current_month_idx:
-                        actual_cost[mi] = actual_cost.get(mi, 0) + val
-                    else:
-                        forecast_cost[mi] = forecast_cost.get(mi, 0) + val
-                except ValueError:
-                    pass
-
-        def get_mi(lbl):
-            for i, ma in enumerate(month_abbr):
-                if lbl.startswith(ma): return i
-            return -1
-
-        # Actual cost — aligned to months_list (Jan–current in BQ)
-        cost_out = []
-        for lbl in months_list:
-            mi = get_mi(lbl)
-            if mi < 0 or mi >= current_month_idx:
-                cost_out.append(None)
-            else:
-                cost_out.append(int(actual_cost.get(mi, 0)) or None)
-
-        # Forecast cost — all months from current_month_idx to Dec, in order
-        fc_out = []
-        for mi in range(current_month_idx, 12):
-            val = int(forecast_cost.get(mi, 0)) or None
-            fc_out.append(val)
-
-        print(f"  Sheet: {sum(1 for c in cost_out if c)} actual months, {sum(1 for c in fc_out if c)} forecast months (Jun–Dec)")
-        print(f"  Sheet actual values: {cost_out}")
-        print(f"  Sheet forecast values: {fc_out}")
-        return cost_out, fc_out
-    except Exception as e:
-        import traceback, sys
-        print(f"  WARNING Sheet fetch failed: {type(e).__name__}: {e}", flush=True)
-        # Print 403 response body if available
-        if hasattr(e, 'read'):
-            try: print(f"  403 body: {e.read().decode()}", flush=True)
-            except: pass
-        traceback.print_exc(file=sys.stdout)
-        sys.stdout.flush()
-        return None, None
-
-
 
 # Days per month
 def days_in(d):
@@ -468,26 +367,10 @@ try:
 except Exception as e:
     print(f"  WARNING Vertical monthly skipped: {e}")
 
-# Cost — sync from Google Sheets
-SHEET_ID = '1D-2eQcfDMzy42wHUF4bpwCY4cWtrJNvp-kdv9R_iFUI'
-current_month_idx = today.month - 1
-sheet_actual, sheet_forecast = fetch_sheet_cost(SHEET_ID, months_labels, current_month_idx)
-
-if sheet_actual:
-    cost = sheet_actual  # actual costs per month (None for future months)
-    # Merge: use sheet data where available, keep existing for gaps
-    existing_cost = D['growth_channel']['cost']
-    for i in range(n):
-        if cost[i] is None and i < len(existing_cost) and existing_cost[i]:
-            cost[i] = existing_cost[i]  # keep existing actual if sheet missing
-else:
-    cost = pad(D['growth_channel']['cost'], n)
-
-# Forecast cost (Jun-Dec planning)
-if sheet_forecast:
-    new_forecast = [v for v in sheet_forecast if v]
-else:
-    new_forecast = D['growth_channel'].get('cost_forecast', [])
+# Cost — managed manually via Budget tab in dashboard (localStorage)
+# Keep existing cost data from data.json; do not overwrite with BQ or Sheet data.
+cost = pad(D['growth_channel']['cost'], n)
+new_forecast = D['growth_channel'].get('cost_forecast', [])
 gc_new = growth_n
 ret_d1_gc=[round(gc_new[i]*(paid_d1[i] or 0)) if gc_new[i] else None for i in range(n)]
 ret_d7_gc=[round(gc_new[i]*(paid_d7[i] or 0)) if gc_new[i] else None for i in range(n)]
