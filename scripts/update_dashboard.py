@@ -350,6 +350,56 @@ except Exception as e:
     print(f"  WARNING Campaigns skipped: {e}")
     campaigns = D.get('campaigns', [])
 
+# Vertical monthly breakdown — full 2026 trend
+def classify_vertical(lc):
+    if any(k in lc for k in ['pty','property','bds','nha dat']): return 'pty'
+    if any(k in lc for k in ['job','viec lam','tuyen dung']): return 'job'
+    if any(k in lc for k in ['veh','vehicle']): return 'veh'
+    if any(k in lc for k in ['gds','elt','electronics']): return 'gds'
+    return 'other'
+
+vertical_monthly = D.get('vertical_monthly', {})
+try:
+    vm_rows = run("""
+    SELECT
+      DATE_TRUNC(visit_date, MONTH) as month,
+      CASE
+        WHEN LOWER(campaign) LIKE '%pty%' THEN 'pty'
+        WHEN LOWER(campaign) LIKE '%job%' OR LOWER(campaign) LIKE '%viec lam%' THEN 'job'
+        WHEN LOWER(campaign) LIKE '%veh%' THEN 'veh'
+        WHEN LOWER(campaign) LIKE '%gds%' OR LOWER(campaign) LIKE '%elt%' THEN 'gds'
+        ELSE 'other'
+      END as vertical,
+      SUM(d0) as new_users,
+      SUM(user_20adview_7d) as activated_adview
+    FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
+    WHERE return_status = 'new'
+      AND campaign != 'all'
+      AND channel = 'all'
+      AND vertical_user = 'all'
+      AND visit_date >= '2026-01-01'
+    GROUP BY 1, 2
+    ORDER BY 1, 2
+    """)
+    vm_lookup = {}
+    for r in vm_rows:
+        vm_lookup[(to_date(r['month']), r['vertical'])] = r
+    def vm_arr(vert, key):
+        return [int(vm_lookup.get((m, vert), {}).get(key) or 0) for m in all_months]
+    vertical_monthly = {
+        'pty_new_users': vm_arr('pty', 'new_users'),
+        'job_new_users': vm_arr('job', 'new_users'),
+        'veh_new_users': vm_arr('veh', 'new_users'),
+        'gds_new_users': vm_arr('gds', 'new_users'),
+        'pty_activated': vm_arr('pty', 'activated_adview'),
+        'job_activated': vm_arr('job', 'activated_adview'),
+        'veh_activated': vm_arr('veh', 'activated_adview'),
+        'gds_activated': vm_arr('gds', 'activated_adview'),
+    }
+    print(f"  Vertical monthly: OK ({len(vm_rows)} rows)")
+except Exception as e:
+    print(f"  WARNING Vertical monthly skipped: {e}")
+
 # Cost — sync from Google Sheets
 SHEET_ID = '1D-2eQcfDMzy42wHUF4bpwCY4cWtrJNvp-kdv9R_iFUI'
 current_month_idx = today.month - 1
@@ -435,6 +485,7 @@ out = {
         "crr_d7": [round(cost[i]/ret_d7_gc[i]) if cost[i] and ret_d7_gc[i] else None for i in range(n)],
         "crr_m1": [round(cost[i]/ret_m1_gc[i]) if cost[i] and ret_m1_gc[i] else None for i in range(n)],
     },
+    "vertical_monthly": vertical_monthly,
     "campaigns": campaigns,
 }
 

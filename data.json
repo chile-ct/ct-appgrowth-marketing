@@ -670,6 +670,16 @@
       null
     ]
   },
+  "vertical_monthly": {
+    "pty_new_users":  [51764, 30027, 53360, 29754, 34601, 12461],
+    "job_new_users":  [3084,  3665,  21787, 45212, 45936, 19835],
+    "veh_new_users":  [2283,  2648,  5144,  4979,  3384,  873],
+    "gds_new_users":  [6485,  6963,  7934,  5567,  5782,  1340],
+    "pty_activated":  [14625, 8679,  15621, 8056,  10280, 2984],
+    "job_activated":  [1101,  1266,  6142,  12543, 13355, 5095],
+    "veh_activated":  [747,   923,   1641,  1423,  1151,  231],
+    "gds_activated":  [2244,  2595,  2743,  1878,  1981,  383]
+  },
   "campaigns": [
     {"name":"job_appinstall_inapp_android_adview_7d","vertical":"job","new_users":16137,"activated_adview":5223,"activated_lead":4577,"activation_rate":0.3237,"nurr_d1":0.3666,"nurr_d7":0.1494,"month":"May 2026"},
     {"name":"job_appinstall_mass_android","vertical":"job","new_users":13928,"activated_adview":2933,"activated_lead":2719,"activation_rate":0.2106,"nurr_d1":0.2932,"nurr_d7":0.1060,"month":"May 2026"},
