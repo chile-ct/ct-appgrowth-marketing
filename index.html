@@ -1935,6 +1935,8 @@ document.addEventListener('DOMContentLoaded', initDashboard);
   // Core paste handler — called from onpaste on each input (most reliable)
   window.handleBudgetPaste = function(e, anchorId) {
     const text = (e.clipboardData || window.clipboardData).getData('text');
+    // DEBUG — remove after confirming paste works
+    alert('DEBUG paste:\nanchorId=' + anchorId + '\nhasTab=' + text.includes('\t') + '\nlen=' + text.length + '\nfirst80=' + text.slice(0,80));
     if (!text || !text.includes('\t')) return; // single-cell paste → let browser handle normally
 
     e.preventDefault();
