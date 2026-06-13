@@ -291,13 +291,16 @@ current_month_i = n - 1  # last index = current (partial) month
 prev_month_i = n - 2     # second-to-last = previous month
 
 # D7: show partial month data (current month D7 is valid for users installed ≥7 days ago)
-# M1: null current + previous month (M1 window of ~30 days not complete yet)
-app_m1  = null_partial(app_m1,  [current_month_i], [prev_month_i])
+# M1: null current + 2 previous months.
+#   BQ pipeline has ~6-8 week lag before M1 is fully populated for a cohort,
+#   so month n-3 (e.g. April when current=June) still shows incomplete data.
+prev2_month_i = max(0, n - 3)
+app_m1  = null_partial(app_m1,  [current_month_i], [prev_month_i, prev2_month_i])
 nurr_d7 = nurr_d7 if act_rows else D['retention']['nurr_d7']
-nurr_m1 = null_partial(nurr_m1 if act_rows else D['retention']['nurr_m1'], [current_month_i], [prev_month_i])
-dir_m1  = null_partial(dir_m1,  [current_month_i], [prev_month_i])
-org_m1  = null_partial(org_m1,  [current_month_i], [prev_month_i])
-paid_m1 = null_partial(paid_m1, [current_month_i], [prev_month_i])
+nurr_m1 = null_partial(nurr_m1 if act_rows else D['retention']['nurr_m1'], [current_month_i], [prev_month_i, prev2_month_i])
+dir_m1  = null_partial(dir_m1,  [current_month_i], [prev_month_i, prev2_month_i])
+org_m1  = null_partial(org_m1,  [current_month_i], [prev_month_i, prev2_month_i])
+paid_m1 = null_partial(paid_m1, [current_month_i], [prev_month_i, prev2_month_i])
 
 # Campaign-level data — latest full month only
 campaigns = []
