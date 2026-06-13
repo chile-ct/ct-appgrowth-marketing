@@ -58,6 +58,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .month-selector { display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
 .month-chip { padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1.5px solid #e5e7eb; background: white; color: #6b7280; transition: all 0.15s; }
 .month-chip.active { border-color: #4361ee; background: #4361ee; color: white; }
+.vchip { padding:4px 12px; border-radius:12px; border:1.5px solid #d1d5db; background:#f9fafb; font-size:11px; font-weight:600; cursor:pointer; color:#6b7280; transition:all 0.15s; }
+.vchip.active { background:#4361ee; border-color:#4361ee; color:white; }
 .month-chip.chip-jan.active { background: #4361ee; border-color: #4361ee; }
 .month-chip.chip-feb.active { background: #ef4444; border-color: #ef4444; }
 .month-chip.chip-mar.active { background: #10b981; border-color: #10b981; }
@@ -545,25 +547,17 @@ canvas { max-height: 320px; }
         <div class="note" style="margin-top:8px">Campaigns tagged với vertical trong BQ. Untagged "(none)" không tính vào đây.</div>
       </div>
     </div>
-    <div class="charts-grid" style="margin-bottom:16px">
-      <div class="chart-card">
-        <div class="chart-title">New Users by Campaign — PTY Vertical</div>
-        <div style="position:relative;height:300px"><canvas id="chartCampPtyAcq"></canvas></div>
+    <div class="chart-card" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <div class="chart-title" style="margin:0">New Users by Campaign</div>
+        <div id="campAcqChips" style="display:flex;gap:6px">
+          <button class="vchip active" onclick="renderCampChart('acq','pty',this)">PTY</button>
+          <button class="vchip" onclick="renderCampChart('acq','job',this)">JOB</button>
+          <button class="vchip" onclick="renderCampChart('acq','veh',this)">VEH</button>
+          <button class="vchip" onclick="renderCampChart('acq','gds',this)">GDS</button>
+        </div>
       </div>
-      <div class="chart-card">
-        <div class="chart-title">New Users by Campaign — JOB Vertical</div>
-        <div style="position:relative;height:300px"><canvas id="chartCampJobAcq"></canvas></div>
-      </div>
-    </div>
-    <div class="charts-grid" style="margin-bottom:16px">
-      <div class="chart-card">
-        <div class="chart-title">New Users by Campaign — VEH Vertical</div>
-        <div style="position:relative;height:300px"><canvas id="chartCampVehAcq"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">New Users by Campaign — GDS Vertical</div>
-        <div style="position:relative;height:300px"><canvas id="chartCampGdsAcq"></canvas></div>
-      </div>
+      <div style="position:relative;height:320px"><canvas id="chartCampAcq"></canvas></div>
     </div>
     <div class="card" style="margin-bottom:16px">
       <div class="card-title">Acquisition — Growth Channel</div>
@@ -585,25 +579,17 @@ canvas { max-height: 320px; }
         <div class="note" style="margin-top:8px">Campaigns tagged với vertical trong BQ. Untagged "(none)" không tính vào đây.</div>
       </div>
     </div>
-    <div class="charts-grid" style="margin-bottom:16px">
-      <div class="chart-card">
-        <div class="chart-title">Activation Rate by Campaign — PTY Vertical</div>
-        <div style="position:relative;height:300px"><canvas id="chartCampPtyAct"></canvas></div>
+    <div class="chart-card" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <div class="chart-title" style="margin:0">Activation Rate by Campaign</div>
+        <div id="campActChips" style="display:flex;gap:6px">
+          <button class="vchip active" onclick="renderCampChart('act','pty',this)">PTY</button>
+          <button class="vchip" onclick="renderCampChart('act','job',this)">JOB</button>
+          <button class="vchip" onclick="renderCampChart('act','veh',this)">VEH</button>
+          <button class="vchip" onclick="renderCampChart('act','gds',this)">GDS</button>
+        </div>
       </div>
-      <div class="chart-card">
-        <div class="chart-title">Activation Rate by Campaign — JOB Vertical</div>
-        <div style="position:relative;height:300px"><canvas id="chartCampJobAct"></canvas></div>
-      </div>
-    </div>
-    <div class="charts-grid" style="margin-bottom:16px">
-      <div class="chart-card">
-        <div class="chart-title">Activation Rate by Campaign — VEH Vertical</div>
-        <div style="position:relative;height:300px"><canvas id="chartCampVehAct"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">Activation Rate by Campaign — GDS Vertical</div>
-        <div style="position:relative;height:300px"><canvas id="chartCampGdsAct"></canvas></div>
-      </div>
+      <div style="position:relative;height:320px"><canvas id="chartCampAct"></canvas></div>
     </div>
     <div class="card" style="margin-bottom:16px">
       <div class="card-title">Activation — Growth Channel</div>
@@ -1473,9 +1459,9 @@ function renderCampaignTables() {
   }));
 
   const byScore = [...scored].sort((a,b)=>b.score-a.score);
-  const byUsers = [...c].sort((a,b)=>b.new_users-a.new_users);
-  const byAct   = [...c].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0));
-  const byNURR  = [...c].sort((a,b)=>(b.nurr_d1||0)-(a.nurr_d1||0));
+  const byUsers = [...c].filter(r=>r.name!=='(none)').sort((a,b)=>b.new_users-a.new_users);
+  const byAct   = [...c].filter(r=>r.name!=='(none)').sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0));
+  const byNURR  = [...c].filter(r=>r.name!=='(none)').sort((a,b)=>(b.nurr_d1||0)-(a.nurr_d1||0));
 
   const t1=document.getElementById('campaignAcqTable');     if(t1) t1.innerHTML=tableHTML(byUsers);
   const t2=document.getElementById('campaignActTable');     if(t2) t2.innerHTML=tableHTML(byAct);
@@ -1496,39 +1482,50 @@ function renderCampaignTables() {
     t0.innerHTML=`<thead>${scoreHead}</thead><tbody>${scoreRows}</tbody>`;
   }
 
-  // Vertical campaign slices
-  const ptyC = byUsers.filter(r=>r.vertical==='pty').slice(0,10);
-  const jobC = byUsers.filter(r=>r.vertical==='job').slice(0,10);
-  const vehC = byUsers.filter(r=>r.vertical==='veh').slice(0,10);
-  const gdsC = byUsers.filter(r=>r.vertical==='gds').slice(0,10);
+  // Vertical campaign slices (keyed by vertical)
+  const campByVert = {
+    pty: byUsers.filter(r=>r.vertical==='pty'),
+    job: byUsers.filter(r=>r.vertical==='job'),
+    veh: byUsers.filter(r=>r.vertical==='veh'),
+    gds: byUsers.filter(r=>r.vertical==='gds'),
+  };
+  const campActByVert = {
+    pty: [...campByVert.pty].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)),
+    job: [...campByVert.job].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)),
+    veh: [...campByVert.veh].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)),
+    gds: [...campByVert.gds].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)),
+  };
+  const vertColors = {pty:C.blue, job:C.green, veh:C.orange, gds:C.purple};
 
-  function shortName(n) { return n.length>30?n.substring(0,28)+'…':n; }
+  function shortName(n) { return n.length>32?n.substring(0,30)+'…':n; }
+  const fmtUsers = v=>v>=1000?(v/1000).toFixed(1)+'K':String(v);
+  const fmtRate  = v=>(v*100).toFixed(1)+'%';
 
-  function makeHBar(canvasId, campaigns, valueKey, title, fmtFn, color) {
+  function drawHBar(canvasId, rows, valueKey, fmtFn, color) {
     const ctx = document.getElementById(canvasId); if(!ctx) return;
-    const existing = Object.values(Chart.instances||{}).find(c=>c.canvas?.id===canvasId);
-    if(existing) existing.destroy();
-    if(!campaigns.length){ const v=canvasId.includes('Pty')?'PTY':canvasId.includes('Job')?'JOB':canvasId.includes('Veh')?'VEH':'GDS'; ctx.parentElement.innerHTML=`<div style="text-align:center;color:#9ca3af;padding:40px;font-size:12px">No ${v} campaigns found</div>`; return; }
-    const labels = campaigns.map(r=>shortName(r.name));
-    const data   = campaigns.map(r=>r[valueKey]||0);
-    new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:title,data,backgroundColor:color+'cc',borderColor:color,borderWidth:1,borderRadius:3}]},
+    const inst = Object.values(Chart.instances||{}).find(c=>c.canvas?.id===canvasId);
+    if(inst) inst.destroy();
+    const top = rows.slice(0,12);
+    if(!top.length){ ctx.parentElement.innerHTML=`<div style="text-align:center;color:#9ca3af;padding:60px;font-size:12px">No campaigns found</div>`; return; }
+    new Chart(ctx,{type:'bar',
+      data:{labels:top.map(r=>shortName(r.name)),datasets:[{label:valueKey,data:top.map(r=>r[valueKey]||0),backgroundColor:color+'cc',borderColor:color,borderWidth:1,borderRadius:3}]},
       options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
         plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${fmtFn(c.parsed.x)}`}}},
-        scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>fmtFn(v)}},
-          y:{grid:{display:false},ticks:{font:{size:10}}}}}});
+        scales:{x:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>fmtFn(v)}},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
   }
 
-  const fmtUsers  = v=>v>=1000?(v/1000).toFixed(1)+'K':v;
-  const fmtRate   = v=>(v*100).toFixed(1)+'%';
-  const sortByAct = arr=>[...arr].sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0));
-  makeHBar('chartCampPtyAcq', ptyC,            'new_users',       'New Users',       fmtUsers, C.blue);
-  makeHBar('chartCampJobAcq', jobC,            'new_users',       'New Users',       fmtUsers, C.green);
-  makeHBar('chartCampVehAcq', vehC,            'new_users',       'New Users',       fmtUsers, C.orange);
-  makeHBar('chartCampGdsAcq', gdsC,            'new_users',       'New Users',       fmtUsers, C.purple);
-  makeHBar('chartCampPtyAct', sortByAct(ptyC), 'activation_rate', 'Activation Rate', fmtRate,  C.orange);
-  makeHBar('chartCampJobAct', sortByAct(jobC), 'activation_rate', 'Activation Rate', fmtRate,  C.purple);
-  makeHBar('chartCampVehAct', sortByAct(vehC), 'activation_rate', 'Activation Rate', fmtRate,  C.blue);
-  makeHBar('chartCampGdsAct', sortByAct(gdsC), 'activation_rate', 'Activation Rate', fmtRate,  C.green);
+  window.renderCampChart = function(tab, vert, btn) {
+    // Update chip active state
+    const chipContainer = btn.parentElement;
+    chipContainer.querySelectorAll('.vchip').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    if(tab==='acq') drawHBar('chartCampAcq', campByVert[vert],    'new_users',       fmtUsers, vertColors[vert]);
+    else             drawHBar('chartCampAct', campActByVert[vert], 'activation_rate', fmtRate,  vertColors[vert]);
+  };
+
+  // Initial render — PTY selected by default
+  drawHBar('chartCampAcq', campByVert.pty,    'new_users',       fmtUsers, C.blue);
+  drawHBar('chartCampAct', campActByVert.pty, 'activation_rate', fmtRate,  C.blue);
 
   // Vertical mix stacked bar — monthly trend from vertical_monthly in data.json
   const vm = D.vertical_monthly;
@@ -1767,13 +1764,18 @@ async function initDashboard() {
       const MALL = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       const ACT = 5;
       const totals = MALL.map((_,i) => ['gds','veh','job','pty','parent'].reduce((s,v)=>s+(saved[v]?.[i]||0),0));
-      D.growth_channel.cost = D.months.map((lbl,i) => {
+      const gc = D.growth_channel;
+      // Include current partial month (ACT = index 5 = Jun) in cost
+      gc.cost = D.months.map((lbl,i) => {
         const mi = MALL.findIndex(m => lbl.startsWith(m));
-        return (mi >= 0 && mi < ACT && totals[mi]) ? totals[mi] : null;
+        if (mi < 0 || mi > ACT) return null;
+        return totals[mi] || null;
       });
-      D.growth_channel.cost_forecast = totals.slice(ACT).filter(v=>v>0);
-      D.growth_channel.cpa = D.growth_channel.new_users.map((u,i)=>u&&D.growth_channel.cost[i]?Math.round(D.growth_channel.cost[i]/u):null);
-      D.growth_channel.caa = D.growth_channel.adview_activated.map((a,i)=>a&&D.growth_channel.cost[i]?Math.round(D.growth_channel.cost[i]/a):null);
+      gc.cost_forecast = totals.slice(ACT + 1).filter(v=>v>0);
+      gc.cpa = gc.new_users.map((u,i)=>u&&gc.cost[i]?Math.round(gc.cost[i]/u):null);
+      gc.caa = gc.adview_activated.map((a,i)=>a&&gc.cost[i]?Math.round(gc.cost[i]/a):null);
+      gc.crr_d1 = (gc.retained_d1||[]).map((r,i)=>r&&gc.cost[i]?Math.round(gc.cost[i]/r):null);
+      gc.crr_d7 = (gc.retained_d7||[]).map((r,i)=>r&&gc.cost[i]?Math.round(gc.cost[i]/r):null);
     }
   } catch(e) {}
 
@@ -1993,19 +1995,21 @@ document.addEventListener('DOMContentLoaded', initDashboard);
     const gc = D.growth_channel;
     const n = D.months.length;
 
-    // actual cost: months 0..ACTUAL_COUNT-1
+    // cost: actual months (0..ACTUAL_COUNT-1) + current partial month (ACTUAL_COUNT)
     gc.cost = D.months.map((lbl,i) => {
       const mi = MONTHS_ALL.findIndex(m => lbl.startsWith(m));
-      if (mi < 0 || mi >= ACTUAL_COUNT) return null;
+      if (mi < 0 || mi > ACTUAL_COUNT) return null;  // include current month (ACTUAL_COUNT = Jun index 5)
       return totals[mi] || null;
     });
 
-    // forecast cost: Jun–Dec (indices ACTUAL_COUNT..11)
-    gc.cost_forecast = totals.slice(ACTUAL_COUNT).filter(v => v > 0);
+    // forecast cost: Jul–Dec (indices ACTUAL_COUNT+1..11)
+    gc.cost_forecast = totals.slice(ACTUAL_COUNT + 1).filter(v => v > 0);
 
-    // Recalculate CPA/CAA
+    // Recalculate CPA/CAA/CRR for all months including Jun
     gc.cpa = gc.new_users.map((u,i) => u && gc.cost[i] ? Math.round(gc.cost[i]/u) : null);
     gc.caa = gc.adview_activated.map((a,i) => a && gc.cost[i] ? Math.round(gc.cost[i]/a) : null);
+    gc.crr_d1 = gc.retained_d1.map((r,i) => r && gc.cost[i] ? Math.round(gc.cost[i]/r) : null);
+    gc.crr_d7 = gc.retained_d7.map((r,i) => r && gc.cost[i] ? Math.round(gc.cost[i]/r) : null);
 
     // Re-render cost charts by destroying and reinitializing
     ['chartG5Cost','chartG5CostVsUsers'].forEach(id => {

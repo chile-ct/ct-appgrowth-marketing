@@ -104,20 +104,43 @@ except Exception as e:
     print(f"  WARNING Activation skipped: {e}")
 
 # Retention (may fail with 403)
-ret_rows = []
+ret_total_rows = []
+ret_app_rows = []
+ret_web_rows = []
 try:
-    ret_rows = run("""
+    ret_total_rows = run("""
     SELECT DATE_TRUNC(min_date,MONTH) as month,
       SAFE_DIVIDE(SUM(d1),SUM(d0)) as ret_d1,
       SAFE_DIVIDE(SUM(d7),SUM(d0)) as ret_d7,
       SAFE_DIVIDE(SUM(m1),SUM(d0)) as ret_m1
     FROM ct_digital.dashboard__retention_90d
-    WHERE new_status='return' AND min_date >= '2026-01-01'  -- all platforms to match reference definition
+    WHERE new_status='return' AND min_date >= '2026-01-01'
     GROUP BY 1 ORDER BY 1
     """)
-    print(f"  Retention: {len(ret_rows)} rows OK")
+    ret_app_rows = run("""
+    SELECT DATE_TRUNC(min_date,MONTH) as month,
+      SAFE_DIVIDE(SUM(d1),SUM(d0)) as ret_d1,
+      SAFE_DIVIDE(SUM(d7),SUM(d0)) as ret_d7,
+      SAFE_DIVIDE(SUM(m1),SUM(d0)) as ret_m1
+    FROM ct_digital.dashboard__retention_90d
+    WHERE new_status='return' AND min_date >= '2026-01-01'
+      AND platform IN ('Android','iOS')
+    GROUP BY 1 ORDER BY 1
+    """)
+    ret_web_rows = run("""
+    SELECT DATE_TRUNC(min_date,MONTH) as month,
+      SAFE_DIVIDE(SUM(d1),SUM(d0)) as ret_d1,
+      SAFE_DIVIDE(SUM(d7),SUM(d0)) as ret_d7,
+      SAFE_DIVIDE(SUM(m1),SUM(d0)) as ret_m1
+    FROM ct_digital.dashboard__retention_90d
+    WHERE new_status='return' AND min_date >= '2026-01-01'
+      AND platform NOT IN ('Android','iOS')
+    GROUP BY 1 ORDER BY 1
+    """)
+    print(f"  Retention: total={len(ret_total_rows)}, app={len(ret_app_rows)}, web={len(ret_web_rows)} rows OK")
 except Exception as e:
     print(f"  WARNING Retention skipped: {e}")
+    ret_web_rows = []
 
 # Build month list
 all_months = sorted(set(to_date(r['month']) for r in mau_rows))
@@ -287,18 +310,27 @@ else:
     org_d1=er['organic_d1']; org_d7=er['organic_d7']; org_m1=er['organic_m1']
     paid_d1=eg['nurr_d1']; paid_d7=eg['nurr_d7']; paid_m1=eg['nurr_m1']
 
-if ret_rows:
-    app_d1=get_arr(ret_rows,'ret_d1',all_months); app_d7=get_arr(ret_rows,'ret_d7',all_months)
-    app_m1=get_arr(ret_rows,'ret_m1',all_months)
+if ret_total_rows:
+    tot_d1_bq=get_arr(ret_total_rows,'ret_d1',all_months); tot_d7_bq=get_arr(ret_total_rows,'ret_d7',all_months)
+    tot_m1_bq=get_arr(ret_total_rows,'ret_m1',all_months)
+    app_d1=get_arr(ret_app_rows,'ret_d1',all_months) if ret_app_rows else tot_d1_bq
+    app_d7=get_arr(ret_app_rows,'ret_d7',all_months) if ret_app_rows else tot_d7_bq
+    app_m1=get_arr(ret_app_rows,'ret_m1',all_months) if ret_app_rows else tot_m1_bq
+    web_d1=get_arr(ret_web_rows,'ret_d1',all_months) if ret_web_rows else [None]*n
+    web_d7=get_arr(ret_web_rows,'ret_d7',all_months) if ret_web_rows else [None]*n
+    web_m1=get_arr(ret_web_rows,'ret_m1',all_months) if ret_web_rows else [None]*n
 else:
     er=D['retention']
-    app_d1=er['app_d1']; app_d7=er['app_d7']; app_m1=er['app_m1']
+    tot_d1_bq=er.get('total_d1',[None]*n); tot_d7_bq=er.get('total_d7',[None]*n); tot_m1_bq=er.get('total_m1',[None]*n)
+    app_d1=er.get('app_d1',tot_d1_bq); app_d7=er.get('app_d7',tot_d7_bq); app_m1=er.get('app_m1',tot_m1_bq)
+    web_d1=er.get('web_d1',[None]*n); web_d7=er.get('web_d7',[None]*n); web_m1=er.get('web_m1',[None]*n)
 
 def pad(arr, length, val=None):
     return list(arr) + [val]*(length-len(arr))
 
-tot_d1=pad(D['retention']['total_d1'],n); tot_d7=pad(D['retention']['total_d7'],n)
-tot_m1=pad(D['retention']['total_m1'],n)
+tot_d1 = pad(tot_d1_bq, n)
+tot_d7 = pad(tot_d7_bq, n)
+tot_m1 = pad(tot_m1_bq, n)
 
 # Null out D7/M1 for partial months — these metrics need full month data to be meaningful
 # D7 = need users from last 7 days of month to have completed their D7 window (null current month)
@@ -315,16 +347,16 @@ current_month_i = n - 1  # last index = current (partial) month
 prev_month_i = n - 2     # second-to-last = previous month
 
 # D7: show partial month data (current month D7 is valid for users installed ≥7 days ago)
-# M1: null current + 2 previous months.
-#   BQ pipeline has ~6-8 week lag before M1 is fully populated for a cohort,
-#   so month n-3 (e.g. April when current=June) still shows incomplete data.
-prev2_month_i = max(0, n - 3)
-app_m1  = null_partial(app_m1,  [current_month_i], [prev_month_i, prev2_month_i])
+# M1: null current + previous month (need full month cohort to complete 30-day window).
+app_m1  = null_partial(app_m1,  [current_month_i, prev_month_i])
+web_m1  = null_partial(web_m1,  [current_month_i, prev_month_i])
+tot_m1  = null_partial(tot_m1,  [current_month_i, prev_month_i])
 nurr_d7 = nurr_d7 if act_rows else D['retention']['nurr_d7']
-nurr_m1 = null_partial(nurr_m1 if act_rows else D['retention']['nurr_m1'], [current_month_i], [prev_month_i, prev2_month_i])
-dir_m1  = null_partial(dir_m1,  [current_month_i], [prev_month_i, prev2_month_i])
-org_m1  = null_partial(org_m1,  [current_month_i], [prev_month_i, prev2_month_i])
-paid_m1 = null_partial(paid_m1, [current_month_i], [prev_month_i, prev2_month_i])
+nurr_m1_raw = nurr_m1 if act_rows else D['retention']['nurr_m1']
+nurr_m1 = null_partial(nurr_m1_raw, [current_month_i, prev_month_i])
+dir_m1  = null_partial(dir_m1,  [current_month_i, prev_month_i])
+org_m1  = null_partial(org_m1,  [current_month_i, prev_month_i])
+paid_m1 = null_partial(paid_m1, [current_month_i, prev_month_i])
 
 # Campaign-level data — latest full month only
 campaigns = []
@@ -345,7 +377,7 @@ try:
       SAFE_DIVIDE(SUM(d7), SUM(d0)) as nurr_d7
     FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
     WHERE return_status = 'new'
-      AND campaign != 'all'
+      AND campaign NOT IN ('all', '(none)')
       AND channel = 'all'
       AND vertical_user = 'all'
       AND visit_date >= '{m_start}' AND visit_date < '{m_end}'
@@ -401,7 +433,7 @@ try:
       SUM(user_20adview_7d) as activated_adview
     FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
     WHERE return_status = 'new'
-      AND campaign != 'all'
+      AND campaign NOT IN ('all', '(none)')
       AND channel = 'all'
       AND vertical_user = 'all'
       AND visit_date >= '2026-01-01'
@@ -491,6 +523,7 @@ out = {
     "retention": {
         "total_d1": tot_d1, "total_d7": tot_d7, "total_m1": tot_m1,
         "app_d1": app_d1, "app_d7": app_d7, "app_m1": app_m1,
+        "web_d1": web_d1, "web_d7": web_d7, "web_m1": web_m1,
         "nurr_d1": nurr_d1, "nurr_d7": nurr_d7, "nurr_m1": nurr_m1,
         "direct_d1": dir_d1, "direct_d7": dir_d7, "direct_m1": dir_m1,
         "organic_d1": org_d1, "organic_d7": org_d7, "organic_m1": org_m1,
