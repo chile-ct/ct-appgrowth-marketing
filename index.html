@@ -131,6 +131,7 @@ canvas { max-height: 320px; }
       <span class="target-badge">Stickiness: <strong>18%</strong></span>
       <span class="target-badge">App MAU target: <strong>1,680,927</strong></span>
       <span class="target-badge">Total CT MAU: <strong>6,874,579</strong></span>
+      <span id="partial-date-badge" style="display:none;background:rgba(245,158,11,0.2);border:1px solid rgba(245,158,11,0.5);border-radius:4px;padding:2px 8px;font-size:10px;color:#fde68a;white-space:nowrap"></span>
     </div>
   </div><!-- header-row -->
 </div>
@@ -1474,14 +1475,17 @@ function renderCampaignTables() {
       const ctx = document.getElementById(canvasId); if(!ctx) return;
       const existing = Object.values(Chart.instances||{}).find(ch=>ch.canvas?.id===canvasId);
       if(existing) existing.destroy();
-      const fmtK = v => v>=1000?(v/1000).toFixed(1)+'K':v;
+      const fmtK = v => v>=1000?(v/1000).toFixed(1)+'K':String(v);
+      // Pre-compute column totals for % calculation
+      const datasets = VERT_DEFS.map(v => vm[v.key + metricSuffix] || []);
+      const colTotals = D.months.map((_, i) => datasets.reduce((s, d) => s + (d[i]||0), 0));
       new Chart(ctx, {
         type: 'bar',
         data: {
           labels: D.months,
-          datasets: VERT_DEFS.map(v => ({
+          datasets: VERT_DEFS.map((v, di) => ({
             label: v.label,
-            data: vm[v.key + metricSuffix] || [],
+            data: datasets[di],
             backgroundColor: v.color + 'cc',
             borderColor: v.color,
             borderWidth: 1,
@@ -1498,10 +1502,15 @@ function renderCampaignTables() {
             legend: { position: 'top', labels: { font: { size: 11 }, padding: 8, boxWidth: 12 } },
             tooltip: {
               callbacks: {
-                label: ctx => ` ${ctx.dataset.label}: ${fmtK(ctx.parsed.y)}`,
+                label: ctx => {
+                  const v = ctx.parsed.y || 0;
+                  const tot = colTotals[ctx.dataIndex] || 1;
+                  const pct = ((v / tot) * 100).toFixed(1);
+                  return ` ${ctx.dataset.label}: ${fmtK(v)} (${pct}%)`;
+                },
                 footer: items => {
-                  const total = items.reduce((s,i)=>s+i.parsed.y,0);
-                  return `Total (tagged): ${fmtK(total)}`;
+                  const total = colTotals[items[0]?.dataIndex] || 0;
+                  return `Total tagged: ${fmtK(total)}`;
                 }
               }
             }
@@ -1697,6 +1706,18 @@ async function initDashboard() {
   updateS2KPICards(D.months.length-1);
   updateS3KPICards(D.months.length-1);
   renderCampaignTables();
+
+  // Partial month badge — show "* Tháng 6: data đến DD/MM/YYYY"
+  if (D.partial_months && D.partial_months.length && D.updated_at) {
+    const badge = document.getElementById('partial-date-badge');
+    if (badge) {
+      const [y, m, d] = D.updated_at.split('-');
+      const partialLabel = D.partial_months[D.partial_months.length - 1].replace('*','').trim();
+      badge.textContent = `* ${partialLabel}: data đến ${d}/${m}/${y}`;
+      badge.style.display = 'inline';
+    }
+  }
+
   // Default to latest month
   const latestKey = D.months[D.months.length-1].replace(/[^a-zA-Z]/g,'').toLowerCase().substring(0,3);
 
