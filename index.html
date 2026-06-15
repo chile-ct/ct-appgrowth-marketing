@@ -110,7 +110,7 @@ tr.sep td { border-top: 2px solid #c7d2fe; }
 .charts-grid > * { min-width: 0; overflow: hidden; }
 .chart-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .chart-title { font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
-canvas { max-height: 320px; }
+canvas { max-height: 500px; }
 
 /* DATA TABS */
 .tabs { display: flex; gap: 4px; margin-bottom: 16px; }
@@ -544,8 +544,8 @@ canvas { max-height: 320px; }
     <div class="charts-grid" style="margin-bottom:16px">
       <div class="chart-card"><div class="chart-title">New App Users (Growth) vs Total — % Share</div><div style="position:relative;height:380px"><canvas id="chartG5Acq"></canvas></div></div>
       <div class="chart-card">
-        <div class="chart-title">New Users by Vertical — Monthly Trend (PTY / JOB / VEH / GDS)</div>
-        <div style="position:relative;height:260px"><canvas id="chartVerticalMixAcq"></canvas></div>
+        <div class="chart-title">New Users by Vertical — Monthly Trend</div>
+        <div style="position:relative;height:380px"><canvas id="chartVerticalMixAcq"></canvas></div>
         <div class="note" style="margin-top:8px">Campaigns tagged với vertical trong BQ. Untagged "(none)" không tính vào đây.</div>
       </div>
     </div>
@@ -581,8 +581,8 @@ canvas { max-height: 320px; }
     <div class="charts-grid" style="margin-bottom:16px">
       <div class="chart-card"><div class="chart-title">Activation Trend — Growth Channel</div><div style="position:relative;height:380px"><canvas id="chartG5Act"></canvas></div></div>
       <div class="chart-card">
-        <div class="chart-title">Activated (≥20 adview D7) by Vertical — Monthly Trend (PTY / JOB / VEH / GDS)</div>
-        <div style="position:relative;height:260px"><canvas id="chartVerticalMixAct"></canvas></div>
+        <div class="chart-title">Activated (≥20 adview D7) by Vertical — Monthly Trend</div>
+        <div style="position:relative;height:380px"><canvas id="chartVerticalMixAct"></canvas></div>
         <div class="note" style="margin-top:8px">Campaigns tagged với vertical trong BQ. Untagged "(none)" không tính vào đây.</div>
       </div>
     </div>
