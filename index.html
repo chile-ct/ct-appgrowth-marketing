@@ -1250,7 +1250,7 @@ function renderAllCharts() {
       plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}},tooltip:{callbacks:{label:c=>{const v=c.parsed.y;if(c.dataset.yAxisID==='y1')return ` ${c.dataset.label}: ${(v*100).toFixed(1)}%`;return ` ${c.dataset.label}: ${(v/1000).toFixed(0)}K`;}}}},
       scales:{x:{grid:{display:false},ticks:{font:{size:11}}},
         y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>(v/1000).toFixed(0)+'K'},position:'left'},
-        y1:{grid:{display:false},ticks:{font:{size:10},callback:v=>(v*100).toFixed(0)+'%'},position:'right',min:0,max:0.4}
+        y1:{grid:{display:false},ticks:{font:{size:10},callback:v=>(v*100).toFixed(0)+'%'},position:'right'}
       }}});
   })();
   // chartG5Act: combo — bars = monthly activated adview/lead, lines = activation rates
@@ -1268,7 +1268,7 @@ function renderAllCharts() {
         tooltip:{callbacks:{label:c=>{const v=c.parsed.y;if(c.dataset.yAxisID==='y1')return ` ${c.dataset.label}: ${(v*100).toFixed(1)}%`;return ` ${c.dataset.label}: ${(v/1000).toFixed(0)}K`;}}}},
       scales:{x:{grid:{display:false},ticks:{font:{size:11}}},
         y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>(v/1000).toFixed(0)+'K'},position:'left'},
-        y1:{grid:{display:false},ticks:{font:{size:10},callback:v=>(v*100).toFixed(0)+'%'},position:'right',min:0,max:0.40}
+        y1:{grid:{display:false},ticks:{font:{size:10},callback:v=>(v*100).toFixed(0)+'%'},position:'right'}
       }}});
   })();
   makeChart('chartG5Ret','line',MONTHS,[
