@@ -85,11 +85,11 @@ print(f"  MAU: {len(mau_rows)} months | New users: {len(new_rows)} rows")
 act_rows = []
 try:
     act_rows = run("""
-    -- Sum across all vertical_user values (not just pre-agg 'all') to get correct total
     SELECT DATE_TRUNC(visit_date,MONTH) as month,
       CASE WHEN channel='all' THEN 'Total' ELSE channel END as channel,
       AVG(dau) as avg_new_dau,
       SUM(user_20adview_7d) as adview_total, SUM(user_1lead_7d) as lead_total,
+      SUM(save_ad) as save_total,
       SAFE_DIVIDE(SUM(d1),SUM(d0)) as nurr_d1,
       SAFE_DIVIDE(SUM(d7),SUM(d0)) as nurr_d7,
       SAFE_DIVIDE(SUM(m1),SUM(d0)) as nurr_m1
@@ -103,6 +103,29 @@ try:
     print(f"  Activation: {len(act_rows)} rows OK")
 except Exception as e:
     print(f"  WARNING Activation skipped: {e}")
+
+# Daily activation — last 90 days by day and channel (for date-range chart)
+daily_act_rows = []
+try:
+    daily_act_rows = run("""
+    SELECT visit_date,
+      CASE WHEN channel='all' THEN 'Total'
+           WHEN channel IN ('Paid Search','Display','Growth') THEN 'Growth'
+           ELSE channel END as channel,
+      SUM(d0) as new_users,
+      SUM(user_20adview_7d) as adview_activated,
+      SUM(user_1lead_7d) as lead_activated,
+      SUM(save_ad) as save_activated
+    FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
+    WHERE return_status='new' AND campaign='all'
+      AND vertical_user='all'
+      AND channel IN ('all','Direct','Organic Search','Paid Search','Display','Growth')
+      AND visit_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
+    GROUP BY 1,2 ORDER BY 1,2
+    """)
+    print(f"  Daily activation: {len(daily_act_rows)} rows OK")
+except Exception as e:
+    print(f"  WARNING Daily activation skipped: {e}")
 
 # Retention (may fail with 403)
 ret_total_rows = []
@@ -186,6 +209,7 @@ new_login_total = [
 if act_rows:
     def a(ch, key): return get_arr(act_rows, key, all_months, channel=ch)
     adview_total = a('Total','adview_total'); lead_total = a('Total','lead_total')
+    save_total = a('Total','save_total')
     nurr_d1=a('Total','nurr_d1'); nurr_d7=a('Total','nurr_d7'); nurr_m1=a('Total','nurr_m1')
     dir_adv=a('Direct','adview_total'); org_adv=a('Organic Search','adview_total')
     paid_adv=a('Paid Search','adview_total'); disp_adv=a('Display','adview_total')
@@ -195,16 +219,23 @@ if act_rows:
     paid_lead=a('Paid Search','lead_total'); disp_lead=a('Display','lead_total')
     crm_lead=a('Growth','lead_total')
     growth_lead=[(paid_lead[i] or 0)+(disp_lead[i] or 0)+(crm_lead[i] or 0) for i in range(n)]
+    dir_save=a('Direct','save_total'); org_save=a('Organic Search','save_total')
+    paid_save=a('Paid Search','save_total'); disp_save=a('Display','save_total')
+    crm_save=a('Growth','save_total')
+    growth_save=[(paid_save[i] or 0)+(disp_save[i] or 0)+(crm_save[i] or 0) for i in range(n)]
     dir_d1=a('Direct','nurr_d1'); dir_d7=a('Direct','nurr_d7'); dir_m1=a('Direct','nurr_m1')
     org_d1=a('Organic Search','nurr_d1'); org_d7=a('Organic Search','nurr_d7'); org_m1=a('Organic Search','nurr_m1')
-    paid_d1=a('Paid Search','nurr_d1'); paid_d7=a('Paid Search','nurr_d7'); paid_m1=a('Total','nurr_m1')  # M1: use Total channel (M1 from Paid Search is unreliable)
+    paid_d1=a('Paid Search','nurr_d1'); paid_d7=a('Paid Search','nurr_d7'); paid_m1=a('Total','nurr_m1')
 else:
     print("  Using existing activation data")
     ex=D['activation']; er=D['retention']; eg=D['growth_channel']
     adview_total=ex['adview_total']; lead_total=ex['lead_total']
+    save_total=ex.get('save_total',[None]*n)
     nurr_d1=er['nurr_d1']; nurr_d7=er['nurr_d7']; nurr_m1=er['nurr_m1']
     dir_adv=ex['direct_adview']; org_adv=ex['organic_adview']; growth_adv=ex['growth_adview']
     dir_lead=ex['direct_lead']; org_lead=ex['organic_lead']; growth_lead=ex['growth_lead']
+    dir_save=ex.get('direct_save',[None]*n); org_save=ex.get('organic_save',[None]*n)
+    growth_save=ex.get('growth_save',[None]*n)
     dir_d1=er['direct_d1']; dir_d7=er['direct_d7']; dir_m1=er['direct_m1']
     org_d1=er['organic_d1']; org_d7=er['organic_d7']; org_m1=er['organic_m1']
     paid_d1=eg['nurr_d1']; paid_d7=eg['nurr_d7']; paid_m1=eg['nurr_m1']
@@ -401,16 +432,21 @@ out = {
         "growth_pct_total": [safe_div(gc_new[i],total_n[i]) for i in range(n)],
     },
     "activation": {
-        "adview_total": adview_total, "lead_total": lead_total,
+        "adview_total": adview_total, "lead_total": lead_total, "save_total": save_total,
         "adview_rate": [safe_div(adview_total[i],total_n[i]) for i in range(n)],
         "lead_rate": [safe_div(lead_total[i],total_n[i]) for i in range(n)],
+        "save_rate": [safe_div(save_total[i],total_n[i]) if save_total[i] else None for i in range(n)],
         "adview_daily": daily(adview_total,days), "lead_daily": daily(lead_total,days),
+        "save_daily": daily(save_total,days),
         "direct_adview": dir_adv, "organic_adview": org_adv, "growth_adview": growth_adv,
         "direct_lead": dir_lead, "organic_lead": org_lead, "growth_lead": growth_lead,
+        "direct_save": dir_save, "organic_save": org_save, "growth_save": growth_save,
         "direct_adview_daily": daily(dir_adv,days), "organic_adview_daily": daily(org_adv,days),
         "growth_adview_daily": daily(growth_adv,days),
         "direct_lead_daily": daily(dir_lead,days), "organic_lead_daily": daily(org_lead,days),
         "growth_lead_daily": daily(growth_lead,days),
+        "direct_save_daily": daily(dir_save,days), "organic_save_daily": daily(org_save,days),
+        "growth_save_daily": daily(growth_save,days),
     },
     "retention": {
         "total_d1": tot_d1, "total_d7": tot_d7, "total_m1": tot_m1,
@@ -439,6 +475,17 @@ out = {
     },
     "vertical_monthly": vertical_monthly,
     "campaigns": campaigns,
+    "daily_activation": [
+        {
+            "date": str(r["visit_date"]),
+            "channel": str(r["channel"]),
+            "new_users": int(r["new_users"]) if r["new_users"] else 0,
+            "adview_activated": int(r["adview_activated"]) if r["adview_activated"] else 0,
+            "lead_activated": int(r["lead_activated"]) if r["lead_activated"] else 0,
+            "save_activated": int(r["save_activated"]) if r["save_activated"] else 0,
+        }
+        for r in daily_act_rows
+    ] if daily_act_rows else D.get("daily_activation", []),
 }
 
 with open(DATA_JSON, 'w') as f:
