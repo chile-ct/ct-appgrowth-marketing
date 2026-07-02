@@ -292,15 +292,13 @@ canvas { max-height: 500px; }
 <div class="section" id="section-3">
   <div class="section-title">3. New App User Activation</div>
   <div class="section-subtitle">
-    <strong>Activation</strong>: New app user cần được activate — 3 điều kiện tính riêng: ≥20 adview D7, ≥1 lead D7, ≥1 save D0
+    <strong>Activation</strong>: New app user cần được activate — 2 điều kiện tính riêng: ≥20 adview D7 và ≥1 save D0
   </div>
 
-  <div class="kpi-grid" id="s3-kpi-grid" style="margin-bottom:16px;grid-template-columns:repeat(3,1fr)">
+  <div class="kpi-grid" id="s3-kpi-grid" style="margin-bottom:16px;grid-template-columns:repeat(4,1fr)">
     <div class="kpi-card"><div class="kpi-label">Monthly Activated ≥20 adview D7</div><div class="kpi-value" id="kpi-s3-adview">—</div><div class="kpi-sub" id="kpi-s3-adview-sub">—</div><div class="kpi-delta" id="kpi-s3-adview-delta">—</div></div>
-    <div class="kpi-card"><div class="kpi-label">Monthly Activated ≥1 lead D7</div><div class="kpi-value" id="kpi-s3-lead">—</div><div class="kpi-sub" id="kpi-s3-lead-sub">—</div><div class="kpi-delta" id="kpi-s3-lead-delta">—</div></div>
     <div class="kpi-card"><div class="kpi-label">Save actions D0 (≥1 save)</div><div class="kpi-value" id="kpi-s3-save">—</div><div class="kpi-sub" id="kpi-s3-save-sub">—</div><div class="kpi-delta" id="kpi-s3-save-delta">—</div></div>
     <div class="kpi-card"><div class="kpi-label">Activation Rate (adview D7)</div><div class="kpi-value" id="kpi-s3-rate-adv">—</div><div class="kpi-sub" id="kpi-s3-rate-adv-sub">—</div><div class="kpi-delta" id="kpi-s3-rate-adv-delta">—</div></div>
-    <div class="kpi-card"><div class="kpi-label">Activation Rate (lead D7)</div><div class="kpi-value" id="kpi-s3-rate-lead">—</div><div class="kpi-sub" id="kpi-s3-rate-lead-sub">—</div><div class="kpi-delta" id="kpi-s3-rate-lead-delta">—</div></div>
     <div class="kpi-card"><div class="kpi-label">Save Rate D0</div><div class="kpi-value" id="kpi-s3-rate-save">—</div><div class="kpi-sub" id="kpi-s3-rate-save-sub">—</div><div class="kpi-delta" id="kpi-s3-rate-save-delta">—</div></div>
   </div>
 
@@ -312,7 +310,7 @@ canvas { max-height: 500px; }
 
   <div class="tab-content active" id="act-0">
     <div class="chart-card" style="margin-bottom:16px">
-      <div class="chart-title">New App MAU & Activation Rate: ≥20 adview D7 vs ≥1 lead D7 vs ≥1 save D0</div>
+      <div class="chart-title">New App MAU & Activation Rate: ≥20 adview D7 vs ≥1 save D0</div>
       <div style="position:relative;height:280px"><canvas id="chartActOverview"></canvas></div>
     </div>
     <div class="card">
@@ -327,9 +325,6 @@ canvas { max-height: 500px; }
   <div class="tab-content" id="act-1">
     <div class="charts-grid" style="margin-bottom:16px">
       <div class="chart-card"><div class="chart-title">Monthly Activated by Channel (≥20 adview D7)</div><div style="position:relative;height:280px"><canvas id="chartActMonthCh1"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title">Monthly Activated by Channel (≥1 lead D7)</div><div style="position:relative;height:280px"><canvas id="chartActMonthCh2"></canvas></div></div>
-    </div>
-    <div style="margin-bottom:16px">
       <div class="chart-card"><div class="chart-title">Monthly Save Actions D0 by Channel (≥1 save D0)</div><div style="position:relative;height:280px"><canvas id="chartActMonthCh3"></canvas></div></div>
     </div>
     <div class="charts-grid">
@@ -338,13 +333,9 @@ canvas { max-height: 500px; }
         <div style="overflow-x:auto"><table id="actMonthAdviewTable"></table></div>
       </div>
       <div class="card">
-        <div class="card-title">Monthly Activated by Channel — ≥1 lead D7</div>
-        <div style="overflow-x:auto"><table id="actMonthLeadTable"></table></div>
+        <div class="card-title">Monthly Save Actions D0 by Channel — ≥1 save D0</div>
+        <div style="overflow-x:auto"><table id="actMonthSaveTable"></table></div>
       </div>
-    </div>
-    <div style="margin-top:16px" class="card">
-      <div class="card-title">Monthly Save Actions D0 by Channel — ≥1 save D0</div>
-      <div style="overflow-x:auto"><table id="actMonthSaveTable"></table></div>
     </div>
   </div>
 
@@ -358,9 +349,6 @@ canvas { max-height: 500px; }
     </div>
     <div style="margin-bottom:16px">
       <div class="chart-card"><div class="chart-title">Daily Activated by Channel — ≥20 adview D7</div><div style="position:relative;height:280px"><canvas id="chartActDailyCh1"></canvas></div></div>
-    </div>
-    <div style="margin-bottom:16px">
-      <div class="chart-card"><div class="chart-title">Daily Activated by Channel — ≥1 lead D7</div><div style="position:relative;height:280px"><canvas id="chartActDailyCh2"></canvas></div></div>
     </div>
     <div style="margin-bottom:16px">
       <div class="chart-card"><div class="chart-title">Daily Save Actions D0 by Channel — ≥1 save D0</div><div style="position:relative;height:280px"><canvas id="chartActDailyCh3"></canvas></div></div>
@@ -877,10 +865,8 @@ function updateS3KPICards(i) {
     const de=document.getElementById(id+'-delta'); if(de) de.innerHTML=delta||'—';
   };
   set('kpi-s3-adview', fmtN(act.adview_total[i]), mn, d(act.adview_total[i], prev!=null?act.adview_total[prev]:null, false));
-  set('kpi-s3-lead', fmtN(act.lead_total[i]), mn, d(act.lead_total[i], prev!=null?act.lead_total[prev]:null, false));
   set('kpi-s3-save', fmtN(act.save_total ? act.save_total[i] : null), mn, d(act.save_total?act.save_total[i]:null, prev!=null&&act.save_total?act.save_total[prev]:null, false));
   set('kpi-s3-rate-adv', fmtP(act.adview_rate[i]), mn, d(act.adview_rate[i], prev!=null?act.adview_rate[prev]:null, true));
-  set('kpi-s3-rate-lead', fmtP(act.lead_rate[i]), mn, d(act.lead_rate[i], prev!=null?act.lead_rate[prev]:null, true));
   set('kpi-s3-rate-save', fmtP(act.save_rate ? act.save_rate[i] : null), mn, d(act.save_rate?act.save_rate[i]:null, prev!=null&&act.save_rate?act.save_rate[prev]:null, true));
 }
 
@@ -1093,7 +1079,6 @@ function renderAllCharts() {
     new Chart(ctx,{type:'bar',data:{labels:MONTHS,datasets:[
       {label:'New App MAU',data:ov.new_mau,backgroundColor:C.teal+'55',borderColor:C.teal,borderWidth:1,borderRadius:4,yAxisID:'y'},
       {label:'% ≥20 adview D7',data:act.adview_rate,type:'line',borderColor:C.blue,backgroundColor:'transparent',tension:0.4,pointRadius:4,borderWidth:2,yAxisID:'y1'},
-      {label:'% ≥1 lead D7',data:act.lead_rate,type:'line',borderColor:C.green,backgroundColor:'transparent',tension:0.4,pointRadius:4,borderWidth:2,borderDash:[4,4],yAxisID:'y1'},
       {label:'% ≥1 save D0',data:act.save_rate||[],type:'line',borderColor:C.orange,backgroundColor:'transparent',tension:0.4,pointRadius:4,borderWidth:2,borderDash:[2,4],yAxisID:'y1'}
     ]},options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}},
@@ -1118,13 +1103,10 @@ function renderAllCharts() {
     };
     t.innerHTML = `<thead><tr><th>Metric</th>${ths}</tr></thead><tbody>
       ${row('Monthly Activated <span class="tag tag-adview">≥20 adview D7</span>', act.adview_total, fmtN)}
-      ${row('Monthly Activated <span class="tag tag-lead">≥1 lead D7</span>', act.lead_total, fmtN)}
       ${row('Save Actions D0 <span class="tag" style="background:#fef9c3;color:#854d0e">≥1 save D0</span>', act.save_total||[], fmtN)}
       ${row('Activation rate <span class="tag tag-adview">≥20 adview D7</span>', act.adview_rate, fmtP)}
-      ${row('Activation rate <span class="tag tag-lead">≥1 lead D7</span>', act.lead_rate, fmtP)}
       ${row('Save rate D0 <span class="tag" style="background:#fef9c3;color:#854d0e">≥1 save D0</span>', act.save_rate||[], fmtP)}
       ${row('Daily Activated <span class="tag tag-adview">≥20 adview D7</span>', act.adview_daily, fmtN, 'sep')}
-      ${row('Daily Activated <span class="tag tag-lead">≥1 lead D7</span>', act.lead_daily, fmtN)}
       ${row('Daily Save D0 <span class="tag" style="background:#fef9c3;color:#854d0e">≥1 save D0</span>', act.save_daily||[], fmtN)}
     </tbody>`;
   })();
@@ -1147,12 +1129,6 @@ function renderAllCharts() {
       {label:'Organic Search', data:act.organic_adview},
       {label:'Growth (Paid+Display+CRM)', data:act.growth_adview}
     ]);
-    buildTable('actMonthLeadTable',[
-      {label:'Total', data:act.lead_total, cls:'total-row'},
-      {label:'Direct', data:act.direct_lead},
-      {label:'Organic Search', data:act.organic_lead},
-      {label:'Growth (Paid+Display+CRM)', data:act.growth_lead}
-    ]);
     buildTable('actMonthSaveTable',[
       {label:'Total', data:act.save_total||[], cls:'total-row'},
       {label:'Direct', data:act.direct_save||[]},
@@ -1162,7 +1138,6 @@ function renderAllCharts() {
   })();
 
   makeChart('chartActMonthCh1','bar',MONTHS,[B('Direct',act.direct_adview,C.blue),B('Organic Search',act.organic_adview,C.green),B('Growth (P+D+CRM)',act.growth_adview,C.orange)],{noAR:true});
-  makeChart('chartActMonthCh2','bar',MONTHS,[B('Direct',act.direct_lead,C.blue),B('Organic Search',act.organic_lead,C.green),B('Growth (P+D+CRM)',act.growth_lead,C.orange)],{noAR:true});
   makeChart('chartActMonthCh3','bar',MONTHS,[B('Direct',act.direct_save||[],C.blue),B('Organic Search',act.organic_save||[],C.green),B('Growth (P+D+CRM)',act.growth_save||[],C.orange)],{noAR:true});
 
   // By Channel Daily — date picker charts
@@ -1201,11 +1176,10 @@ function renderAllCharts() {
             y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>(v/1000).toFixed(0)+'K'}}}}});
     }
     renderDailyChart('chartActDailyCh1','adview_activated','≥20 adview D7');
-    renderDailyChart('chartActDailyCh2','lead_activated','≥1 lead D7');
     renderDailyChart('chartActDailyCh3','save_activated','≥1 save D0');
   };
 
-  // Set default date range (last 30 days of available data) and render
+  // Set default date range (last 30 days) — don't render yet, charts are on hidden tab
   (function(){
     if (!D || !D.daily_activation || !D.daily_activation.length) return;
     const dates = [...new Set(D.daily_activation.map(r=>r.date))].sort();
@@ -1215,7 +1189,6 @@ function renderAllCharts() {
     const endEl = document.getElementById('dailyActEnd');
     if(startEl) startEl.value = startDate;
     if(endEl) endEl.value = endDate;
-    renderDailyActCharts();
   })();
 
   // S4 Ret Overview: comparison charts D1, D7 and M1
@@ -1403,6 +1376,7 @@ function renderAllCharts() {
 function switchTab(g,idx){
   document.querySelectorAll(`#tabs-${g} .tab`).forEach((t,i)=>t.classList.toggle('active',i===idx));
   document.querySelectorAll(`[id^="${g}-"]`).forEach((c,i)=>c.classList.toggle('active',i===idx));
+  if (g==='act' && idx===2 && typeof renderDailyActCharts==='function') renderDailyActCharts();
 }
 
 function updateKPICards(monthIndex) {
