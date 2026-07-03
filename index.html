@@ -391,18 +391,15 @@ canvas { max-height: 500px; }
 
   <div class="tab-content active" id="ret-0">
     <div class="chart-card" style="margin-bottom:16px">
-      <div class="chart-title">Retention D1 — Total CT vs App (iOS+Android) vs Web vs NURR</div>
-      <div style="position:relative;height:260px"><canvas id="chartRetD1Compare"></canvas></div>
-    </div>
-    <div class="charts-grid" style="margin-bottom:16px">
-      <div class="chart-card">
-        <div class="chart-title">Retention D7 — Total CT vs App vs Web vs NURR</div>
-        <div style="position:relative;height:260px"><canvas id="chartRetD7Compare"></canvas></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px">
+        <div class="chart-title" style="margin:0">Retention — Total CT vs App vs Web vs NURR</div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="vchip active" id="retChip-d1" onclick="switchRetMetric('d1')">D1</button>
+          <button class="vchip" id="retChip-d7" onclick="switchRetMetric('d7')">D7</button>
+          <button class="vchip" id="retChip-m1" onclick="switchRetMetric('m1')">M1</button>
+        </div>
       </div>
-      <div class="chart-card">
-        <div class="chart-title">Retention M1 — Total CT vs App vs Web vs NURR</div>
-        <div style="position:relative;height:260px"><canvas id="chartRetM1Compare"></canvas></div>
-      </div>
+      <div style="position:relative;height:280px"><canvas id="chartRetCompare"></canvas></div>
     </div>
     <div class="card">
       <div class="card-title">Total User & App User Retention — D1 / D7 / M1</div>
@@ -485,7 +482,7 @@ canvas { max-height: 500px; }
   <!-- Tab 0: Overview -->
   <div class="tab-content active" id="g5-0">
     <div class="charts-grid" style="margin-bottom:16px">
-      <div class="chart-card"><div class="chart-title">New Users vs Activated (≥20 adview D7 & ≥1 save D0) — Growth Channel</div><div style="position:relative;height:280px"><canvas id="chartG5Overview"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">New Users vs Activated — Growth Channel</div><div style="position:relative;height:280px"><canvas id="chartG5Overview"></canvas></div></div>
       <div class="chart-card"><div class="chart-title">CPA / CAA / CRR Trend (₫)</div><div style="position:relative;height:280px"><canvas id="chartG5Cost"></canvas></div></div>
     </div>
     <div class="chart-card" style="margin-bottom:16px">
@@ -526,7 +523,7 @@ canvas { max-height: 500px; }
     <div class="charts-grid" style="margin-bottom:16px">
       <div class="chart-card" style="display:flex;flex-direction:column"><div class="chart-title">Activation Trend — Growth Channel</div><div style="position:relative;flex:1;min-height:200px"><canvas id="chartG5Act"></canvas></div></div>
       <div class="chart-card" style="display:flex;flex-direction:column">
-        <div class="chart-title">Activated (≥20 adview D7) by Vertical — Monthly Trend</div>
+        <div class="chart-title">Activated (≥20 adview D7) by Vertical</div>
         <div style="position:relative;flex:1;min-height:200px"><canvas id="chartVerticalMixAct"></canvas></div>
         <div class="note" style="margin-top:8px">Growth channel campaigns (Paid Search + Display + CRM) có tag vertical (PTY/JOB/VEH/GDS). Loại trừ web_to_app campaigns.</div>
       </div>
@@ -1030,53 +1027,73 @@ const C = {blue:'#4361ee',green:'#10b981',orange:'#f59e0b',purple:'#8b5cf6',red:
 function injectChartControls(canvasId, isPct) {
   const canvas = document.getElementById(canvasId); if (!canvas) return;
   const card = canvas.closest('.chart-card'); if (!card) return;
-  if (card.querySelector('.chart-controls')) return; // already injected
+  if (card.querySelector('.chart-controls')) return;
 
   const inst = Object.values(Chart.instances||{}).find(c=>c.canvas?.id===canvasId);
   if (!inst) return;
-
-  // Pick main dataset: prefer 'Total' or 'Total Growth', else first non-line bar
   const ds = inst.data.datasets||[];
-  const mainDs = ds.find(d=>/^Total/i.test(d.label)) || ds.find(d=>d.type!=='line') || ds[0];
-  let avgHtml = '';
-  if (mainDs?.data) {
-    const vals = mainDs.data.filter(v=>v!=null&&v!==''&&!isNaN(v)&&v!==0);
-    if (vals.length) {
-      const avg = vals.reduce((s,v)=>s+Number(v),0)/vals.length;
-      const isRate = isPct || (avg>0&&avg<2&&avg!==Math.round(avg));
-      let txt;
-      if (isRate)        txt = (avg*100).toFixed(1)+'%';
-      else if (avg>=1e6) txt = (avg/1e6).toFixed(2)+'M';
-      else if (avg>=1000)txt = (avg/1000).toFixed(1)+'K';
-      else               txt = Math.round(avg).toLocaleString('en');
-      avgHtml = `<span style="font-size:20px;font-weight:800;color:#4361ee;white-space:nowrap">Avg: ${txt}</span>`;
-    }
-  }
 
-  // CSV export
+  // Per-series avg
+  function seriesAvg(d) {
+    const vals = (d.data||[]).filter(v=>v!=null&&v!==''&&!isNaN(v)&&v!==0);
+    return vals.length ? vals.reduce((s,v)=>s+Number(v),0)/vals.length : null;
+  }
+  function fmtVal(avg, isRate) {
+    if (avg==null) return null;
+    if (isRate) return (avg*100).toFixed(1)+'%';
+    if (avg>=1e6) return (avg/1e6).toFixed(2)+'M';
+    if (avg>=1000) return (avg/1000).toFixed(1)+'K';
+    return Math.round(avg).toLocaleString('en');
+  }
+  const avgLines = ds.filter(d=>d.label&&!d.hidden).map(d=>{
+    const avg = seriesAvg(d); if (avg==null) return '';
+    const isRate = isPct || d.yAxisID==='y1' || (avg>0&&avg<2&&avg!==Math.round(avg));
+    const txt = fmtVal(avg, isRate); if (!txt) return '';
+    const col = (typeof d.borderColor==='string' ? d.borderColor : '#4361ee').replace(/(cc|99|55|44|22)$/i,'').substring(0,7) || '#4361ee';
+    return `<div style="display:flex;align-items:baseline;gap:3px;line-height:1.4"><span style="font-size:10px;color:#6b7280;white-space:nowrap">${d.label}:</span><span style="font-size:13px;font-weight:700;color:${col};white-space:nowrap">${txt}</span></div>`;
+  }).filter(Boolean);
+  const avgHtml = avgLines.length ? `<div style="display:flex;flex-direction:column;gap:1px;align-items:flex-end">${avgLines.join('')}</div>` : '';
+
+  // Export
+  const dropId = '_drop_'+canvasId;
   window['_csv_'+canvasId] = function(){
     const labels = inst.data.labels||[];
     const rows = [['Month',...ds.map(d=>d.label||'')].join(',')];
     labels.forEach((l,i)=>rows.push(['"'+l+'"',...ds.map(d=>{const v=d.data?.[i];return v!=null?v:'';})].join(',')));
     const a=document.createElement('a');
-    a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));
+    a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv;charset=utf-8'}));
     a.download=canvasId+'.csv'; a.click();
   };
-  const csvBtn = `<button onclick="window['_csv_${canvasId}']()" title="Export CSV" style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:5px;padding:3px 9px;font-size:11px;cursor:pointer;color:#374151;white-space:nowrap">⬇ CSV</button>`;
+  window['_xls_'+canvasId] = function(){
+    const labels = inst.data.labels||[];
+    const esc = s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const mkRow = cells=>`<Row>${cells.map(c=>`<Cell><Data ss:Type="String">${esc(c)}</Data></Cell>`).join('')}</Row>`;
+    let xml=`<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Data"><Table>${mkRow(['Month',...ds.map(d=>d.label||'')])}`;
+    labels.forEach((l,i)=>{xml+=mkRow([l,...ds.map(d=>d.data?.[i]??'')]);});
+    xml+=`</Table></Worksheet></Workbook>`;
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([xml],{type:'application/vnd.ms-excel'}));
+    a.download=canvasId+'.xls'; a.click();
+  };
+  if (!window._dropCloseAdded) {
+    window._dropCloseAdded=true;
+    document.addEventListener('click',()=>document.querySelectorAll('[id^="_drop_"]').forEach(el=>el.style.display='none'));
+  }
+  const exportBtn=`<div style="position:relative;display:inline-block"><button onclick="var d=document.getElementById('${dropId}');d.style.display=d.style.display==='block'?'none':'block';event.stopPropagation()" style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:5px;padding:3px 9px;font-size:11px;cursor:pointer;color:#374151;white-space:nowrap">⬇ Export ▾</button><div id="${dropId}" style="display:none;position:absolute;right:0;top:100%;margin-top:2px;background:white;border:1px solid #d1d5db;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:999;min-width:138px;overflow:hidden"><button onclick="window['_csv_${canvasId}']();document.getElementById('${dropId}').style.display='none'" style="display:block;width:100%;text-align:left;padding:8px 12px;font-size:12px;border:none;background:none;cursor:pointer;color:#374151">📄 CSV</button><button onclick="window['_xls_${canvasId}']();document.getElementById('${dropId}').style.display='none'" style="display:block;width:100%;text-align:left;padding:8px 12px;font-size:12px;border:none;background:none;cursor:pointer;color:#374151;border-top:1px solid #f3f4f6">📊 Excel (.xls)</button></div></div>`;
 
   const ctrl = document.createElement('div');
   ctrl.className = 'chart-controls';
-  ctrl.style.cssText = 'display:flex;align-items:center;gap:8px;flex-shrink:0';
-  ctrl.innerHTML = avgHtml + csvBtn;
+  ctrl.style.cssText = 'display:flex;align-items:flex-start;gap:8px;flex-shrink:0';
+  ctrl.innerHTML = avgHtml + exportBtn;
 
-  // Find title element and wrap in flex header if not already
   const titleEl = card.querySelector('.chart-title');
   const existingHeader = card.querySelector('[style*="justify-content:space-between"]');
   if (existingHeader) {
+    existingHeader.style.alignItems = 'flex-start';
     existingHeader.appendChild(ctrl);
   } else if (titleEl) {
     const wrap = document.createElement('div');
-    wrap.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px';
+    wrap.style.cssText = 'display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:8px';
     titleEl.style.marginBottom = '0';
     titleEl.parentNode.insertBefore(wrap, titleEl);
     wrap.appendChild(titleEl);
@@ -1184,6 +1201,7 @@ function renderAllCharts() {
     if(existing)existing.destroy();
     const fmtK=v=>v==null?'':v>=1000?(v/1000).toFixed(1)+'K':String(Math.round(v));
     new Chart(ctx,{
+      type:'bar',
       data:{
         labels:MONTHS,
         datasets:[
@@ -1431,59 +1449,48 @@ function renderAllCharts() {
   (function(){
     const n = MONTHS.length;
     const web_other_mau = ov.web_other_mau;
-    // Retention D1 chart
+    // Unified retention comparison chart (D1/D7/M1 switchable)
     (function(){
-      const ctx = document.getElementById('chartRetD1Compare'); if(!ctx) return;
-      const ex = Object.values(Chart.instances||{}).find(c=>c.canvas?.id==='chartRetD1Compare');
-      if(ex) ex.destroy();
-      // Use real BQ data directly — no formula
-      const webD1 = ret.web_d1 || [];
-      new Chart(ctx,{type:'line',data:{labels:MONTHS,datasets:[
-        {label:'Total CT User D1',data:ret.total_d1,borderColor:'#9ca3af',backgroundColor:'#9ca3af22',fill:false,tension:0.4,pointRadius:4,borderWidth:2},
-        {label:'App User D1 (iOS+Android)',data:ret.app_d1,borderColor:'#4361ee',backgroundColor:'#4361ee22',fill:false,tension:0.4,pointRadius:4,borderWidth:2},
-        {label:'Web User D1',data:webD1,borderColor:'#0891b2',backgroundColor:'transparent',fill:false,tension:0.4,pointRadius:4,borderWidth:2,borderDash:[4,4]},
-        {label:'NURR D1 (New User)',data:ret.nurr_d1,borderColor:'#f59e0b',backgroundColor:'transparent',fill:false,tension:0.4,pointRadius:4,borderWidth:1,borderDash:[2,2]}
-      ]},options:{responsive:true,maintainAspectRatio:false,
+      const webD1 = ret.web_d1 || [], web_d7 = ret.web_d7 || [], web_m1 = ret.web_m1 || [];
+      const retOpts = {responsive:true,maintainAspectRatio:false,
         plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}},
           tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y!=null?(c.parsed.y*100).toFixed(1)+'%':'—'}`}}},
         scales:{x:{grid:{display:false},ticks:{font:{size:11}}},
-          y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>(v*100).toFixed(0)+'%'}}}}
-      });
-      requestAnimationFrame(()=>injectChartControls('chartRetD1Compare',true));
+          y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>(v*100).toFixed(0)+'%'}}}};
+      window._retDs = {
+        d1: [
+          {label:'Total CT D1',data:ret.total_d1,borderColor:'#9ca3af',backgroundColor:'#9ca3af22',fill:false,tension:0.4,pointRadius:4,borderWidth:2},
+          {label:'App D1 (iOS+Android)',data:ret.app_d1,borderColor:'#4361ee',backgroundColor:'#4361ee22',fill:false,tension:0.4,pointRadius:4,borderWidth:2},
+          {label:'Web D1',data:webD1,borderColor:'#0891b2',backgroundColor:'transparent',fill:false,tension:0.4,pointRadius:4,borderWidth:2,borderDash:[4,4]},
+          {label:'NURR D1',data:ret.nurr_d1,borderColor:'#f59e0b',backgroundColor:'transparent',fill:false,tension:0.4,pointRadius:4,borderWidth:1,borderDash:[2,2]}
+        ],
+        d7: [
+          {label:'Total CT D7',data:ret.total_d7,borderColor:'#9ca3af',backgroundColor:'#9ca3af22',fill:false,tension:0.4,pointRadius:4,borderWidth:2},
+          {label:'App D7',data:ret.app_d7,borderColor:'#4361ee',backgroundColor:'#4361ee22',fill:false,tension:0.4,pointRadius:4,borderWidth:2},
+          {label:'Web D7',data:web_d7,borderColor:'#0891b2',backgroundColor:'transparent',fill:false,tension:0.4,pointRadius:4,borderWidth:2,borderDash:[4,4]},
+          {label:'NURR D7',data:ret.nurr_d7,borderColor:'#f59e0b',backgroundColor:'transparent',fill:false,tension:0.4,pointRadius:4,borderWidth:1,borderDash:[2,2]}
+        ],
+        m1: [
+          {label:'Total CT M1',data:ret.total_m1,borderColor:'#9ca3af',backgroundColor:'#9ca3af22',fill:false,tension:0.4,pointRadius:4,borderWidth:2},
+          {label:'App M1',data:ret.app_m1,borderColor:'#4361ee',backgroundColor:'#4361ee22',fill:false,tension:0.4,pointRadius:4,borderWidth:2},
+          {label:'Web M1',data:web_m1,borderColor:'#0891b2',backgroundColor:'transparent',fill:false,tension:0.4,pointRadius:4,borderWidth:2,borderDash:[4,4]},
+          {label:'NURR M1',data:ret.nurr_m1,borderColor:'#f59e0b',backgroundColor:'transparent',fill:false,tension:0.4,pointRadius:4,borderWidth:1,borderDash:[2,2]}
+        ]
+      };
+      const ctx = document.getElementById('chartRetCompare'); if(!ctx) return;
+      window._chartRetCompare = new Chart(ctx,{type:'line',data:{labels:MONTHS,datasets:window._retDs.d1},options:retOpts});
+      requestAnimationFrame(()=>injectChartControls('chartRetCompare',true));
     })();
-    // Use real BQ data directly — no formula
-    const web_d7 = ret.web_d7 || [];
-    const web_m1 = ret.web_m1 || [];
-    function makeRetChart(id, label1, d1, label2, d2, label3, d3, label4, d4) {
-      const ctx = document.getElementById(id); if(!ctx) return;
-      const ex = Object.values(Chart.instances||{}).find(c=>c.canvas?.id===id);
-      if(ex) ex.destroy();
-      new Chart(ctx, {type:'line', data:{labels:MONTHS, datasets:[
-        {label:label1, data:d1, borderColor:'#9ca3af', backgroundColor:'#9ca3af22', fill:false, tension:0.4, pointRadius:4, borderWidth:2},
-        {label:label2, data:d2, borderColor:'#0891b2', backgroundColor:'transparent', fill:false, tension:0.4, pointRadius:4, borderWidth:2},
-        {label:label3, data:d3, borderColor:'#4361ee', backgroundColor:'#4361ee22', fill:false, tension:0.4, pointRadius:4, borderWidth:2},
-        {label:label4, data:d4, borderColor:'#f59e0b', backgroundColor:'transparent', fill:false, tension:0.4, pointRadius:4, borderWidth:2, borderDash:[4,4]}
-      ]}, options:{responsive:true, maintainAspectRatio:false,
-        plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}},
-          tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y!=null?(c.parsed.y*100).toFixed(1)+'%':'—'}`}}},
-        scales:{x:{grid:{display:false},ticks:{font:{size:11}}},
-          y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>(v*100).toFixed(0)+'%'}}}}
-      });
-      requestAnimationFrame(()=>injectChartControls(id,true));
-    }
-    makeRetChart('chartRetD7Compare',
-      'Total CT User D7', ret.total_d7,
-      'Web User D7', web_d7,
-      'App User D7', ret.app_d7,
-      'NURR D7 (New)', ret.nurr_d7
-    );
-    makeRetChart('chartRetM1Compare',
-      'Total CT User M1', ret.total_m1,
-      'Web User M1', web_m1,
-      'App User M1', ret.app_m1,
-      'NURR M1 (New)', ret.nurr_m1
-    );
-  })();
+    window.switchRetMetric = function(metric) {
+      document.querySelectorAll('[id^="retChip-"]').forEach(b=>b.classList.remove('active'));
+      const chip = document.getElementById('retChip-'+metric); if(chip) chip.classList.add('active');
+      const inst = window._chartRetCompare; if(!inst||!window._retDs) return;
+      inst.data.datasets = window._retDs[metric];
+      inst.update('none');
+      const card = inst.canvas.closest('.chart-card');
+      if (card) { const c=card.querySelector('.chart-controls'); if(c) c.remove(); }
+      requestAnimationFrame(()=>injectChartControls('chartRetCompare',true));
+    };
   // NURR funnel bar: use last month's values for each channel
   const lastI = MONTHS.length - 1;
   const prevI = lastI - 1; // Apr (last full month for M1)
