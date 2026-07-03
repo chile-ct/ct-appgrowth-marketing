@@ -1491,6 +1491,7 @@ function renderAllCharts() {
       if (card) { const c=card.querySelector('.chart-controls'); if(c) c.remove(); }
       requestAnimationFrame(()=>injectChartControls('chartRetCompare',true));
     };
+  })();
   // NURR funnel bar: use last month's values for each channel
   const lastI = MONTHS.length - 1;
   const prevI = lastI - 1; // Apr (last full month for M1)
