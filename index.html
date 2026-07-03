@@ -1048,6 +1048,7 @@ function injectChartControls(canvasId, isPct) {
   const avgLines = ds.filter(d=>d.label&&!d.hidden).map(d=>{
     const avg = seriesAvg(d); if (avg==null) return '';
     const isRate = isPct || d.yAxisID==='y1' || (avg>0&&avg<2&&avg!==Math.round(avg));
+    if (isRate) return ''; // skip avg for % series — weighted avg needs raw denominators
     const txt = fmtVal(avg, isRate); if (!txt) return '';
     const col = (typeof d.borderColor==='string' ? d.borderColor : '#4361ee').replace(/(cc|99|55|44|22)$/i,'').substring(0,7) || '#4361ee';
     return `<div style="display:flex;align-items:baseline;gap:3px;line-height:1.4"><span style="font-size:10px;color:#6b7280;white-space:nowrap">${d.label}:</span><span style="font-size:13px;font-weight:700;color:${col};white-space:nowrap">${txt}</span></div>`;
