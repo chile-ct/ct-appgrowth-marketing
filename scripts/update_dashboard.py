@@ -312,7 +312,7 @@ try:
         FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
         WHERE return_status = 'new'
           AND campaign NOT IN ('all', '(none)')
-          AND channel IN ('Paid Search', 'Display', 'Growth')
+          AND channel NOT IN ('all', 'Direct', 'Organic Search', 'web_to_app')
           AND vertical_user = 'all'
           AND LOWER(campaign) NOT LIKE '%web_to_app%'
           AND LOWER(campaign) NOT LIKE '%web2app%'
@@ -402,6 +402,44 @@ try:
 except Exception as e:
     print(f"  WARNING Vertical monthly skipped: {e}")
 
+# Attribution assist — % of Direct/Organic users that are Growth-campaign last-touch attributed
+attribution_assist = D.get('attribution_assist', {'direct_pct': [None]*n, 'organic_pct': [None]*n})
+try:
+    aa_rows = run("""
+    SELECT
+      DATE_TRUNC(visit_date, MONTH) as month,
+      channel,
+      SUM(CASE WHEN campaign = 'all' THEN d0 ELSE 0 END) as total_channel,
+      SUM(CASE WHEN campaign NOT IN ('all','(none)')
+           AND NOT REGEXP_CONTAINS(LOWER(campaign), r'web.to.app|web2app')
+           THEN d0 ELSE 0 END) as growth_campaign_attributed
+    FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
+    WHERE return_status = 'new'
+      AND vertical_user = 'all'
+      AND channel IN ('Direct', 'Organic Search')
+      AND visit_date >= '2026-01-01'
+    GROUP BY 1, 2
+    ORDER BY 1, 2
+    """)
+    aa_lookup = {}
+    for r in aa_rows:
+        aa_lookup[(to_date(r['month']), r['channel'])] = r
+    def aa_pct(ch):
+        out_arr = []
+        for m in all_months:
+            row = aa_lookup.get((m, ch), {})
+            total = int(row.get('total_channel') or 0)
+            tagged = int(row.get('growth_campaign_attributed') or 0)
+            out_arr.append(round(tagged/total, 4) if total else None)
+        return out_arr
+    attribution_assist = {
+        'direct_pct': aa_pct('Direct'),
+        'organic_pct': aa_pct('Organic Search'),
+    }
+    print(f"  Attribution assist: {len(aa_rows)} rows OK")
+except Exception as e:
+    print(f"  WARNING Attribution assist skipped: {e}")
+
 # Cost — managed manually via Budget tab in dashboard (localStorage)
 # Keep existing cost data from data.json; do not overwrite with BQ or Sheet data.
 cost = pad(D['growth_channel']['cost'], n)
@@ -478,6 +516,7 @@ out = {
         "crr_m1": [round(cost[i]/ret_m1_gc[i]) if cost[i] and ret_m1_gc[i] else None for i in range(n)],
     },
     "vertical_monthly": vertical_monthly,
+    "attribution_assist": attribution_assist,
     "campaigns": campaigns,
     "daily_activation": [
         {

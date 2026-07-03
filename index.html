@@ -203,7 +203,7 @@ canvas { max-height: 500px; }
 <div class="section" id="section-2">
   <div class="section-title">2. New App User Acquisition</div>
   <div class="section-subtitle">
-    <strong>New App User</strong>: User lần đầu tải app và mở app vào D0 — counted once per device lifetime | Channel: Direct · Organic Search · Growth (Paid+Display+CRM) · (Other)
+    <strong>New App User</strong>: User lần đầu tải app và mở app vào D0 — counted once per device lifetime | Channel: Direct · Organic Search · Growth (Paid+Display+CRM+Social) · (Other)
   </div>
 
 
@@ -211,7 +211,7 @@ canvas { max-height: 500px; }
     <div class="kpi-card"><div class="kpi-label">New App MAU (Total)</div><div class="kpi-value" id="kpi-s2-total">—</div><div class="kpi-sub" id="kpi-s2-total-sub">—</div><div class="kpi-delta" id="kpi-s2-total-delta">—</div></div>
     <div class="kpi-card"><div class="kpi-label">Direct</div><div class="kpi-value" id="kpi-s2-direct">—</div><div class="kpi-sub" id="kpi-s2-direct-sub">—</div><div class="kpi-delta" id="kpi-s2-direct-delta">—</div></div>
     <div class="kpi-card"><div class="kpi-label">Organic Search</div><div class="kpi-value" id="kpi-s2-organic">—</div><div class="kpi-sub" id="kpi-s2-organic-sub">—</div><div class="kpi-delta" id="kpi-s2-organic-delta">—</div></div>
-    <div class="kpi-card"><div class="kpi-label">Growth (Paid+Display+CRM)</div><div class="kpi-value" id="kpi-s2-growth">—</div><div class="kpi-sub" id="kpi-s2-growth-sub">—</div><div class="kpi-delta" id="kpi-s2-growth-delta">—</div></div>
+    <div class="kpi-card"><div class="kpi-label">Growth (Paid+Display+CRM+Social)</div><div class="kpi-value" id="kpi-s2-growth">—</div><div class="kpi-sub" id="kpi-s2-growth-sub">—</div><div class="kpi-delta" id="kpi-s2-growth-delta">—</div></div>
     <div class="kpi-card"><div class="kpi-label">Avg Daily New DAU</div><div class="kpi-value" id="kpi-s2-dau">—</div><div class="kpi-sub" id="kpi-s2-dau-sub">—</div><div class="kpi-delta" id="kpi-s2-dau-delta">—</div></div>
     <div class="kpi-card"><div class="kpi-label">Growth % of Total</div><div class="kpi-value" id="kpi-s2-pct">—</div><div class="kpi-sub" id="kpi-s2-pct-sub">—</div><div class="kpi-delta" id="kpi-s2-pct-delta">—</div></div>
   </div>
@@ -255,7 +255,7 @@ canvas { max-height: 500px; }
           <tr class="total-row"><td>Total</td><td>261,241</td><td>234,333</td><td>344,562</td><td>293,506</td><td class="apr">295,688</td></tr>
           <tr><td>Direct</td><td>142,590</td><td>122,781</td><td>192,791</td><td>157,824</td><td class="apr">154,320</td></tr>
           <tr><td>Organic Search</td><td>55,700</td><td>61,101</td><td>64,173</td><td>53,038</td><td class="apr">52,992</td></tr>
-          <tr><td>Growth (Paid+Display+CRM)</td><td>54,439</td><td>41,702</td><td>77,942</td><td>75,796</td><td class="apr">80,424</td></tr>
+          <tr><td>Growth (Paid+Display+CRM+Social)</td><td>54,439</td><td>41,702</td><td>77,942</td><td>75,796</td><td class="apr">80,424</td></tr>
           <tr><td>(Other)</td><td>8,511</td><td>8,749</td><td>9,656</td><td>6,848</td><td class="apr">7,950</td></tr>
         </tbody>
       </table>
@@ -290,7 +290,7 @@ canvas { max-height: 500px; }
           <tr class="total-row"><td>Total</td><td>8,429</td><td>8,370</td><td>11,116</td><td>9,785</td><td class="apr">9,538</td></tr>
           <tr><td>Direct</td><td>4,601</td><td>4,386</td><td>6,220</td><td>5,263</td><td class="apr">4,978</td></tr>
           <tr><td>Organic Search</td><td>1,797</td><td>2,182</td><td>2,070</td><td>1,768</td><td class="apr">1,709</td></tr>
-          <tr><td>Growth (Paid+Display+CRM)</td><td>1,756</td><td>1,489</td><td>2,515</td><td>2,527</td><td class="apr">2,594</td></tr>
+          <tr><td>Growth (Paid+Display+CRM+Social)</td><td>1,756</td><td>1,489</td><td>2,515</td><td>2,527</td><td class="apr">2,594</td></tr>
           <tr><td>(Other)</td><td>275</td><td>313</td><td>311</td><td>228</td><td class="apr">256</td></tr>
         </tbody>
       </table>
@@ -470,7 +470,7 @@ canvas { max-height: 500px; }
 
 <!-- ===== SECTION 5: GROWTH PERFORMANCE ===== -->
 <div class="section" id="section-5">
-  <div class="section-title">5. Growth Performance — Growth Channel (Paid+Display+CRM)</div>
+  <div class="section-title">5. Growth Performance — Growth Channel (Paid+Display+CRM+Social)</div>
   <div class="section-subtitle">
     <strong>Growth Channel</strong>: Toàn bộ performance về volume &amp; quality của new app user được drive bởi Growth Marketing (Paid Search + Display + CRM campaigns) · Acquisition → Activation → Retention → Cost efficiency
   </div>
@@ -1171,13 +1171,13 @@ function renderAllCharts() {
       {label:'Total', data:act.adview_total, cls:'total-row'},
       {label:'Direct', data:act.direct_adview},
       {label:'Organic Search', data:act.organic_adview},
-      {label:'Growth (Paid+Display+CRM)', data:act.growth_adview}
+      {label:'Growth (Paid+Display+CRM+Social)', data:act.growth_adview}
     ]);
     buildTable('actMonthSaveTable',[
       {label:'Total', data:act.save_total||[], cls:'total-row'},
       {label:'Direct', data:act.direct_save||[]},
       {label:'Organic Search', data:act.organic_save||[]},
-      {label:'Growth (Paid+Display+CRM)', data:act.growth_save||[]}
+      {label:'Growth (Paid+Display+CRM+Social)', data:act.growth_save||[]}
     ]);
   })();
 
@@ -2018,7 +2018,13 @@ function renderStaticTables() {
     const thead = `<tr><th>Metric</th>${ths}</tr>`;
     const tbody = rows.map(r => {
       if (r.sec) return `<tr class="total-row"><td colspan="${n+1}" style="font-size:11px;color:#4361ee;text-transform:uppercase;letter-spacing:.5px">${r.sec}</td></tr>`;
-      const cells = MONTHS.map((m,i)=>`<td${i===n-1?' class="apr"':''}>${r.fmt(r.arr[i])}</td>`).join('');
+      const cells = MONTHS.map((m,i)=>{
+        const val = r.fmt(r.arr[i]);
+        const note = (r.noteArr && r.noteArr[i] != null)
+          ? `<div style="font-size:10px;color:#aaa;margin-top:1px">${(r.noteArr[i]*100).toFixed(0)}% growth-attr.</div>`
+          : '';
+        return `<td${i===n-1?' class="apr"':''}>${val}${note}</td>`;
+      }).join('');
       return `<tr class="${r.cls||''}"><td>${r.lbl}</td>${cells}</tr>`;
     }).join('');
     el.innerHTML = `<thead>${thead}</thead><tbody>${tbody}</tbody>`;
@@ -2041,19 +2047,20 @@ function renderStaticTables() {
     {lbl:'Avg Daily New DAU', arr:ov.avg_new_dau, fmt:fmtN},
   ]);
 
+  const aa = D.attribution_assist || {};
   genTable('s2ChannelTable', [
     {lbl:'Total', arr:ov.new_mau, fmt:fmtN, cls:'total-row'},
-    {lbl:'Direct', arr:ac.direct, fmt:fmtN},
-    {lbl:'Organic Search', arr:ac.organic, fmt:fmtN},
-    {lbl:'Growth (Paid+Display+CRM)', arr:ac.growth, fmt:fmtN},
+    {lbl:'Direct', arr:ac.direct, fmt:fmtN, noteArr:aa.direct_pct},
+    {lbl:'Organic Search', arr:ac.organic, fmt:fmtN, noteArr:aa.organic_pct},
+    {lbl:'Growth (Paid+Display+CRM+Social)', arr:ac.growth, fmt:fmtN},
     {lbl:'(Other)', arr:ac.other, fmt:fmtN},
   ]);
 
   genTable('s2DailyTable', [
     {lbl:'Total', arr:ov.avg_new_dau, fmt:fmtN, cls:'total-row'},
-    {lbl:'Direct', arr:ac.direct_daily, fmt:fmtN},
-    {lbl:'Organic Search', arr:ac.organic_daily, fmt:fmtN},
-    {lbl:'Growth (Paid+Display+CRM)', arr:ac.growth_daily, fmt:fmtN},
+    {lbl:'Direct', arr:ac.direct_daily, fmt:fmtN, noteArr:aa.direct_pct},
+    {lbl:'Organic Search', arr:ac.organic_daily, fmt:fmtN, noteArr:aa.organic_pct},
+    {lbl:'Growth (Paid+Display+CRM+Social)', arr:ac.growth_daily, fmt:fmtN},
     {lbl:'(Other)', arr:ac.other_daily, fmt:fmtN},
   ]);
 
@@ -2063,13 +2070,13 @@ function renderStaticTables() {
       {lbl:'Total', arr:act.adview_daily, fmt:fmtN, cls:'total-row'},
       {lbl:'Direct', arr:act.direct_adview_daily, fmt:fmtN},
       {lbl:'Organic Search', arr:act.organic_adview_daily, fmt:fmtN},
-      {lbl:'Growth (Paid+Display+CRM)', arr:act.growth_adview_daily, fmt:fmtN},
+      {lbl:'Growth (Paid+Display+CRM+Social)', arr:act.growth_adview_daily, fmt:fmtN},
     ]);
     genTable('s3SaveDailyTable', [
       {lbl:'Total', arr:act.save_daily, fmt:fmtN, cls:'total-row'},
       {lbl:'Direct', arr:act.direct_save_daily, fmt:fmtN},
       {lbl:'Organic Search', arr:act.organic_save_daily, fmt:fmtN},
-      {lbl:'Growth (Paid+Display+CRM)', arr:act.growth_save_daily, fmt:fmtN},
+      {lbl:'Growth (Paid+Display+CRM+Social)', arr:act.growth_save_daily, fmt:fmtN},
     ]);
   }
 }
