@@ -461,8 +461,17 @@ canvas { max-height: 500px; }
     <div class="kpi-card"><div class="kpi-label">Monthly Activated (adview)</div><div class="kpi-value" id="kpi-s5-adv">22.2K</div><div class="kpi-sub" id="kpi-s5-adv-sub">May 2026* (Latest)</div><div class="kpi-delta up" id="kpi-s5-adv-delta">▲ vs Apr: +1.9K (+9.3%)</div></div>
     <div class="kpi-card"><div class="kpi-label">Monthly Activated (save D0)</div><div class="kpi-value" id="kpi-s5-lead">19.6K</div><div class="kpi-sub" id="kpi-s5-lead-sub">May 2026* (Latest)</div><div class="kpi-delta up" id="kpi-s5-lead-delta">▲ vs Apr: +0.7K (+3.6%)</div></div>
     <div class="kpi-card"><div class="kpi-label">NURR D1</div><div class="kpi-value" id="kpi-s5-nurrD1">35.8%</div><div class="kpi-sub" id="kpi-s5-nurrD1-sub">May 2026* (Latest)</div><div class="kpi-delta down" id="kpi-s5-nurrD1-delta">▼ vs Apr: −1.7pp</div></div>
-    <div class="kpi-card"><div class="kpi-label">NURR M1</div><div class="kpi-value" id="kpi-s5-nurrM1">—</div><div class="kpi-sub" id="kpi-s5-nurrM1-sub">May 2026* — N/A (partial month)</div><div class="kpi-delta" id="kpi-s5-nurrM1-delta">N/A (partial month)</div></div>
+    <div class="kpi-card"><div class="kpi-label">CAA — Save Action</div><div class="kpi-value" id="kpi-s5-caaSave">—</div><div class="kpi-sub" id="kpi-s5-caaSave-sub">—</div><div class="kpi-delta" id="kpi-s5-caaSave-delta">—</div></div>
     <div class="kpi-card"><div class="kpi-label">Monthly Cost · CPA</div><div class="kpi-value" id="kpi-s5-cost">521.1M ₫</div><div class="kpi-sub" id="kpi-s5-cost-sub">May 2026* (Latest)</div><div class="kpi-delta" id="kpi-s5-cost-delta">CPA: 6,481₫/user</div></div>
+  </div>
+  <div class="month-selector" id="ms-s5" style="margin:12px 0 4px">
+    <button class="month-chip chip-overall active" onclick="selectMonth('s5','overall')">Latest</button>
+    <button class="month-chip chip-jun" onclick="selectMonth('s5','jun')">Jun 2026</button>
+    <button class="month-chip chip-may" onclick="selectMonth('s5','may')">May 2026</button>
+    <button class="month-chip chip-apr" onclick="selectMonth('s5','apr')">Apr 2026</button>
+    <button class="month-chip chip-mar" onclick="selectMonth('s5','mar')">Mar 2026</button>
+    <button class="month-chip chip-feb" onclick="selectMonth('s5','feb')">Feb 2026</button>
+    <button class="month-chip chip-jan" onclick="selectMonth('s5','jan')">Jan 2026</button>
   </div>
 
   <div class="tabs" id="tabs-g5">
@@ -956,30 +965,46 @@ const S5_KPI = {
 };
 
 function updateS5KPIs(month) {
-  const d = S5_KPI[month] || S5_KPI.overall;
-  const set = (id, val, clsId, cls) => {
+  if (!D || !D.growth_channel) return;
+  const gc = D.growth_channel;
+  const keyToIdx = {jan:0, feb:1, mar:2, apr:3, may:4, jun:5};
+  const lastActual = D.months.reduce((a, m, i) => m.includes('*') ? a : i, 0);
+  const i = month === 'overall' ? lastActual : (keyToIdx[month] ?? lastActual);
+  const prev = i > 0 ? i - 1 : null;
+  const mn = D.months[i];
+  const prevMn = prev != null ? D.months[prev] : '';
+
+  const fmtN = v => v==null ? '—' : v>=1e6 ? (v/1e6).toFixed(2)+'M' : v>=1000 ? Math.round(v/1000)+'K' : v.toLocaleString('en');
+  const fmtP = v => v==null ? '—' : (v*100).toFixed(1)+'%';
+  const fmtC = v => v==null ? '—' : v>=1e6 ? (v/1e6).toFixed(1)+'M ₫' : Math.round(v/1000).toLocaleString('en')+'K ₫';
+  const fmtVND = v => v==null ? '—' : Math.round(v).toLocaleString('en')+'₫';
+
+  function delta(cur, prv, isRate) {
+    if (cur==null || prv==null) return '';
+    const diff = cur - prv, pos = diff >= 0;
+    const txt = isRate
+      ? (pos?'+':'')+((diff)*100).toFixed(1)+'pp'
+      : fmtN(Math.abs(diff));
+    return `<span class="${pos?'up':'down'}">${pos?'▲':'▼'} ${txt} vs ${prevMn}</span>`;
+  }
+
+  const caaSave = gc.cost?.[i] && gc.lead_activated?.[i] ? Math.round(gc.cost[i] / gc.lead_activated[i]) : null;
+  const caaSavePrev = prev!=null && gc.cost?.[prev] && gc.lead_activated?.[prev] ? Math.round(gc.cost[prev] / gc.lead_activated[prev]) : null;
+
+  const set = (id, val, sub, dHtml) => {
     const el = document.getElementById(id); if(el) el.textContent = val;
-    const deltaEl = document.getElementById(clsId);
-    if(deltaEl) { deltaEl.textContent = val; deltaEl.className = 'kpi-delta ' + (cls||''); }
+    const se = document.getElementById(id+'-sub'); if(se) se.textContent = sub || mn;
+    const de = document.getElementById(id+'-delta'); if(de) de.innerHTML = dHtml || '—';
   };
-  document.getElementById('kpi-s5-new') && (document.getElementById('kpi-s5-new').textContent = d.new);
-  document.getElementById('kpi-s5-new-sub') && (document.getElementById('kpi-s5-new-sub').textContent = d.label);
-  document.getElementById('kpi-s5-new-delta') && (document.getElementById('kpi-s5-new-delta').textContent = d.dNew, document.getElementById('kpi-s5-new-delta').className = 'kpi-delta ' + d.newClr);
-  document.getElementById('kpi-s5-adv') && (document.getElementById('kpi-s5-adv').textContent = d.adv);
-  document.getElementById('kpi-s5-adv-sub') && (document.getElementById('kpi-s5-adv-sub').textContent = d.label);
-  document.getElementById('kpi-s5-adv-delta') && (document.getElementById('kpi-s5-adv-delta').textContent = d.dAdv, document.getElementById('kpi-s5-adv-delta').className = 'kpi-delta ' + d.advClr);
-  document.getElementById('kpi-s5-lead') && (document.getElementById('kpi-s5-lead').textContent = d.lead);
-  document.getElementById('kpi-s5-lead-sub') && (document.getElementById('kpi-s5-lead-sub').textContent = d.label);
-  document.getElementById('kpi-s5-lead-delta') && (document.getElementById('kpi-s5-lead-delta').textContent = d.dLead, document.getElementById('kpi-s5-lead-delta').className = 'kpi-delta ' + d.leadClr);
-  document.getElementById('kpi-s5-nurrD1') && (document.getElementById('kpi-s5-nurrD1').textContent = d.nD1);
-  document.getElementById('kpi-s5-nurrD1-sub') && (document.getElementById('kpi-s5-nurrD1-sub').textContent = d.label);
-  document.getElementById('kpi-s5-nurrD1-delta') && (document.getElementById('kpi-s5-nurrD1-delta').textContent = d.dD1, document.getElementById('kpi-s5-nurrD1-delta').className = 'kpi-delta ' + d.d1Clr);
-  document.getElementById('kpi-s5-nurrM1') && (document.getElementById('kpi-s5-nurrM1').textContent = d.nM1);
-  document.getElementById('kpi-s5-nurrM1-sub') && (document.getElementById('kpi-s5-nurrM1-sub').textContent = d.nM1sub);
-  document.getElementById('kpi-s5-nurrM1-delta') && (document.getElementById('kpi-s5-nurrM1-delta').textContent = d.dM1, document.getElementById('kpi-s5-nurrM1-delta').className = 'kpi-delta ' + d.m1Clr);
-  document.getElementById('kpi-s5-cost') && (document.getElementById('kpi-s5-cost').textContent = d.cost);
-  document.getElementById('kpi-s5-cost-sub') && (document.getElementById('kpi-s5-cost-sub').textContent = d.label);
-  document.getElementById('kpi-s5-cost-delta') && (document.getElementById('kpi-s5-cost-delta').textContent = d.dCost, document.getElementById('kpi-s5-cost-delta').className = 'kpi-delta ' + d.costClr);
+
+  set('kpi-s5-new',     fmtN(gc.new_users?.[i]),        mn, delta(gc.new_users?.[i], prev!=null?gc.new_users?.[prev]:null, false));
+  set('kpi-s5-adv',     fmtN(gc.adview_activated?.[i]),  mn, delta(gc.adview_activated?.[i], prev!=null?gc.adview_activated?.[prev]:null, false));
+  set('kpi-s5-lead',    fmtN(gc.lead_activated?.[i]),    mn, delta(gc.lead_activated?.[i], prev!=null?gc.lead_activated?.[prev]:null, false));
+  set('kpi-s5-nurrD1',  fmtP(gc.nurr_d1?.[i]),          mn, delta(gc.nurr_d1?.[i], prev!=null?gc.nurr_d1?.[prev]:null, true));
+  set('kpi-s5-caaSave', fmtVND(caaSave),                 mn, delta(caaSave, caaSavePrev, false));
+  const costVal = gc.cost?.[i];
+  const cpaVal  = gc.cpa?.[i];
+  set('kpi-s5-cost', fmtC(costVal), mn, costVal && cpaVal ? `CPA: ${fmtVND(cpaVal)}/user` : costVal ? '' : 'Chưa có data');
 }
 
 // ============================================================
@@ -2255,6 +2280,7 @@ async function initDashboard() {
   updateKPICards(D.months.length-1);
   updateS2KPICards(D.months.length-1);
   updateS3KPICards(D.months.length-1);
+  updateS5KPIs('overall');
   renderCampaignTables();
 
   // Partial month badge — show "* Tháng 6: data đến DD/MM/YYYY"
