@@ -480,7 +480,7 @@ canvas { max-height: 500px; }
       <div class="chart-card"><div class="chart-title">CPA / CAA / CRR Trend (₫)</div><div style="position:relative;height:280px"><canvas id="chartG5Cost"></canvas></div></div>
     </div>
     <div class="chart-card" style="margin-bottom:16px">
-      <div class="chart-title">Monthly Cost vs New Users (bars nhạt = forecast Jun–Dec)</div>
+      <div class="chart-title">Monthly Cost vs New Users (bars nhạt = forecast)</div>
       <div style="position:relative;height:300px"><canvas id="chartG5CostVsUsers"></canvas></div>
     </div>
     <div class="card" style="margin-bottom:16px">
@@ -597,10 +597,8 @@ canvas { max-height: 500px; }
     <div id="budgetPasteZone">
       <table id="budgetTable" onpaste="window.budgetPaste(event)" style="border-collapse:collapse;width:100%;font-size:11px;table-layout:fixed">
         <thead>
-          <tr>
+          <tr id="budgetGroupRow">
             <th rowspan="2" style="background:#1e1b4b;color:white;padding:6px 8px;text-align:left;position:sticky;left:0;z-index:2;width:60px">Vertical</th>
-            <th colspan="5" style="background:#d1fae5;color:#065f46;padding:6px;text-align:center;font-weight:600;border:1px solid #a7f3d0">← actual →</th>
-            <th colspan="7" style="background:#fef3c7;color:#92400e;padding:6px;text-align:center;font-weight:600;border:1px solid #fde68a">← forecast →</th>
           </tr>
           <tr id="budgetMonthRow"></tr>
         </thead>
@@ -2149,7 +2147,7 @@ async function initDashboard() {
     const saved = JSON.parse(localStorage.getItem('budgetData2026'));
     if (saved) {
       const MALL = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      const ACT = 5;
+      const ACT = new Date().getMonth(); // months before current = actual
       const totals = MALL.map((_,i) => ['gds','veh','job','pty','parent'].reduce((s,v)=>s+(saved[v]?.[i]||0),0));
       const gc = D.growth_channel;
       // Include current partial month (ACT = index 5 = Jun) in cost
@@ -2214,7 +2212,8 @@ document.addEventListener('DOMContentLoaded', initDashboard);
     { key:'parent', label:'PARENT' },
   ];
   const MONTHS_ALL = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const ACTUAL_COUNT = 5; // Jan–May are actual
+  // Months before the current month are actual (e.g. in July → Jan–Jun = 6 actual)
+  const ACTUAL_COUNT = new Date().getMonth();
   const ROW_COLORS = { gds:'#eff6ff', veh:'#f0fdf4', job:'#fdf4ff', pty:'#fff7ed', parent:'#f0f9ff' };
 
   // Default data from Google Sheet (screenshot)
@@ -2243,6 +2242,15 @@ document.addEventListener('DOMContentLoaded', initDashboard);
 
   function buildTable() {
     const data = loadData();
+
+    // Group header row (actual / forecast spans)
+    const gRow = document.getElementById('budgetGroupRow');
+    if (gRow) {
+      const fcCount = 12 - ACTUAL_COUNT;
+      gRow.innerHTML = `<th rowspan="2" style="background:#1e1b4b;color:white;padding:6px 8px;text-align:left;position:sticky;left:0;z-index:2;width:60px">Vertical</th>`
+        + (ACTUAL_COUNT > 0 ? `<th colspan="${ACTUAL_COUNT}" style="background:#d1fae5;color:#065f46;padding:6px;text-align:center;font-weight:600;border:1px solid #a7f3d0">← actual →</th>` : '')
+        + (fcCount > 0 ? `<th colspan="${fcCount}" style="background:#fef3c7;color:#92400e;padding:6px;text-align:center;font-weight:600;border:1px solid #fde68a">← forecast →</th>` : '');
+    }
 
     // Month header row
     const mRow = document.getElementById('budgetMonthRow');
