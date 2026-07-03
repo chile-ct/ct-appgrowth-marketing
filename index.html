@@ -217,8 +217,8 @@ canvas { max-height: 500px; }
   </div>
 
   <div class="tabs" id="tabs-new">
-    <button class="tab active" onclick="switchTab('new',1)">By Channel — Monthly</button>
-    <button class="tab" onclick="switchTab('new',2)">By Channel — Daily</button>
+    <button class="tab active" onclick="switchTab('new',0)">By Channel — Monthly</button>
+    <button class="tab" onclick="switchTab('new',1)">By Channel — Daily</button>
   </div>
 
   <div class="tab-content active" id="new-1">
@@ -551,36 +551,35 @@ canvas { max-height: 500px; }
 
   <!-- Tab 4: By Vertical -->
   <div class="tab-content" id="g5-4">
-    <!-- Row 1: Vertical trend + Combined campaign chart -->
-    <div class="charts-grid" style="margin-bottom:16px">
-      <div class="chart-card" style="display:flex;flex-direction:column">
-        <div class="chart-title">New Users by Vertical — Monthly Trend</div>
-        <div style="position:relative;flex:1;min-height:260px"><canvas id="chartVerticalMixAcq"></canvas></div>
-        <div class="note" style="margin-top:8px">Growth channel campaigns (Paid Search + Display + CRM) có tag vertical (PTY/JOB/VEH/GDS). Loại trừ web_to_app campaigns.</div>
-      </div>
-      <div class="chart-card" style="display:flex;flex-direction:column">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:8px">
-          <div>
-            <div class="chart-title" style="margin:0">Campaign Performance by Vertical</div>
-            <div id="campSubtitle" style="font-size:11px;color:#6b7280;margin-top:2px">Data: tháng đang hiển thị</div>
-          </div>
-        </div>
-        <div id="campMetricRow" style="display:flex;gap:6px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
-          <span style="font-size:11px;color:#6b7280;white-space:nowrap">Metric:</span>
-          <button class="vchip active" onclick="switchCampMetric('acq',this)">New Users</button>
-          <button class="vchip" onclick="switchCampMetric('adv',this)">≥20 adview D7</button>
-          <button class="vchip" onclick="switchCampMetric('save',this)">≥1 save D0</button>
-        </div>
-        <div id="campVertChips" style="display:flex;gap:6px;margin-bottom:10px">
-          <button class="vchip active" onclick="renderCampCombined('pty',this)">PTY</button>
-          <button class="vchip" onclick="renderCampCombined('job',this)">JOB</button>
-          <button class="vchip" onclick="renderCampCombined('veh',this)">VEH</button>
-          <button class="vchip" onclick="renderCampCombined('gds',this)">GDS</button>
-        </div>
-        <div style="position:relative;flex:1;min-height:300px"><canvas id="chartCampAcq"></canvas></div>
-      </div>
+    <!-- Row 1: Vertical trend (full width) -->
+    <div class="chart-card" style="margin-bottom:16px">
+      <div class="chart-title">New Users by Vertical — Monthly Trend</div>
+      <div style="position:relative;height:280px"><canvas id="chartVerticalMixAcq"></canvas></div>
+      <div class="note" style="margin-top:8px">Growth channel campaigns (Paid Search + Display + CRM + Social) có tag vertical (PTY/JOB/VEH/GDS). Loại trừ web_to_app campaigns.</div>
     </div>
-    <!-- Row 2: Detail table full width -->
+    <!-- Row 2: Campaign chart (full width) -->
+    <div class="chart-card" style="margin-bottom:16px;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+        <div>
+          <div class="chart-title" style="margin:0">Campaign Performance by Vertical</div>
+          <div id="campSubtitle" style="font-size:11px;color:#6b7280;margin-top:2px">Data: tháng đang hiển thị</div>
+        </div>
+      </div>
+      <div id="campMetricRow" style="display:flex;gap:6px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
+        <span style="font-size:11px;color:#6b7280;white-space:nowrap">Metric:</span>
+        <button class="vchip active" onclick="switchCampMetric('acq',this)">New Users</button>
+        <button class="vchip" onclick="switchCampMetric('adv',this)">≥20 adview D7</button>
+        <button class="vchip" onclick="switchCampMetric('save',this)">≥1 save D0</button>
+      </div>
+      <div id="campVertChips" style="display:flex;gap:6px;margin-bottom:10px">
+        <button class="vchip active" onclick="renderCampCombined('pty',this)">PTY</button>
+        <button class="vchip" onclick="renderCampCombined('job',this)">JOB</button>
+        <button class="vchip" onclick="renderCampCombined('veh',this)">VEH</button>
+        <button class="vchip" onclick="renderCampCombined('gds',this)">GDS</button>
+      </div>
+      <div style="position:relative;height:320px"><canvas id="chartCampAcq"></canvas></div>
+    </div>
+    <!-- Row 3: Detail table full width -->
     <div class="card">
       <div class="card-title">New Users by Vertical — Monthly Detail</div>
       <div style="overflow-x:auto"><table id="vertDetailTable"></table></div>
@@ -1092,7 +1091,7 @@ function renderAllCharts() {
 
   // S2 charts
   makeChart('chartNewOverview','line',MONTHS,[L('New App MAU',ov.new_mau,C.blue)],{noAR:true});
-  deferTo('new-1',()=>{
+  deferTo('new-0',()=>{
     const ctx=document.getElementById('chartNewChannel'); if(!ctx)return;
     const existing=Object.values(Chart.instances||{}).find(c=>c.canvas?.id==='chartNewChannel');
     if(existing)existing.destroy();
@@ -1526,7 +1525,7 @@ function switchTab(g,idx){
   document.querySelectorAll(`#tabs-${g} .tab`).forEach((t,i)=>t.classList.toggle('active',i===idx));
   document.querySelectorAll(`[id^="${g}-"]`).forEach((c,i)=>c.classList.toggle('active',i===idx));
   if (g==='act' && idx===2 && typeof renderDailyActCharts==='function') renderDailyActCharts();
-  if (g==='new' && idx===2 && typeof renderDailyNewCharts==='function') renderDailyNewCharts();
+  if (g==='new' && idx===1 && typeof renderDailyNewCharts==='function') renderDailyNewCharts();
   const key=g+'-'+idx;
   if(_pendingTabRenders[key]){
     const pending=_pendingTabRenders[key];
