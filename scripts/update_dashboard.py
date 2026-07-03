@@ -312,8 +312,10 @@ try:
         FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
         WHERE return_status = 'new'
           AND campaign NOT IN ('all', '(none)')
-          AND channel = 'all'
+          AND channel NOT IN ('all', 'Direct', 'Organic Search')
           AND vertical_user = 'all'
+          AND LOWER(campaign) NOT LIKE '%web_to_app%'
+          AND LOWER(campaign) NOT LIKE '%web2app%'
           AND visit_date >= '2026-01-01' AND visit_date < '{last_full_end}'
         GROUP BY 1, 2, 3
         HAVING SUM(d0) >= 100
@@ -373,8 +375,10 @@ try:
     FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
     WHERE return_status = 'new'
       AND campaign NOT IN ('all', '(none)')
-      AND channel = 'all'
+      AND channel NOT IN ('all', 'Direct', 'Organic Search')
       AND vertical_user = 'all'
+      AND LOWER(campaign) NOT LIKE '%web_to_app%'
+      AND LOWER(campaign) NOT LIKE '%web2app%'
       AND visit_date >= '2026-01-01'
     GROUP BY 1, 2
     ORDER BY 1, 2
