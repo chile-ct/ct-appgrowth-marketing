@@ -217,31 +217,11 @@ canvas { max-height: 500px; }
   </div>
 
   <div class="tabs" id="tabs-new">
-    <button class="tab active" onclick="switchTab('new',0)">Overview</button>
-    <button class="tab" onclick="switchTab('new',1)">By Channel — Monthly</button>
+    <button class="tab active" onclick="switchTab('new',1)">By Channel — Monthly</button>
     <button class="tab" onclick="switchTab('new',2)">By Channel — Daily</button>
   </div>
 
-  <div class="tab-content active" id="new-0">
-    <div class="chart-card" style="margin-bottom:16px">
-      <div class="chart-title">New App MAU Trend</div>
-      <div style="position:relative;height:280px"><canvas id="chartNewOverview"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-title">New App MAU & Daily New DAU — Total</div>
-      <div style="overflow-x:auto">
-      <table id="s2OverviewTable">
-        <thead><tr><th>Metric</th><th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th class="apr">May*</th></tr></thead>
-        <tbody>
-          <tr class="total-row"><td>New App MAU</td><td>261,241</td><td>234,333</td><td>344,562</td><td>293,506</td><td class="apr">295,688</td></tr>
-          <tr><td>Avg Daily New DAU</td><td>8,429</td><td>8,370</td><td>11,116</td><td>9,785</td><td class="apr">9,538</td></tr>
-        </tbody>
-      </table>
-      </div>
-    </div>
-  </div>
-
-  <div class="tab-content" id="new-1">
+  <div class="tab-content active" id="new-1">
     <div class="chart-card" style="margin-bottom:16px">
       <div class="chart-title">New App MAU by Channel</div>
       <div style="position:relative;height:280px"><canvas id="chartNewChannel"></canvas></div>
@@ -590,7 +570,6 @@ canvas { max-height: 500px; }
           <button class="vchip active" onclick="switchCampMetric('acq',this)">New Users</button>
           <button class="vchip" onclick="switchCampMetric('adv',this)">≥20 adview D7</button>
           <button class="vchip" onclick="switchCampMetric('save',this)">≥1 save D0</button>
-          <button class="vchip" onclick="switchCampMetric('rate',this)">Save D0 Rate</button>
         </div>
         <div id="campVertChips" style="display:flex;gap:6px;margin-bottom:10px">
           <button class="vchip active" onclick="renderCampCombined('pty',this)">PTY</button>
@@ -1113,7 +1092,39 @@ function renderAllCharts() {
 
   // S2 charts
   makeChart('chartNewOverview','line',MONTHS,[L('New App MAU',ov.new_mau,C.blue)],{noAR:true});
-  deferTo('new-1',()=>makeChart('chartNewChannel','bar',MONTHS,[B('Direct',ac.direct,C.blue),B('Organic Search',ac.organic,C.green),B('Growth (P+D+CRM)',ac.growth,C.orange),B('(Other)',ac.other,C.gray)],{noAR:true}));
+  deferTo('new-1',()=>{
+    const ctx=document.getElementById('chartNewChannel'); if(!ctx)return;
+    const existing=Object.values(Chart.instances||{}).find(c=>c.canvas?.id==='chartNewChannel');
+    if(existing)existing.destroy();
+    const fmtK=v=>v==null?'':v>=1000?(v/1000).toFixed(1)+'K':String(Math.round(v));
+    new Chart(ctx,{
+      data:{
+        labels:MONTHS,
+        datasets:[
+          {type:'bar',label:'Direct',data:ac.direct,backgroundColor:C.blue+'99',borderColor:C.blue,borderWidth:1,borderRadius:2,stack:'s'},
+          {type:'bar',label:'Organic Search',data:ac.organic,backgroundColor:C.green+'99',borderColor:C.green,borderWidth:1,borderRadius:2,stack:'s'},
+          {type:'bar',label:'Growth (P+D+CRM+Social)',data:ac.growth,backgroundColor:C.orange+'99',borderColor:C.orange,borderWidth:1,borderRadius:2,stack:'s'},
+          {type:'bar',label:'(Other)',data:ac.other,backgroundColor:C.gray+'99',borderColor:C.gray,borderWidth:1,borderRadius:2,stack:'s'},
+          {type:'line',label:'Total New App MAU',data:ov.new_mau,borderColor:'#1e293b',backgroundColor:'#1e293b22',borderWidth:2,pointRadius:3,pointHoverRadius:5,tension:0.3,yAxisID:'y',stack:undefined},
+        ]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        scales:{
+          x:{stacked:true,grid:{display:false},ticks:{font:{size:10}}},
+          y:{stacked:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>fmtK(v)}}
+        },
+        plugins:{
+          legend:{position:'top',labels:{font:{size:11},padding:6,boxWidth:12}},
+          tooltip:{callbacks:{label:c=>{
+            const v=c.parsed.y; if(v==null)return null;
+            const tot=ov.new_mau[c.dataIndex]||1;
+            return c.dataset.type==='line'?` Total: ${fmtK(v)}`:` ${c.dataset.label}: ${fmtK(v)} (${((v/tot)*100).toFixed(1)}%)`;
+          }}}
+        }
+      }
+    });
+  });
 
   // S3 Activation: dual-axis bar+line
   (function(){
@@ -1877,12 +1888,17 @@ function renderCampaignTables() {
       ? D.months.map((_, i) => Math.max(0, (gcNew[i]||0) - vertTotals[i]))
       : null;
     const chartDatasets = VERT_DEFS.map((v, di) => ({
-      label: v.label, data: datasets[di],
-      backgroundColor: v.color+'cc', borderColor: v.color, borderWidth:1, borderRadius:2,
+      type: 'bar', label: v.label, data: datasets[di],
+      backgroundColor: v.color+'cc', borderColor: v.color, borderWidth:1, borderRadius:2, stack:'s',
     }));
     if (otherData) chartDatasets.push({
-      label: 'Other', data: otherData,
-      backgroundColor: '#94a3b8cc', borderColor: '#94a3b8', borderWidth:1, borderRadius:2,
+      type: 'bar', label: 'Other', data: otherData,
+      backgroundColor: '#94a3b8cc', borderColor: '#94a3b8', borderWidth:1, borderRadius:2, stack:'s',
+    });
+    if (isNewUsers) chartDatasets.push({
+      type: 'line', label: 'Total Growth', data: colTotals,
+      borderColor: '#1e293b', backgroundColor: '#1e293b22', borderWidth: 2,
+      pointRadius: 3, pointHoverRadius: 5, tension: 0.3, stack: undefined,
     });
     new Chart(ctx, {
       type: 'bar',
