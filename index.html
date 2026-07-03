@@ -440,7 +440,7 @@ canvas { max-height: 500px; }
   <div class="kpi-grid" style="grid-template-columns:repeat(6,1fr)" id="s5-kpis">
     <div class="kpi-card"><div class="kpi-label">New Users (Growth)</div><div class="kpi-value" id="kpi-s5-new">80.4K</div><div class="kpi-sub" id="kpi-s5-new-sub">May 2026* (Latest)</div><div class="kpi-delta up" id="kpi-s5-new-delta">▲ vs Apr: +4.6K (+6.1%)</div></div>
     <div class="kpi-card"><div class="kpi-label">Monthly Activated (adview)</div><div class="kpi-value" id="kpi-s5-adv">22.2K</div><div class="kpi-sub" id="kpi-s5-adv-sub">May 2026* (Latest)</div><div class="kpi-delta up" id="kpi-s5-adv-delta">▲ vs Apr: +1.9K (+9.3%)</div></div>
-    <div class="kpi-card"><div class="kpi-label">Monthly Activated (lead)</div><div class="kpi-value" id="kpi-s5-lead">19.6K</div><div class="kpi-sub" id="kpi-s5-lead-sub">May 2026* (Latest)</div><div class="kpi-delta up" id="kpi-s5-lead-delta">▲ vs Apr: +0.7K (+3.6%)</div></div>
+    <div class="kpi-card"><div class="kpi-label">Monthly Activated (save D0)</div><div class="kpi-value" id="kpi-s5-lead">19.6K</div><div class="kpi-sub" id="kpi-s5-lead-sub">May 2026* (Latest)</div><div class="kpi-delta up" id="kpi-s5-lead-delta">▲ vs Apr: +0.7K (+3.6%)</div></div>
     <div class="kpi-card"><div class="kpi-label">NURR D1</div><div class="kpi-value" id="kpi-s5-nurrD1">35.8%</div><div class="kpi-sub" id="kpi-s5-nurrD1-sub">May 2026* (Latest)</div><div class="kpi-delta down" id="kpi-s5-nurrD1-delta">▼ vs Apr: −1.7pp</div></div>
     <div class="kpi-card"><div class="kpi-label">NURR M1</div><div class="kpi-value" id="kpi-s5-nurrM1">—</div><div class="kpi-sub" id="kpi-s5-nurrM1-sub">May 2026* — N/A (partial month)</div><div class="kpi-delta" id="kpi-s5-nurrM1-delta">N/A (partial month)</div></div>
     <div class="kpi-card"><div class="kpi-label">Monthly Cost · CPA</div><div class="kpi-value" id="kpi-s5-cost">521.1M ₫</div><div class="kpi-sub" id="kpi-s5-cost-sub">May 2026* (Latest)</div><div class="kpi-delta" id="kpi-s5-cost-delta">CPA: 6,481₫/user</div></div>
@@ -457,7 +457,7 @@ canvas { max-height: 500px; }
   <!-- Tab 0: Overview -->
   <div class="tab-content active" id="g5-0">
     <div class="charts-grid" style="margin-bottom:16px">
-      <div class="chart-card"><div class="chart-title">New Users vs Activated (≥20 adview D7 & ≥1 lead D7) — Growth Channel</div><div style="position:relative;height:280px"><canvas id="chartG5Overview"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">New Users vs Activated (≥20 adview D7 & ≥1 save D0) — Growth Channel</div><div style="position:relative;height:280px"><canvas id="chartG5Overview"></canvas></div></div>
       <div class="chart-card"><div class="chart-title">CPA / CAA / CRR Trend (₫)</div><div style="position:relative;height:280px"><canvas id="chartG5Cost"></canvas></div></div>
     </div>
     <div class="chart-card" style="margin-bottom:16px">
@@ -467,7 +467,7 @@ canvas { max-height: 500px; }
     <div class="card" style="margin-bottom:16px">
       <div class="card-title">Growth Channel — All Metrics Summary</div>
       <div style="overflow-x:auto"><table id="g5SummaryTable"></table></div>
-      <div class="note">Cost = tổng 5 dòng "app growth" từ sheet Data for Claude | ↓ = best trong kỳ | Activated combine = MAX(adview, lead)</div>
+      <div class="note">Cost = tổng 5 dòng "app growth" từ sheet Data for Claude | ↓ = best trong kỳ | Activated combine = MAX(adview, save)</div>
     </div>
     <div class="card" id="campaignOverviewCard">
       <div class="card-title">🎯 Top Campaigns — Combined Score: New Users × Activation Rate × NURR D1</div>
@@ -532,50 +532,38 @@ canvas { max-height: 500px; }
 
   <!-- Tab 4: By Vertical -->
   <div class="tab-content" id="g5-4">
-    <!-- Row 1: Vertical trend chart + detail table -->
+    <!-- Row 1: Vertical trend + Combined campaign chart -->
     <div class="charts-grid" style="margin-bottom:16px">
       <div class="chart-card" style="display:flex;flex-direction:column">
         <div class="chart-title">New Users by Vertical — Monthly Trend</div>
         <div style="position:relative;flex:1;min-height:260px"><canvas id="chartVerticalMixAcq"></canvas></div>
         <div class="note" style="margin-top:8px">Campaigns tagged với vertical trong BQ. Untagged "(none)" không tính vào đây.</div>
       </div>
-      <div class="card">
-        <div class="card-title">New Users by Vertical — Monthly Detail</div>
-        <div style="overflow-x:auto"><table id="vertDetailTable"></table></div>
+      <div class="chart-card" style="display:flex;flex-direction:column">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+          <div>
+            <div class="chart-title" style="margin:0">Campaign Performance by Vertical</div>
+            <div id="campSubtitle" style="font-size:11px;color:#6b7280;margin-top:2px">Data: tháng đang hiển thị</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center">
+          <span style="font-size:11px;color:#6b7280;white-space:nowrap">Metric:</span>
+          <button class="vchip active" id="campMetricAcq" onclick="switchCampMetric('acq',this)">New Users</button>
+          <button class="vchip" id="campMetricAct" onclick="switchCampMetric('act',this)">Save D0 Rate</button>
+        </div>
+        <div id="campVertChips" style="display:flex;gap:6px;margin-bottom:10px">
+          <button class="vchip active" onclick="renderCampCombined('pty',this)">PTY</button>
+          <button class="vchip" onclick="renderCampCombined('job',this)">JOB</button>
+          <button class="vchip" onclick="renderCampCombined('veh',this)">VEH</button>
+          <button class="vchip" onclick="renderCampCombined('gds',this)">GDS</button>
+        </div>
+        <div style="position:relative;flex:1;min-height:300px"><canvas id="chartCampAcq"></canvas></div>
       </div>
     </div>
-    <!-- Row 2: Campaign charts side by side -->
-    <div class="charts-grid" style="margin-bottom:16px">
-      <div class="chart-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-          <div>
-            <div class="chart-title" style="margin:0">New Users by Campaign</div>
-            <div id="campAcqSubtitle" style="font-size:11px;color:#6b7280;margin-top:2px">Data: tháng đang hiển thị</div>
-          </div>
-          <div id="campAcqChips" style="display:flex;gap:6px">
-            <button class="vchip active" onclick="renderCampChart('acq','pty',this)">PTY</button>
-            <button class="vchip" onclick="renderCampChart('acq','job',this)">JOB</button>
-            <button class="vchip" onclick="renderCampChart('acq','veh',this)">VEH</button>
-            <button class="vchip" onclick="renderCampChart('acq','gds',this)">GDS</button>
-          </div>
-        </div>
-        <div style="position:relative;height:340px"><canvas id="chartCampAcq"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-          <div>
-            <div class="chart-title" style="margin:0">Activation Rate by Campaign</div>
-            <div id="campActSubtitle" style="font-size:11px;color:#6b7280;margin-top:2px">Data: tháng đang hiển thị</div>
-          </div>
-          <div id="campActChips" style="display:flex;gap:6px">
-            <button class="vchip active" onclick="renderCampChart('act','pty',this)">PTY</button>
-            <button class="vchip" onclick="renderCampChart('act','job',this)">JOB</button>
-            <button class="vchip" onclick="renderCampChart('act','veh',this)">VEH</button>
-            <button class="vchip" onclick="renderCampChart('act','gds',this)">GDS</button>
-          </div>
-        </div>
-        <div style="position:relative;height:340px"><canvas id="chartCampAct"></canvas></div>
-      </div>
+    <!-- Row 2: Detail table full width -->
+    <div class="card">
+      <div class="card-title">New Users by Vertical — Monthly Detail</div>
+      <div style="overflow-x:auto"><table id="vertDetailTable"></table></div>
     </div>
   </div>
 
@@ -1280,7 +1268,7 @@ function renderAllCharts() {
     new Chart(ctx,{type:'bar',data:{labels:MONTHS,datasets:[
       B('New App Users',gc.new_users,C.gray),
       B('Activated ≥20 adview D7',gc.adview_activated,C.blue),
-      B('Activated ≥1 lead D7',gc.lead_activated,C.green)
+      B('Activated ≥1 save D0',gc.lead_activated,C.green)
     ]},options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:12}}},
         tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${(c.parsed.y/1000).toFixed(0)}K`}}},
@@ -1309,9 +1297,9 @@ function renderAllCharts() {
     const ctx=document.getElementById('chartG5Act'); if(!ctx)return;
     new Chart(ctx,{type:'bar',data:{labels:MONTHS,datasets:[
       {label:'Monthly Activated ≥20 adview D7',data:gc.adview_activated,backgroundColor:C.blue+'cc',borderColor:C.blue,borderWidth:1,borderRadius:4,yAxisID:'y'},
-      {label:'Monthly Activated ≥1 lead D7',data:gc.lead_activated,backgroundColor:C.green+'cc',borderColor:C.green,borderWidth:1,borderRadius:4,yAxisID:'y'},
-      {label:'Activation rate (≥20 adview D7)',data:gc.adview_rate,type:'line',borderColor:C.orange,backgroundColor:'transparent',tension:0.4,pointRadius:4,borderWidth:2,yAxisID:'y1'},
-      {label:'Activation rate (≥1 lead D7)',data:gc.lead_rate,type:'line',borderColor:C.red,backgroundColor:'transparent',tension:0.4,pointRadius:4,borderWidth:2,borderDash:[4,4],yAxisID:'y1'}
+      {label:'Monthly Activated ≥1 save D0',data:gc.lead_activated,backgroundColor:C.green+'cc',borderColor:C.green,borderWidth:1,borderRadius:4,yAxisID:'y'},
+      {label:'20 adview D7 rate',data:gc.adview_rate,type:'line',borderColor:C.orange,backgroundColor:'transparent',tension:0.4,pointRadius:4,borderWidth:2,yAxisID:'y1'},
+      {label:'Save D0 rate',data:gc.lead_rate,type:'line',borderColor:C.red,backgroundColor:'transparent',tension:0.4,pointRadius:4,borderWidth:2,borderDash:[4,4],yAxisID:'y1'}
     ]},options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}},
         tooltip:{callbacks:{label:c=>{const v=c.parsed.y;if(c.dataset.yAxisID==='y1')return ` ${c.dataset.label}: ${(v*100).toFixed(1)}%`;return ` ${c.dataset.label}: ${(v/1000).toFixed(0)}K`;}}}},
@@ -1641,7 +1629,11 @@ function renderCampaignTables() {
   // All campaigns from data.json — may span multiple months
   const allCamps = (D.campaigns||[]).filter(r=>r.name!=='(none)');
   // Default month = latest full month present in campaigns
-  const campMonths = [...new Set(allCamps.map(r=>r.month))].sort();
+  const MO={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  const campMonths = [...new Set(allCamps.map(r=>r.month))].sort((a,b)=>{
+    const [am,ay]=a.split(' '), [bm,by]=b.split(' ');
+    return parseInt(ay)!==parseInt(by)?parseInt(ay)-parseInt(by):MO[am]-MO[bm];
+  });
   let currentCampMonth = campMonths[campMonths.length-1] || '';
 
   function getCampForMonth(m) {
@@ -1694,27 +1686,37 @@ function renderCampaignTables() {
     });
   }
 
-  function updateCampSubtitles(monthLabel) {
-    const s1=document.getElementById('campAcqSubtitle'); if(s1) s1.textContent=`Data: ${monthLabel}`;
-    const s2=document.getElementById('campActSubtitle'); if(s2) s2.textContent=`Data: ${monthLabel}`;
+  let currentCampMetric = 'acq';
+
+  function updateCampSubtitle(monthLabel) {
+    const s=document.getElementById('campSubtitle'); if(s) s.textContent=`Data: ${monthLabel}`;
+  }
+
+  function _drawCampCombined(vert) {
+    const data = getCampForMonth(currentCampMonth);
+    if(currentCampMetric==='acq') drawHBar('chartCampAcq', data.acq[vert]||[], 'new_users',       fmtUsers, vertColors[vert]);
+    else                          drawHBar('chartCampAcq', data.act[vert]||[], 'activation_rate', fmtRate,  vertColors[vert]);
   }
 
   window.refreshCampCharts = function(monthLabel) {
     currentCampMonth = monthLabel;
-    updateCampSubtitles(monthLabel);
-    const data = getCampForMonth(monthLabel);
-    const acqVert = (document.querySelector('#campAcqChips .vchip.active')||{}).textContent?.toLowerCase() || 'pty';
-    const actVert = (document.querySelector('#campActChips .vchip.active')||{}).textContent?.toLowerCase() || 'pty';
-    drawHBar('chartCampAcq', data.acq[acqVert]||[], 'new_users',       fmtUsers, vertColors[acqVert]);
-    drawHBar('chartCampAct', data.act[actVert]||[], 'activation_rate', fmtRate,  vertColors[actVert]);
+    updateCampSubtitle(monthLabel);
+    const vert = (document.querySelector('#campVertChips .vchip.active')||{}).textContent?.toLowerCase() || 'pty';
+    _drawCampCombined(vert);
   };
 
-  window.renderCampChart = function(tab, vert, btn) {
-    btn.parentElement.querySelectorAll('.vchip').forEach(b=>b.classList.remove('active'));
+  window.switchCampMetric = function(metric, btn) {
+    currentCampMetric = metric;
+    document.querySelectorAll('#campMetricAcq,#campMetricAct').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
-    const data = getCampForMonth(currentCampMonth);
-    if(tab==='acq') drawHBar('chartCampAcq', data.acq[vert]||[], 'new_users',       fmtUsers, vertColors[vert]);
-    else             drawHBar('chartCampAct', data.act[vert]||[], 'activation_rate', fmtRate,  vertColors[vert]);
+    const vert = (document.querySelector('#campVertChips .vchip.active')||{}).textContent?.toLowerCase() || 'pty';
+    _drawCampCombined(vert);
+  };
+
+  window.renderCampCombined = function(vert, btn) {
+    document.querySelectorAll('#campVertChips .vchip').forEach(b=>b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    _drawCampCombined(vert);
   };
 
   // Vertical mix stacked bar — monthly trend from vertical_monthly in data.json
@@ -1779,14 +1781,12 @@ function renderCampaignTables() {
   // Defer g5-2: chartVerticalMixAct
   (_pendingTabRenders['g5-2']=_pendingTabRenders['g5-2']||[]).push(()=>makeVertStacked('chartVerticalMixAct','_activated'));
 
-  // Defer g5-4: vertical trend + detail table + campaign charts
-  updateCampSubtitles(currentCampMonth);
+  // Defer g5-4: vertical trend + detail table + combined campaign chart
+  updateCampSubtitle(currentCampMonth);
   (_pendingTabRenders['g5-4']=_pendingTabRenders['g5-4']||[]).push(()=>{
     makeVertStacked('chartVerticalMixAcq','_new_users');
     renderVertDetailTable();
-    const initData=getCampForMonth(currentCampMonth);
-    drawHBar('chartCampAcq',initData.acq.pty,'new_users',fmtUsers,C.blue);
-    drawHBar('chartCampAct',initData.act.pty,'activation_rate',fmtRate,C.blue);
+    _drawCampCombined('pty');
   });
 }
 
@@ -1830,9 +1830,9 @@ function renderGrowthTables() {
     {lbl:'Monthly Activated',arr:gc.adview_activated,fmt:fmtN,cls:'total-row'},
     {lbl:'Activation rate',arr:gc.adview_rate,fmt:fmtP,rate:true},
     {lbl:'Daily Activated',arr:gc.adview_daily,fmt:fmtN},
-    {sec:'≥1 Lead D7'},
+    {sec:'≥1 Save D0'},
     {lbl:'Monthly Activated',arr:gc.lead_activated,fmt:fmtN,cls:'total-row'},
-    {lbl:'Activation rate',arr:gc.lead_rate,fmt:fmtP,rate:true},
+    {lbl:'Save D0 rate',arr:gc.lead_rate,fmt:fmtP,rate:true},
     {lbl:'Daily Activated',arr:gc.lead_daily,fmt:fmtN}
   ]);
 
@@ -1855,9 +1855,9 @@ function renderGrowthTables() {
     {sec:'Activation (≥20 adview D7)'},
     {lbl:'Monthly Activated',arr:gc.adview_activated,fmt:fmtN,cls:'total-row'},
     {lbl:'Activation rate',arr:gc.adview_rate,fmt:fmtP,rate:true},
-    {sec:'Activation (≥1 lead D7)'},
+    {sec:'Activation (≥1 save D0)'},
     {lbl:'Monthly Activated',arr:gc.lead_activated,fmt:fmtN,cls:'total-row'},
-    {lbl:'Activation rate',arr:gc.lead_rate,fmt:fmtP,rate:true},
+    {lbl:'Save D0 rate',arr:gc.lead_rate,fmt:fmtP,rate:true},
     {sec:'Retention (Growth Channel Users)'},
     {lbl:'Growth Retention D1',arr:gc.nurr_d1,fmt:fmtP,rate:true},
     {lbl:'Growth Retention D7',arr:gc.nurr_d7,fmt:fmtP,rate:true},
