@@ -546,10 +546,12 @@ canvas { max-height: 500px; }
             <div id="campSubtitle" style="font-size:11px;color:#6b7280;margin-top:2px">Data: tháng đang hiển thị</div>
           </div>
         </div>
-        <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center">
+        <div id="campMetricRow" style="display:flex;gap:6px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
           <span style="font-size:11px;color:#6b7280;white-space:nowrap">Metric:</span>
-          <button class="vchip active" id="campMetricAcq" onclick="switchCampMetric('acq',this)">New Users</button>
-          <button class="vchip" id="campMetricAct" onclick="switchCampMetric('act',this)">Save D0 Rate</button>
+          <button class="vchip active" onclick="switchCampMetric('acq',this)">New Users</button>
+          <button class="vchip" onclick="switchCampMetric('adv',this)">≥20 adview D7</button>
+          <button class="vchip" onclick="switchCampMetric('save',this)">≥1 save D0</button>
+          <button class="vchip" onclick="switchCampMetric('rate',this)">Save D0 Rate</button>
         </div>
         <div id="campVertChips" style="display:flex;gap:6px;margin-bottom:10px">
           <button class="vchip active" onclick="renderCampCombined('pty',this)">PTY</button>
@@ -1638,20 +1640,17 @@ function renderCampaignTables() {
 
   function getCampForMonth(m) {
     const rows = allCamps.filter(r=>r.month===m);
-    const byU = [...rows].sort((a,b)=>b.new_users-a.new_users);
+    const sortBy = (key) => (v) => ({
+      pty: [...rows].filter(r=>r.vertical==='pty').sort((a,b)=>(b[key]||0)-(a[key]||0)),
+      job: [...rows].filter(r=>r.vertical==='job').sort((a,b)=>(b[key]||0)-(a[key]||0)),
+      veh: [...rows].filter(r=>r.vertical==='veh').sort((a,b)=>(b[key]||0)-(a[key]||0)),
+      gds: [...rows].filter(r=>r.vertical==='gds').sort((a,b)=>(b[key]||0)-(a[key]||0)),
+    });
     return {
-      acq: {
-        pty: byU.filter(r=>r.vertical==='pty'),
-        job: byU.filter(r=>r.vertical==='job'),
-        veh: byU.filter(r=>r.vertical==='veh'),
-        gds: byU.filter(r=>r.vertical==='gds'),
-      },
-      act: {
-        pty: [...rows].filter(r=>r.vertical==='pty').sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)),
-        job: [...rows].filter(r=>r.vertical==='job').sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)),
-        veh: [...rows].filter(r=>r.vertical==='veh').sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)),
-        gds: [...rows].filter(r=>r.vertical==='gds').sort((a,b)=>(b.activation_rate||0)-(a.activation_rate||0)),
-      }
+      acq:  sortBy('new_users')(),
+      adv:  sortBy('activated_adview')(),
+      save: sortBy('activated_lead')(),
+      act:  sortBy('activation_rate')(),
     };
   }
 
@@ -1694,8 +1693,10 @@ function renderCampaignTables() {
 
   function _drawCampCombined(vert) {
     const data = getCampForMonth(currentCampMonth);
-    if(currentCampMetric==='acq') drawHBar('chartCampAcq', data.acq[vert]||[], 'new_users',       fmtUsers, vertColors[vert]);
-    else                          drawHBar('chartCampAcq', data.act[vert]||[], 'activation_rate', fmtRate,  vertColors[vert]);
+    if     (currentCampMetric==='acq')  drawHBar('chartCampAcq', data.acq[vert]||[],  'new_users',        fmtUsers, vertColors[vert]);
+    else if(currentCampMetric==='adv')  drawHBar('chartCampAcq', data.adv[vert]||[],  'activated_adview', fmtUsers, vertColors[vert]);
+    else if(currentCampMetric==='save') drawHBar('chartCampAcq', data.save[vert]||[], 'activated_lead',   fmtUsers, vertColors[vert]);
+    else                                drawHBar('chartCampAcq', data.act[vert]||[],  'activation_rate',  fmtRate,  vertColors[vert]);
   }
 
   window.refreshCampCharts = function(monthLabel) {
@@ -1707,7 +1708,7 @@ function renderCampaignTables() {
 
   window.switchCampMetric = function(metric, btn) {
     currentCampMetric = metric;
-    document.querySelectorAll('#campMetricAcq,#campMetricAct').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('#campMetricRow .vchip').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     const vert = (document.querySelector('#campVertChips .vchip.active')||{}).textContent?.toLowerCase() || 'pty';
     _drawCampCombined(vert);
