@@ -187,14 +187,14 @@ canvas { max-height: 500px; }
       <thead><tr><th>Metric</th><th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th class="apr">May*</th></tr></thead>
       <tbody>
         <tr class="total-row"><td>Total App MAU (Android+iOS)</td><td>1,394,597</td><td>1,296,533</td><td>1,551,037</td><td>1,472,750</td><td class="apr">1,489,715</td></tr>
+        <tr><td>↳ Avg Daily DAU</td><td>225,026</td><td>204,524</td><td>252,967</td><td>240,367</td><td class="apr">235,047</td></tr>
         <tr><td>↳ App MAU (login)</td><td>1,030,263</td><td>1,011,227</td><td>1,248,085</td><td>1,204,341</td><td class="apr">1,211,386</td></tr>
         <tr><td>↳ % login / Total App MAU</td><td>73.9%</td><td>78.0%</td><td>80.5%</td><td>81.8%</td><td class="apr">81.3%</td></tr>
-        <tr><td>↳ Avg Daily DAU</td><td>225,026</td><td>204,524</td><td>252,967</td><td>240,367</td><td class="apr">235,047</td></tr>
-        <tr><td>% App MAU / Total Chotot</td><td>22.3%</td><td>28.1%</td><td>21.8%</td><td>24.5%</td><td class="apr">24.8%</td></tr>
         <tr class="sep"><td>New App MAU</td><td>261,241</td><td>234,333</td><td>344,562</td><td>293,506</td><td class="apr">295,688</td></tr>
+        <tr><td>↳ Avg Daily New DAU</td><td>8,429</td><td>8,370</td><td>11,116</td><td>9,785</td><td class="apr">9,538</td></tr>
         <tr><td>↳ New App MAU (login)</td><td>120,641</td><td>151,255</td><td>246,121</td><td>209,296</td><td class="apr">196,680</td></tr>
         <tr><td>↳ % login / New App MAU</td><td>46.2%</td><td>64.5%</td><td>71.4%</td><td>71.3%</td><td class="apr">66.5%</td></tr>
-        <tr><td>↳ Avg Daily New DAU</td><td>8,429</td><td>8,370</td><td>11,116</td><td>9,785</td><td class="apr">9,538</td></tr>
+        <tr><td>% App MAU / Total Chotot</td><td>22.3%</td><td>28.1%</td><td>21.8%</td><td>24.5%</td><td class="apr">24.8%</td></tr>
       </tbody>
     </table>
     </div>
@@ -223,6 +223,7 @@ canvas { max-height: 500px; }
   <div class="tabs" id="tabs-new">
     <button class="tab active" onclick="switchTab('new',0)">By Channel — Monthly</button>
     <button class="tab" onclick="switchTab('new',1)">By Channel — Daily</button>
+    <button class="tab" onclick="switchTab('new',2)">By Vertical</button>
   </div>
 
   <div class="tab-content active" id="new-1">
@@ -281,6 +282,14 @@ canvas { max-height: 500px; }
       </div>
     </div>
   </div>
+
+  <div class="tab-content" id="new-3">
+    <div class="chart-card" style="margin-bottom:16px">
+      <div class="chart-title">New App MAU by Vertical — Monthly Trend (Growth Channel)</div>
+      <div style="position:relative;height:280px"><canvas id="chartNewVertical"></canvas></div>
+      <div class="note" style="margin-top:8px">Data coming soon — vertical breakdown for all new users not yet available. Currently showing Growth channel vertical data only.</div>
+    </div>
+  </div>
 </div>
 
 <div class="divider"></div>
@@ -303,6 +312,7 @@ canvas { max-height: 500px; }
     <button class="tab active" onclick="switchTab('act',0)">Overview</button>
     <button class="tab" onclick="switchTab('act',1)">By Channel — Monthly</button>
     <button class="tab" onclick="switchTab('act',2)">By Channel — Daily</button>
+    <button class="tab" onclick="switchTab('act',3)">By Vertical</button>
   </div>
 
   <div class="tab-content active" id="act-0">
@@ -364,6 +374,17 @@ canvas { max-height: 500px; }
       <div class="card-title" id="s3DailyTableTitle">Avg Daily Activated by Channel — ≥20 adview D7</div>
       <div style="overflow-x:auto"><table id="s3AdviewDailyTable"></table></div>
       <div style="overflow-x:auto;display:none" id="s3SaveDailyTableWrap"><table id="s3SaveDailyTable"></table></div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="act-3">
+    <div class="chart-card" style="margin-bottom:16px">
+      <div class="chart-title">Activated by Vertical — Monthly (Growth Channel)</div>
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <button class="vchip active" id="actVertTabChip-adview" onclick="switchActVertTabMetric('adview')">≥20 adview D7</button>
+        <button class="vchip" id="actVertTabChip-save" onclick="switchActVertTabMetric('save')">≥1 save D0</button>
+      </div>
+      <div style="position:relative;height:280px"><canvas id="chartActVertical"></canvas></div>
     </div>
   </div>
 </div>
@@ -2079,6 +2100,20 @@ function renderCampaignTables() {
     makeVertStacked('chartVerticalMixAct','_activated');
     renderVertDetailTable();
   });
+
+  // Section 2 — By Vertical tab (new-3): New App MAU by Vertical (Growth channel)
+  deferTo('new-3',()=>makeVertStacked('chartNewVertical','_new_users'));
+
+  // Section 3 — By Vertical tab (act-3): Activated by Vertical
+  deferTo('act-3',()=>makeVertStacked('chartActVertical','_activated'));
+  window.switchActVertTabMetric = function(metric) {
+    document.querySelectorAll('[id^="actVertTabChip-"]').forEach(b=>b.classList.remove('active'));
+    const chip=document.getElementById('actVertTabChip-'+metric); if(chip) chip.classList.add('active');
+    const suffix = metric==='adview' ? '_activated' : '_lead_activated';
+    const ctx=document.getElementById('chartActVertical');
+    if(ctx){const card=ctx.closest('.chart-card');if(card){const old=card.querySelector('.chart-controls');if(old)old.remove();}}
+    makeVertStacked('chartActVertical', suffix);
+  };
 }
 
 // ── Growth Channel Tables: dynamic from D + MoM delta ────────────────────────
