@@ -2301,6 +2301,7 @@ async function initDashboard() {
 
 
   renderAllCharts();
+  switchTab('new', 0); // trigger deferred charts on default tab
   renderRetentionTable();
   renderStaticTables();
   renderGrowthTables();
