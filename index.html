@@ -173,8 +173,16 @@ canvas { max-height: 500px; }
     <div style="position:relative;height:280px"><canvas id="chartCTMAU"></canvas></div>
   </div>
   <div class="charts-grid">
-    <div class="chart-card"><div class="chart-title">App MAU = Returning + New</div><div style="position:relative;height:280px"><canvas id="chartOverviewMAU"></canvas></div></div>
-    <div class="chart-card"><div class="chart-title">App MAU = Login + Non-login</div><div style="position:relative;height:280px"><canvas id="chartLoginRate"></canvas></div></div>
+    <div class="chart-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="chart-title" style="margin:0" id="appMAUChartTitle">App MAU = Returning + New</div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="vchip active" id="appMAUChip-usertype" onclick="switchAppMAUView('usertype')">User type</button>
+          <button class="vchip" id="appMAUChip-login" onclick="switchAppMAUView('login')">Login type</button>
+        </div>
+      </div>
+      <div style="position:relative;height:280px"><canvas id="chartOverviewMAU"></canvas></div>
+    </div>
   </div>
   <div class="card">
     <div class="card-title">Monthly Metrics</div>
@@ -1119,41 +1127,50 @@ function renderAllCharts() {
   const gc = D.growth_channel;
   function deferTo(key,fn){(_pendingTabRenders[key]=_pendingTabRenders[key]||[]).push(fn);}
 
-  // S1 Chart 1: Stacked bar (Returning + New) + % new line
-  (function(){
+  // S1 Chart 1: App MAU — switchable between user type (Returning/New) and login type
+  function _renderAppMAUChart(view) {
     const ctx = document.getElementById('chartOverviewMAU'); if(!ctx) return;
-    new Chart(ctx,{type:'bar',data:{labels:MONTHS,datasets:[
-      {label:'Returning App MAU',data:ov.returning_mau,backgroundColor:C.blue+'99',borderColor:C.blue,borderWidth:1,borderRadius:0,stack:'s'},
-      {label:'New App MAU',data:ov.new_mau,backgroundColor:C.green+'cc',borderColor:C.green,borderWidth:1,borderRadius:4,stack:'s'},
-      {label:'% New / Total',data:ov.pct_new,type:'line',borderColor:C.orange,backgroundColor:'transparent',tension:0.4,pointRadius:4,borderWidth:2,yAxisID:'y1'}
-    ]},options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}},
-        tooltip:{callbacks:{label:c=>{const v=c.parsed.y;if(c.dataset.yAxisID==='y1')return ` ${c.dataset.label}: ${(v*100).toFixed(1)}%`;return ` ${c.dataset.label}: ${v>=1e6?(v/1e6).toFixed(2)+'M':(v/1000).toFixed(0)+'K'}`;
-      }}}},
-      scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:11}}},
-        y:{stacked:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':(v/1000).toFixed(0)+'K'},position:'left'},
-        y1:{grid:{display:false},ticks:{font:{size:10},callback:v=>(v*100).toFixed(0)+'%'},position:'right',min:0,max:0.35}
-      }}});
+    const ex = Object.values(Chart.instances||{}).find(c=>c.canvas?.id==='chartOverviewMAU');
+    if(ex) ex.destroy();
+    const card = ctx.closest('.chart-card');
+    if(card) { const old=card.querySelector('.chart-controls'); if(old) old.remove(); }
+    const titleEl = document.getElementById('appMAUChartTitle');
+    const fmtV = v => v>=1e6?(v/1e6).toFixed(2)+'M':(v/1000).toFixed(0)+'K';
+    const ttip = c=>{const v=c.parsed.y;if(c.dataset.yAxisID==='y1')return ` ${c.dataset.label}: ${(v*100).toFixed(1)}%`;return ` ${c.dataset.label}: ${fmtV(v)}`;};
+    if(view==='login') {
+      if(titleEl) titleEl.textContent='App MAU = Login + Non-login';
+      new Chart(ctx,{type:'bar',data:{labels:MONTHS,datasets:[
+        {label:'Non-login MAU',data:ov.mau_nonlogin,backgroundColor:C.gray+'88',borderColor:C.gray,borderWidth:1,borderRadius:0,stack:'s'},
+        {label:'Login MAU',data:ov.mau_login,backgroundColor:C.blue+'cc',borderColor:C.blue,borderWidth:1,borderRadius:4,stack:'s'},
+        {label:'Login Rate %',data:ov.login_rate,type:'line',borderColor:C.orange,backgroundColor:'transparent',tension:0.4,pointRadius:4,borderWidth:2,yAxisID:'y1'}
+      ]},options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}},tooltip:{callbacks:{label:ttip}}},
+        scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:11}}},
+          y:{stacked:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:fmtV},position:'left'},
+          y1:{grid:{display:false},ticks:{font:{size:10},callback:v=>(v*100).toFixed(0)+'%'},position:'right',min:0.5,max:1.0}
+        }}});
+    } else {
+      if(titleEl) titleEl.textContent='App MAU = Returning + New';
+      new Chart(ctx,{type:'bar',data:{labels:MONTHS,datasets:[
+        {label:'Returning App MAU',data:ov.returning_mau,backgroundColor:C.blue+'99',borderColor:C.blue,borderWidth:1,borderRadius:0,stack:'s'},
+        {label:'New App MAU',data:ov.new_mau,backgroundColor:C.green+'cc',borderColor:C.green,borderWidth:1,borderRadius:4,stack:'s'},
+        {label:'% New / Total',data:ov.pct_new,type:'line',borderColor:C.orange,backgroundColor:'transparent',tension:0.4,pointRadius:4,borderWidth:2,yAxisID:'y1'}
+      ]},options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}},tooltip:{callbacks:{label:ttip}}},
+        scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:11}}},
+          y:{stacked:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:fmtV},position:'left'},
+          y1:{grid:{display:false},ticks:{font:{size:10},callback:v=>(v*100).toFixed(0)+'%'},position:'right',min:0,max:0.35}
+        }}});
+    }
     requestAnimationFrame(()=>injectChartControls('chartOverviewMAU'));
-  })();
-
-  // S1 Chart 2: Stacked bar (Login + Non-login) + login rate line
-  (function(){
-    const ctx = document.getElementById('chartLoginRate'); if(!ctx) return;
-    new Chart(ctx,{type:'bar',data:{labels:MONTHS,datasets:[
-      {label:'Non-login MAU',data:ov.mau_nonlogin,backgroundColor:C.gray+'88',borderColor:C.gray,borderWidth:1,borderRadius:0,stack:'s'},
-      {label:'Login MAU',data:ov.mau_login,backgroundColor:C.blue+'cc',borderColor:C.blue,borderWidth:1,borderRadius:4,stack:'s'},
-      {label:'Login Rate %',data:ov.login_rate,type:'line',borderColor:C.orange,backgroundColor:'transparent',tension:0.4,pointRadius:4,borderWidth:2,yAxisID:'y1'}
-    ]},options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}},
-        tooltip:{callbacks:{label:c=>{const v=c.parsed.y;if(c.dataset.yAxisID==='y1')return ` ${c.dataset.label}: ${(v*100).toFixed(1)}%`;return ` ${c.dataset.label}: ${v>=1e6?(v/1e6).toFixed(2)+'M':(v/1000).toFixed(0)+'K'}`;
-      }}}},
-      scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:11}}},
-        y:{stacked:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':(v/1000).toFixed(0)+'K'},position:'left'},
-        y1:{grid:{display:false},ticks:{font:{size:10},callback:v=>(v*100).toFixed(0)+'%'},position:'right',min:0.5,max:1.0}
-      }}});
-    requestAnimationFrame(()=>injectChartControls('chartLoginRate'));
-  })();
+  }
+  window.switchAppMAUView = function(view) {
+    window._appMAUView = view;
+    document.querySelectorAll('[id^="appMAUChip-"]').forEach(b=>b.classList.remove('active'));
+    const chip=document.getElementById('appMAUChip-'+view); if(chip) chip.classList.add('active');
+    _renderAppMAUChart(view);
+  };
+  _renderAppMAUChart('usertype');
 
   // S1 Chart 3: Stacked bar Total CT MAU (App + Web/Other)
   (function(){
@@ -1317,6 +1334,9 @@ function renderAllCharts() {
       const ctx = document.getElementById(canvasId); if(!ctx) return;
       const ex = Object.values(Chart.instances||{}).find(c=>c.canvas?.id===canvasId);
       if(ex) ex.destroy();
+      // Remove old controls so injectChartControls guard doesn't block re-injection
+      const card = ctx.closest('.chart-card');
+      if(card) { const old=card.querySelector('.chart-controls'); if(old) old.remove(); }
       new Chart(ctx,{type:'line',data:{labels:dates,datasets:getSeriesData(metric)},
         options:{responsive:true,maintainAspectRatio:false,
           plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10}}},
@@ -1325,9 +1345,7 @@ function renderAllCharts() {
             x:{grid:{display:false},ticks:{font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:20}},
             y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>v>=1000?(v/1000).toFixed(0)+'K':String(v)}}
           }}});
-      const avg = avgTotal(metric);
-      const el = document.getElementById(avgElId);
-      if(el) el.textContent = avg!=null ? `Avg: ${fmtDailyVal(Math.round(avg))}/ngày` : '';
+      requestAnimationFrame(()=>injectChartControls(canvasId));
     }
 
     // Render whichever metric is currently active
@@ -1417,6 +1435,8 @@ function renderAllCharts() {
     const ctx = document.getElementById('chartNewDailyLine'); if(!ctx) return;
     const ex = Object.values(Chart.instances||{}).find(c=>c.canvas?.id==='chartNewDailyLine');
     if(ex) ex.destroy();
+    const cardNew = ctx.closest('.chart-card');
+    if(cardNew) { const old=cardNew.querySelector('.chart-controls'); if(old) old.remove(); }
     new Chart(ctx,{type:'line',data:{labels:dates,datasets},
       options:{responsive:true,maintainAspectRatio:false,
         plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10}}},
@@ -1425,10 +1445,7 @@ function renderAllCharts() {
           x:{grid:{display:false},ticks:{font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:20}},
           y:{grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>v>=1000?(v/1000).toFixed(0)+'K':String(v)}}
         }}});
-    const tots = rows.filter(r=>r.channel==='Total').map(r=>r.new_users).filter(v=>v!=null);
-    const avg = tots.length ? tots.reduce((s,v)=>s+v,0)/tots.length : null;
-    const el = document.getElementById('newAvgNote');
-    if(el) el.textContent = avg!=null ? `Avg: ${fmtDailyVal(Math.round(avg))}/ngày` : '';
+    requestAnimationFrame(()=>injectChartControls('chartNewDailyLine'));
   };
 
   // Export CSV for new users daily chart
@@ -1591,8 +1608,7 @@ function renderAllCharts() {
         L('CPA',gc.cpa,C.blue),
         L('CAA',gc.caa,C.orange),
         L('CRR D1',gc.crr_d1,C.green),
-        L('CRR D7',gc.crr_d7,C.purple),
-        L('CRR M1',gc.crr_m1,C.red)
+        L('CRR D7',gc.crr_d7,C.purple)
       ]},options:{responsive:true,maintainAspectRatio:false,
         plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:12}}},
           tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y?.toLocaleString('en')}₫`}}},
