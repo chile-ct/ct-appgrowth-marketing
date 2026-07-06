@@ -169,12 +169,12 @@ canvas { max-height: 500px; }
   </div>
 
   <div class="chart-card" style="margin-bottom:16px">
-    <div class="chart-title">Total Chotot MAU = Web/Other + App MAU</div>
+    <div class="chart-title">Total Chotot MAU = Web + App</div>
     <div style="position:relative;height:280px"><canvas id="chartCTMAU"></canvas></div>
   </div>
   <div class="charts-grid">
-    <div class="chart-card"><div class="chart-title">App MAU = Returning + New App MAU | % New line</div><div style="position:relative;height:280px"><canvas id="chartOverviewMAU"></canvas></div></div>
-    <div class="chart-card"><div class="chart-title">App MAU = Login + Non-login | Login Rate % line</div><div style="position:relative;height:280px"><canvas id="chartLoginRate"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">App MAU = Returning + New</div><div style="position:relative;height:280px"><canvas id="chartOverviewMAU"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">App MAU = Login + Non-login</div><div style="position:relative;height:280px"><canvas id="chartLoginRate"></canvas></div></div>
   </div>
   <div class="card">
     <div class="card-title">Monthly Metrics</div>
@@ -342,35 +342,24 @@ canvas { max-height: 500px; }
     </div>
     <div style="margin-bottom:16px">
       <div class="chart-card">
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <button class="vchip active" id="dailyActChip-adview" onclick="switchDailyActMetric('adview')">≥20 adview D7</button>
+          <button class="vchip" id="dailyActChip-save" onclick="switchDailyActMetric('save')">≥1 save D0</button>
+        </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:12px">
-          <div class="chart-title" style="margin:0">Daily Activated by Channel — ≥20 adview D7</div>
+          <div class="chart-title" id="dailyActChartTitle" style="margin:0">Daily Activated by Channel — ≥20 adview D7</div>
           <div class="chart-controls" style="display:flex;align-items:center;gap:10px;flex-shrink:0">
             <div id="actAvgAdview" style="font-size:22px;font-weight:800;color:#4361ee;white-space:nowrap"></div>
-            <button onclick="exportDailyCsv('adview')" title="Export CSV" style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:5px;padding:3px 9px;font-size:11px;cursor:pointer;color:#374151;white-space:nowrap">⬇ CSV</button>
+            <button id="dailyActCsvBtn" onclick="exportDailyCsv('adview')" title="Export CSV" style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:5px;padding:3px 9px;font-size:11px;cursor:pointer;color:#374151;white-space:nowrap">⬇ CSV</button>
           </div>
         </div>
         <div style="position:relative;height:280px"><canvas id="chartActDailyCh1"></canvas></div>
       </div>
     </div>
-    <div style="margin-bottom:16px">
-      <div class="chart-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:12px">
-          <div class="chart-title" style="margin:0">Daily Save Actions D0 by Channel — ≥1 save D0</div>
-          <div class="chart-controls" style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-            <div id="actAvgSave" style="font-size:22px;font-weight:800;color:#4361ee;white-space:nowrap"></div>
-            <button onclick="exportDailyCsv('save')" title="Export CSV" style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:5px;padding:3px 9px;font-size:11px;cursor:pointer;color:#374151;white-space:nowrap">⬇ CSV</button>
-          </div>
-        </div>
-        <div style="position:relative;height:280px"><canvas id="chartActDailyCh3"></canvas></div>
-      </div>
-    </div>
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-title">Avg Daily Activated by Channel — ≥20 adview D7</div>
+    <div class="card" id="s3DailyTableCard">
+      <div class="card-title" id="s3DailyTableTitle">Avg Daily Activated by Channel — ≥20 adview D7</div>
       <div style="overflow-x:auto"><table id="s3AdviewDailyTable"></table></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Avg Daily Activated by Channel — ≥1 save D0</div>
-      <div style="overflow-x:auto"><table id="s3SaveDailyTable"></table></div>
+      <div style="overflow-x:auto;display:none" id="s3SaveDailyTableWrap"><table id="s3SaveDailyTable"></table></div>
     </div>
   </div>
 </div>
@@ -391,13 +380,11 @@ canvas { max-height: 500px; }
 
   <div class="tab-content active" id="ret-0">
     <div class="chart-card" style="margin-bottom:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px">
-        <div class="chart-title" style="margin:0">Retention — Total CT vs App vs Web vs NURR</div>
-        <div style="display:flex;gap:6px;flex-shrink:0">
-          <button class="vchip active" id="retChip-d1" onclick="switchRetMetric('d1')">D1</button>
-          <button class="vchip" id="retChip-d7" onclick="switchRetMetric('d7')">D7</button>
-          <button class="vchip" id="retChip-m1" onclick="switchRetMetric('m1')">M1</button>
-        </div>
+      <div class="chart-title" style="margin-bottom:8px">Retention — Total CT vs App vs Web vs NURR</div>
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <button class="vchip active" id="retChip-d1" onclick="switchRetMetric('d1')">D1</button>
+        <button class="vchip" id="retChip-d7" onclick="switchRetMetric('d7')">D7</button>
+        <button class="vchip" id="retChip-m1" onclick="switchRetMetric('m1')">M1</button>
       </div>
       <div style="position:relative;height:280px"><canvas id="chartRetCompare"></canvas></div>
     </div>
@@ -461,16 +448,6 @@ canvas { max-height: 500px; }
     <div class="kpi-card"><div class="kpi-label">CAA — Save Action</div><div class="kpi-value" id="kpi-s5-caaSave">—</div><div class="kpi-sub" id="kpi-s5-caaSave-sub">—</div><div class="kpi-delta" id="kpi-s5-caaSave-delta">—</div></div>
     <div class="kpi-card"><div class="kpi-label">Monthly Cost · CPA</div><div class="kpi-value" id="kpi-s5-cost">521.1M ₫</div><div class="kpi-sub" id="kpi-s5-cost-sub">May 2026* (Latest)</div><div class="kpi-delta" id="kpi-s5-cost-delta">CPA: 6,481₫/user</div></div>
   </div>
-  <div class="month-selector" id="ms-s5" style="margin:12px 0 4px">
-    <button class="month-chip chip-overall active" onclick="selectMonth('s5','overall')">Latest</button>
-    <button class="month-chip chip-jun" onclick="selectMonth('s5','jun')">Jun 2026</button>
-    <button class="month-chip chip-may" onclick="selectMonth('s5','may')">May 2026</button>
-    <button class="month-chip chip-apr" onclick="selectMonth('s5','apr')">Apr 2026</button>
-    <button class="month-chip chip-mar" onclick="selectMonth('s5','mar')">Mar 2026</button>
-    <button class="month-chip chip-feb" onclick="selectMonth('s5','feb')">Feb 2026</button>
-    <button class="month-chip chip-jan" onclick="selectMonth('s5','jan')">Jan 2026</button>
-  </div>
-
   <div class="tabs" id="tabs-g5">
     <button class="tab active" onclick="switchTab('g5',0)">Overview</button>
     <button class="tab" onclick="switchTab('g5',1)">Acquisition</button>
@@ -482,17 +459,17 @@ canvas { max-height: 500px; }
   <!-- Tab 0: Overview -->
   <div class="tab-content active" id="g5-0">
     <div class="charts-grid" style="margin-bottom:16px">
-      <div class="chart-card"><div class="chart-title">New Users vs Activated — Growth Channel</div><div style="position:relative;height:280px"><canvas id="chartG5Overview"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">New Users vs Activated</div><div style="position:relative;height:280px"><canvas id="chartG5Overview"></canvas></div></div>
       <div class="chart-card"><div class="chart-title">CPA / CAA / CRR Trend (₫)</div><div style="position:relative;height:280px"><canvas id="chartG5Cost"></canvas></div></div>
     </div>
     <div class="chart-card" style="margin-bottom:16px">
-      <div class="chart-title">Monthly Cost vs New Users (bars nhạt = forecast)</div>
+      <div class="chart-title">Monthly Cost vs New Users</div>
       <div style="position:relative;height:300px"><canvas id="chartG5CostVsUsers"></canvas></div>
     </div>
     <div class="card" style="margin-bottom:16px">
       <div class="card-title">Growth Channel — All Metrics Summary</div>
       <div style="overflow-x:auto"><table id="g5SummaryTable"></table></div>
-      <div class="note">Cost = tổng 5 dòng "app growth" từ sheet Data for Claude | ↓ = best trong kỳ | Activated combine = MAX(adview, save)</div>
+      <div class="note">Cost = tổng 5 dòng "app growth" từ sheet Data for Claude | ↓ = best trong kỳ | Activated combine = MAX(adview, save) | CPA = cost/new user | CAA = cost/activated</div>
     </div>
     <div class="card" id="campaignOverviewCard">
       <div class="card-title">🎯 Top Campaigns — Combined Score: New Users × Activation Rate × NURR D1</div>
@@ -521,9 +498,9 @@ canvas { max-height: 500px; }
   <!-- Tab 2: Activation -->
   <div class="tab-content" id="g5-2">
     <div class="charts-grid" style="margin-bottom:16px">
-      <div class="chart-card" style="display:flex;flex-direction:column"><div class="chart-title">Activation Trend — Growth Channel</div><div style="position:relative;flex:1;min-height:200px"><canvas id="chartG5Act"></canvas></div></div>
+      <div class="chart-card" style="display:flex;flex-direction:column"><div class="chart-title">Activation Trend</div><div style="position:relative;flex:1;min-height:200px"><canvas id="chartG5Act"></canvas></div></div>
       <div class="chart-card" style="display:flex;flex-direction:column">
-        <div class="chart-title">Activated (≥20 adview D7) by Vertical</div>
+        <div class="chart-title">Activated by Vertical</div>
         <div style="position:relative;flex:1;min-height:200px"><canvas id="chartVerticalMixAct"></canvas></div>
         <div class="note" style="margin-top:8px">Growth channel campaigns (Paid Search + Display + CRM) có tag vertical (PTY/JOB/VEH/GDS). Loại trừ web_to_app campaigns.</div>
       </div>
@@ -901,7 +878,7 @@ function selectMonth(sectionId, month) {
     c.classList.toggle('active', key.startsWith(month==='overall'?'overall':month.substring(0,3)));
   });
   if (sectionId === 's5') {
-    updateS5KPIs(month);
+    updateS5KPIs();
     if (typeof refreshCampCharts === 'function') {
       const campMonthMap = {jan:'Jan 2026',feb:'Feb 2026',mar:'Mar 2026',apr:'Apr 2026',may:'May 2026',jun:'Jun 2026'};
       const lbl = campMonthMap[month];
@@ -961,12 +938,14 @@ const S5_KPI = {
   may:     { label:'May 2026*', new:'80.4K', adv:'22.2K', lead:'19.6K', nD1:'35.8%', nM1:'—', nM1sub:'May 2026* — N/A (partial month)', cost:'521.1M ₫', dNew:'▲ vs Apr: +4.6K (+6.1%)', dAdv:'▲ vs Apr: +1.9K (+9.3%)', dLead:'▲ vs Apr: +0.7K (+3.6%)', dD1:'▼ vs Apr: −1.7pp', dM1:'N/A (partial month)', dCost:'CPA: 6,481₫/user', newClr:'up', advClr:'up', leadClr:'up', d1Clr:'down', m1Clr:'flat', costClr:'flat' }
 };
 
-function updateS5KPIs(month) {
+function updateS5KPIs() {
   if (!D || !D.growth_channel) return;
   const gc = D.growth_channel;
-  const keyToIdx = {jan:0, feb:1, mar:2, apr:3, may:4, jun:5};
-  const lastActual = D.months.reduce((a, m, i) => m.includes('*') ? a : i, 0);
-  const i = month === 'overall' ? lastActual : (keyToIdx[month] ?? lastActual);
+  // Always use the latest month with non-null new_users data
+  let i = 0;
+  for (let j = 0; j < (gc.new_users||[]).length; j++) {
+    if (gc.new_users[j] != null) i = j;
+  }
   const prev = i > 0 ? i - 1 : null;
   const mn = D.months[i];
   const prevMn = prev != null ? D.months[prev] : '';
@@ -1351,8 +1330,47 @@ function renderAllCharts() {
       if(el) el.textContent = avg!=null ? `Avg: ${fmtDailyVal(Math.round(avg))}/ngày` : '';
     }
 
-    renderDailyChart('chartActDailyCh1','adview_activated','actAvgAdview');
-    renderDailyChart('chartActDailyCh3','save_activated',  'actAvgSave');
+    // Render whichever metric is currently active
+    const activeMetric = window._dailyActMetric || 'adview';
+    if (activeMetric === 'adview') {
+      renderDailyChart('chartActDailyCh1','adview_activated','actAvgAdview');
+    } else {
+      renderDailyChart('chartActDailyCh1','save_activated','actAvgAdview');
+    }
+  };
+
+  window.switchDailyActMetric = function(metric) {
+    window._dailyActMetric = metric;
+    // Update chip active states
+    document.querySelectorAll('[id^="dailyActChip-"]').forEach(b => b.classList.remove('active'));
+    const chip = document.getElementById('dailyActChip-' + metric);
+    if (chip) chip.classList.add('active');
+    // Update title, avg element and CSV button
+    const titleEl = document.getElementById('dailyActChartTitle');
+    const csvBtn  = document.getElementById('dailyActCsvBtn');
+    const avgEl   = document.getElementById('actAvgAdview');
+    if (metric === 'adview') {
+      if (titleEl) titleEl.textContent = 'Daily Activated by Channel — ≥20 adview D7';
+      if (csvBtn)  { csvBtn.onclick = function(){ exportDailyCsv('adview'); }; }
+      const tableTitle = document.getElementById('s3DailyTableTitle');
+      if (tableTitle) tableTitle.textContent = 'Avg Daily Activated by Channel — ≥20 adview D7';
+      const adviewWrap = document.getElementById('s3AdviewDailyTable')?.parentElement;
+      const saveWrap   = document.getElementById('s3SaveDailyTableWrap');
+      if (adviewWrap) adviewWrap.style.display = '';
+      if (saveWrap)   saveWrap.style.display = 'none';
+    } else {
+      if (titleEl) titleEl.textContent = 'Daily Save Actions D0 by Channel — ≥1 save D0';
+      if (csvBtn)  { csvBtn.onclick = function(){ exportDailyCsv('save'); }; }
+      const tableTitle = document.getElementById('s3DailyTableTitle');
+      if (tableTitle) tableTitle.textContent = 'Avg Daily Activated by Channel — ≥1 save D0';
+      const adviewWrap = document.getElementById('s3AdviewDailyTable')?.parentElement;
+      const saveWrap   = document.getElementById('s3SaveDailyTableWrap');
+      if (adviewWrap) adviewWrap.style.display = 'none';
+      if (saveWrap)   saveWrap.style.display = '';
+    }
+    if (avgEl) avgEl.textContent = '';
+    // Re-render the chart with the new metric
+    if (typeof renderDailyActCharts === 'function') renderDailyActCharts();
   };
 
   // Export CSV for activation daily charts
@@ -1510,8 +1528,8 @@ function renderAllCharts() {
     const ctx=document.getElementById('chartG5Overview'); if(!ctx)return;
     new Chart(ctx,{type:'bar',data:{labels:MONTHS,datasets:[
       B('New App Users',gc.new_users,C.gray),
-      B('Activated ≥20 adview D7',gc.adview_activated,C.blue),
-      B('Activated ≥1 save D0',gc.lead_activated,C.green)
+      B('≥20 adview D7',gc.adview_activated,C.blue),
+      B('≥1 save D0',gc.lead_activated,C.green)
     ]},options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:12}}},
         tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${(c.parsed.y/1000).toFixed(0)}K`}}},
@@ -1541,8 +1559,8 @@ function renderAllCharts() {
     if(existing)existing.destroy();
     const ctx=document.getElementById('chartG5Act'); if(!ctx)return;
     new Chart(ctx,{type:'bar',data:{labels:MONTHS,datasets:[
-      {label:'Monthly Activated ≥20 adview D7',data:gc.adview_activated,backgroundColor:C.blue+'cc',borderColor:C.blue,borderWidth:1,borderRadius:4,yAxisID:'y'},
-      {label:'Monthly Activated ≥1 save D0',data:gc.lead_activated,backgroundColor:C.green+'cc',borderColor:C.green,borderWidth:1,borderRadius:4,yAxisID:'y'},
+      {label:'≥20 adview D7',data:gc.adview_activated,backgroundColor:C.blue+'cc',borderColor:C.blue,borderWidth:1,borderRadius:4,yAxisID:'y'},
+      {label:'≥1 save D0',data:gc.lead_activated,backgroundColor:C.green+'cc',borderColor:C.green,borderWidth:1,borderRadius:4,yAxisID:'y'},
       {label:'20 adview D7 rate',data:gc.adview_rate,type:'line',borderColor:C.orange,backgroundColor:'transparent',tension:0.4,pointRadius:4,borderWidth:2,yAxisID:'y1'},
       {label:'Save D0 rate',data:gc.lead_rate,type:'line',borderColor:C.red,backgroundColor:'transparent',tension:0.4,pointRadius:4,borderWidth:2,borderDash:[4,4],yAxisID:'y1'}
     ]},options:{responsive:true,maintainAspectRatio:false,
@@ -2133,8 +2151,8 @@ function renderGrowthTables() {
     {lbl:'Growth Retention M1',arr:gc.nurr_m1,fmt:fmtP,rate:true},
     {sec:'Cost & Unit Economics'},
     {lbl:'Monthly Cost (VND)',arr:gc.cost,fmt:fmtN,cls:'total-row'},
-    {lbl:'CPA — Cost/New User',arr:gc.cpa,fmt:fmtC},
-    {lbl:'CAA — Cost/Activated',arr:gc.caa,fmt:fmtC},
+    {lbl:'CPA',arr:gc.cpa,fmt:fmtC},
+    {lbl:'CAA',arr:gc.caa,fmt:fmtC},
     {lbl:'CRR D1',arr:gc.crr_d1,fmt:fmtC},
     {lbl:'CRR D7',arr:gc.crr_d7,fmt:fmtC},
     {lbl:'CRR M1',arr:gc.crr_m1,fmt:fmtC}
@@ -2289,7 +2307,7 @@ async function initDashboard() {
   updateKPICards(D.months.length-1);
   updateS2KPICards(D.months.length-1);
   updateS3KPICards(D.months.length-1);
-  updateS5KPIs('overall');
+  updateS5KPIs();
   renderCampaignTables();
 
   // Partial month badge — show "* Tháng 6: data đến DD/MM/YYYY"
