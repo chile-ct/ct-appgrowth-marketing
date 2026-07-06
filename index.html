@@ -108,7 +108,7 @@ tr.sep td { border-top: 2px solid #c7d2fe; }
 /* GRID */
 .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
 .charts-grid > * { min-width: 0; overflow: hidden; }
-.chart-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.chart-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: relative; }
 .chart-title { font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
 canvas { max-height: 500px; }
 
@@ -172,17 +172,13 @@ canvas { max-height: 500px; }
     <div class="chart-title">Total Chotot MAU = Web + App</div>
     <div style="position:relative;height:280px"><canvas id="chartCTMAU"></canvas></div>
   </div>
-  <div class="charts-grid">
-    <div class="chart-card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <div class="chart-title" style="margin:0" id="appMAUChartTitle">App MAU = Returning + New</div>
-        <div style="display:flex;gap:6px;flex-shrink:0">
-          <button class="vchip active" id="appMAUChip-usertype" onclick="switchAppMAUView('usertype')">User type</button>
-          <button class="vchip" id="appMAUChip-login" onclick="switchAppMAUView('login')">Login type</button>
-        </div>
-      </div>
-      <div style="position:relative;height:280px"><canvas id="chartOverviewMAU"></canvas></div>
+  <div class="chart-card" style="margin-bottom:16px">
+    <div class="chart-title" id="appMAUChartTitle">App MAU = Returning + New</div>
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      <button class="vchip active" id="appMAUChip-usertype" onclick="switchAppMAUView('usertype')">User type</button>
+      <button class="vchip" id="appMAUChip-login" onclick="switchAppMAUView('login')">Login type</button>
     </div>
+    <div style="position:relative;height:280px"><canvas id="chartOverviewMAU"></canvas></div>
   </div>
   <div class="card">
     <div class="card-title">Monthly Metrics</div>
@@ -191,14 +187,14 @@ canvas { max-height: 500px; }
       <thead><tr><th>Metric</th><th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th class="apr">May*</th></tr></thead>
       <tbody>
         <tr class="total-row"><td>Total App MAU (Android+iOS)</td><td>1,394,597</td><td>1,296,533</td><td>1,551,037</td><td>1,472,750</td><td class="apr">1,489,715</td></tr>
-        <tr><td>↳ Avg Daily DAU</td><td>225,026</td><td>204,524</td><td>252,967</td><td>240,367</td><td class="apr">235,047</td></tr>
         <tr><td>↳ App MAU (login)</td><td>1,030,263</td><td>1,011,227</td><td>1,248,085</td><td>1,204,341</td><td class="apr">1,211,386</td></tr>
         <tr><td>↳ % login / Total App MAU</td><td>73.9%</td><td>78.0%</td><td>80.5%</td><td>81.8%</td><td class="apr">81.3%</td></tr>
+        <tr><td>↳ Avg Daily DAU</td><td>225,026</td><td>204,524</td><td>252,967</td><td>240,367</td><td class="apr">235,047</td></tr>
         <tr><td>% App MAU / Total Chotot</td><td>22.3%</td><td>28.1%</td><td>21.8%</td><td>24.5%</td><td class="apr">24.8%</td></tr>
         <tr class="sep"><td>New App MAU</td><td>261,241</td><td>234,333</td><td>344,562</td><td>293,506</td><td class="apr">295,688</td></tr>
-        <tr><td>↳ Avg Daily New DAU</td><td>8,429</td><td>8,370</td><td>11,116</td><td>9,785</td><td class="apr">9,538</td></tr>
         <tr><td>↳ New App MAU (login)</td><td>120,641</td><td>151,255</td><td>246,121</td><td>209,296</td><td class="apr">196,680</td></tr>
         <tr><td>↳ % login / New App MAU</td><td>46.2%</td><td>64.5%</td><td>71.4%</td><td>71.3%</td><td class="apr">66.5%</td></tr>
+        <tr><td>↳ Avg Daily New DAU</td><td>8,429</td><td>8,370</td><td>11,116</td><td>9,785</td><td class="apr">9,538</td></tr>
       </tbody>
     </table>
     </div>
@@ -406,11 +402,15 @@ canvas { max-height: 500px; }
   </div>
 
   <div class="tab-content" id="ret-1">
-    <div class="charts-grid" style="margin-bottom:16px">
-      <div class="chart-card"><div class="chart-title">NURR D1 by Channel</div><div style="position:relative;height:280px"><canvas id="chartNURRD1Ch"></canvas></div></div>
-      <div class="chart-card"><div class="chart-title">NURR D7 by Channel</div><div style="position:relative;height:280px"><canvas id="chartNURRD7Ch"></canvas></div></div>
+    <div class="chart-card" style="margin-bottom:16px">
+      <div class="chart-title">NURR by Channel</div>
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <button class="vchip active" id="nurrChChip-d1" onclick="switchNURRChMetric('d1')">D1</button>
+        <button class="vchip" id="nurrChChip-d7" onclick="switchNURRChMetric('d7')">D7</button>
+        <button class="vchip" id="nurrChChip-m1" onclick="switchNURRChMetric('m1')">M1</button>
+      </div>
+      <div style="position:relative;height:280px"><canvas id="chartNURRCh"></canvas></div>
     </div>
-    <div class="chart-card" style="margin-bottom:16px"><div class="chart-title">NURR M1 by Channel (full width)</div><div style="position:relative;height:280px"><canvas id="chartNURRM1Ch"></canvas></div></div>
     <div class="card">
       <div class="card-title">NURR by Channel — Monthly Avg</div>
       <div style="overflow-x:auto">
@@ -505,14 +505,7 @@ canvas { max-height: 500px; }
 
   <!-- Tab 2: Activation -->
   <div class="tab-content" id="g5-2">
-    <div class="charts-grid" style="margin-bottom:16px">
-      <div class="chart-card" style="display:flex;flex-direction:column"><div class="chart-title">Activation Trend</div><div style="position:relative;flex:1;min-height:200px"><canvas id="chartG5Act"></canvas></div></div>
-      <div class="chart-card" style="display:flex;flex-direction:column">
-        <div class="chart-title">Activated by Vertical</div>
-        <div style="position:relative;flex:1;min-height:200px"><canvas id="chartVerticalMixAct"></canvas></div>
-        <div class="note" style="margin-top:8px">Growth channel campaigns (Paid Search + Display + CRM) có tag vertical (PTY/JOB/VEH/GDS). Loại trừ web_to_app campaigns.</div>
-      </div>
-    </div>
+    <div class="chart-card" style="margin-bottom:16px"><div class="chart-title">Activation Trend</div><div style="position:relative;height:280px"><canvas id="chartG5Act"></canvas></div></div>
     <div class="card" style="margin-bottom:16px">
       <div class="card-title">Activation — Growth Channel</div>
       <div style="overflow-x:auto"><table id="g5ActTable"></table></div>
@@ -542,33 +535,20 @@ canvas { max-height: 500px; }
 
   <!-- Tab 4: By Vertical -->
   <div class="tab-content" id="g5-4">
-    <!-- Row 1: Vertical trend (full width) -->
-    <div class="chart-card" style="margin-bottom:16px">
-      <div class="chart-title">New Users by Vertical — Monthly Trend</div>
-      <div style="position:relative;height:280px"><canvas id="chartVerticalMixAcq"></canvas></div>
-      <div class="note" style="margin-top:8px">Growth channel campaigns (Paid Search + Display + CRM + Social) có tag vertical (PTY/JOB/VEH/GDS). Loại trừ web_to_app campaigns.</div>
-    </div>
-    <!-- Row 2: Campaign chart (full width) -->
-    <div class="chart-card" style="margin-bottom:16px;display:flex;flex-direction:column">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:8px">
-        <div>
-          <div class="chart-title" style="margin:0">Campaign Performance by Vertical</div>
-          <div id="campSubtitle" style="font-size:11px;color:#6b7280;margin-top:2px">Data: tháng đang hiển thị</div>
+    <!-- Row 1: New Users + Activated by Vertical side by side -->
+    <div class="charts-grid" style="margin-bottom:16px">
+      <div class="chart-card">
+        <div class="chart-title">New Users by Vertical — Monthly Trend</div>
+        <div style="position:relative;height:280px"><canvas id="chartVerticalMixAcq"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Activated by Vertical</div>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <button class="vchip active" id="actVertChip-adview" onclick="switchActVertMetric('adview')">≥20 adview D7</button>
+          <button class="vchip" id="actVertChip-save" onclick="switchActVertMetric('save')">≥1 save D0</button>
         </div>
+        <div style="position:relative;height:280px"><canvas id="chartVerticalMixAct"></canvas></div>
       </div>
-      <div id="campMetricRow" style="display:flex;gap:6px;margin-bottom:6px;align-items:center;flex-wrap:wrap">
-        <span style="font-size:11px;color:#6b7280;white-space:nowrap">Metric:</span>
-        <button class="vchip active" onclick="switchCampMetric('acq',this)">New Users</button>
-        <button class="vchip" onclick="switchCampMetric('adv',this)">≥20 adview D7</button>
-        <button class="vchip" onclick="switchCampMetric('save',this)">≥1 save D0</button>
-      </div>
-      <div id="campVertChips" style="display:flex;gap:6px;margin-bottom:10px">
-        <button class="vchip active" onclick="renderCampCombined('pty',this)">PTY</button>
-        <button class="vchip" onclick="renderCampCombined('job',this)">JOB</button>
-        <button class="vchip" onclick="renderCampCombined('veh',this)">VEH</button>
-        <button class="vchip" onclick="renderCampCombined('gds',this)">GDS</button>
-      </div>
-      <div style="position:relative;height:320px"><canvas id="chartCampAcq"></canvas></div>
     </div>
     <!-- Row 3: Detail table full width -->
     <div class="card">
@@ -1035,12 +1015,12 @@ function injectChartControls(canvasId, isPct) {
   const avgLines = ds.filter(d=>d.label&&!d.hidden).map(d=>{
     const avg = seriesAvg(d); if (avg==null) return '';
     const isRate = isPct || d.yAxisID==='y1' || (avg>0&&avg<2&&avg!==Math.round(avg));
-    if (isRate) return ''; // skip avg for % series — weighted avg needs raw denominators
+    if (isRate) return '';
     const txt = fmtVal(avg, isRate); if (!txt) return '';
     const col = (typeof d.borderColor==='string' ? d.borderColor : '#4361ee').replace(/(cc|99|55|44|22)$/i,'').substring(0,7) || '#4361ee';
-    return `<div style="display:flex;align-items:baseline;gap:3px;line-height:1.4"><span style="font-size:10px;color:#6b7280;white-space:nowrap">${d.label}:</span><span style="font-size:13px;font-weight:700;color:${col};white-space:nowrap">${txt}</span></div>`;
+    return `<span style="font-size:11px;font-weight:700;color:${col};white-space:nowrap">${d.label}: ${txt}</span>`;
   }).filter(Boolean);
-  const avgHtml = avgLines.length ? `<div style="display:flex;flex-direction:column;gap:1px;align-items:flex-end">${avgLines.join('')}</div>` : '';
+  const avgHtml = avgLines.length ? `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${avgLines.join('')}</div>` : '';
 
   // Export
   const dropId = '_drop_'+canvasId;
@@ -1069,26 +1049,12 @@ function injectChartControls(canvasId, isPct) {
   }
   const exportBtn=`<div style="position:relative;display:inline-block"><button onclick="var d=document.getElementById('${dropId}');d.style.display=d.style.display==='block'?'none':'block';event.stopPropagation()" style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:5px;padding:3px 9px;font-size:11px;cursor:pointer;color:#374151;white-space:nowrap">⬇ Export ▾</button><div id="${dropId}" style="display:none;position:absolute;right:0;top:100%;margin-top:2px;background:white;border:1px solid #d1d5db;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:999;min-width:138px;overflow:hidden"><button onclick="window['_csv_${canvasId}']();document.getElementById('${dropId}').style.display='none'" style="display:block;width:100%;text-align:left;padding:8px 12px;font-size:12px;border:none;background:none;cursor:pointer;color:#374151">📄 CSV</button><button onclick="window['_xls_${canvasId}']();document.getElementById('${dropId}').style.display='none'" style="display:block;width:100%;text-align:left;padding:8px 12px;font-size:12px;border:none;background:none;cursor:pointer;color:#374151;border-top:1px solid #f3f4f6">📊 Excel (.xls)</button></div></div>`;
 
+  // Absolutely position controls at top-right of card
   const ctrl = document.createElement('div');
   ctrl.className = 'chart-controls';
-  ctrl.style.cssText = 'display:flex;align-items:flex-start;gap:8px;flex-shrink:0';
+  ctrl.style.cssText = 'position:absolute;top:14px;right:14px;display:flex;align-items:center;gap:8px;z-index:10';
   ctrl.innerHTML = avgHtml + exportBtn;
-
-  const titleEl = card.querySelector('.chart-title');
-  const existingHeader = card.querySelector('[style*="justify-content:space-between"]');
-  if (existingHeader) {
-    existingHeader.style.alignItems = 'flex-start';
-    existingHeader.appendChild(ctrl);
-  } else if (titleEl) {
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:8px';
-    titleEl.style.marginBottom = '0';
-    titleEl.parentNode.insertBefore(wrap, titleEl);
-    wrap.appendChild(titleEl);
-    wrap.appendChild(ctrl);
-  } else {
-    card.insertBefore(ctrl, card.firstChild);
-  }
+  card.appendChild(ctrl);
 }
 
 function makeChart(id,type,labels,datasets,opts={}) {
@@ -1134,7 +1100,7 @@ function renderAllCharts() {
     if(ex) ex.destroy();
     const card = ctx.closest('.chart-card');
     if(card) { const old=card.querySelector('.chart-controls'); if(old) old.remove(); }
-    const titleEl = document.getElementById('appMAUChartTitle');
+    const titleEl = ctx?.closest('.chart-card')?.querySelector('.chart-title');
     const fmtV = v => v>=1e6?(v/1e6).toFixed(2)+'M':(v/1000).toFixed(0)+'K';
     const ttip = c=>{const v=c.parsed.y;if(c.dataset.yAxisID==='y1')return ` ${c.dataset.label}: ${(v*100).toFixed(1)}%`;return ` ${c.dataset.label}: ${fmtV(v)}`;};
     if(view==='login') {
@@ -1531,9 +1497,24 @@ function renderAllCharts() {
   // NURR funnel bar: use last month's values for each channel
   const lastI = MONTHS.length - 1;
   const prevI = lastI - 1; // Apr (last full month for M1)
-  deferTo('ret-1',()=>makeChart('chartNURRD1Ch','line',MONTHS,[L('Total',ret.nurr_d1,C.blue),L('Direct',ret.direct_d1,C.green),L('Organic Search',ret.organic_d1,C.orange),L('Growth (P+D+CRM)',ret.growth_d1,C.purple)],{pct:true,noAR:true}));
-  deferTo('ret-1',()=>makeChart('chartNURRD7Ch','line',MONTHS,[L('Total',ret.nurr_d7,C.blue),L('Direct',ret.direct_d7,C.green),L('Organic Search',ret.organic_d7,C.orange),L('Growth (P+D+CRM)',ret.growth_d7,C.purple)],{pct:true,noAR:true}));
-  deferTo('ret-1',()=>makeChart('chartNURRM1Ch','line',MONTHS,[L('Total',ret.nurr_m1,C.blue),L('Direct',ret.direct_m1,C.green),L('Organic Search',ret.organic_m1,C.orange),L('Growth (P+D+CRM)',ret.growth_m1,C.purple)],{pct:true,noAR:true}));
+  const _nurrChDs = {
+    d1:[L('Total',ret.nurr_d1,C.blue),L('Direct',ret.direct_d1,C.green),L('Organic Search',ret.organic_d1,C.orange),L('Growth (P+D+CRM)',ret.growth_d1,C.purple)],
+    d7:[L('Total',ret.nurr_d7,C.blue),L('Direct',ret.direct_d7,C.green),L('Organic Search',ret.organic_d7,C.orange),L('Growth (P+D+CRM)',ret.growth_d7,C.purple)],
+    m1:[L('Total',ret.nurr_m1,C.blue),L('Direct',ret.direct_m1,C.green),L('Organic Search',ret.organic_m1,C.orange),L('Growth (P+D+CRM)',ret.growth_m1,C.purple)]
+  };
+  deferTo('ret-1',()=>{
+    makeChart('chartNURRCh','line',MONTHS,_nurrChDs.d1,{pct:true,noAR:true});
+    window.switchNURRChMetric = function(metric) {
+      document.querySelectorAll('[id^="nurrChChip-"]').forEach(b=>b.classList.remove('active'));
+      const chip=document.getElementById('nurrChChip-'+metric); if(chip) chip.classList.add('active');
+      const ctx=document.getElementById('chartNURRCh'); if(!ctx) return;
+      const inst=Object.values(Chart.instances||{}).find(c=>c.canvas?.id==='chartNURRCh'); if(!inst) return;
+      const card=ctx.closest('.chart-card');
+      if(card){const old=card.querySelector('.chart-controls');if(old)old.remove();}
+      inst.data.datasets=_nurrChDs[metric]; inst.update('none');
+      requestAnimationFrame(()=>injectChartControls('chartNURRCh',true));
+    };
+  });
   deferTo('ret-1',()=>makeChart('chartNURRFunnel','bar',['Direct','Organic Search','Growth (P+D+CRM)','Total'],[
     B('NURR D1',[ret.direct_d1[lastI],ret.organic_d1[lastI],ret.growth_d1[lastI],ret.nurr_d1[lastI]],C.blue),
     B('NURR D7',[ret.direct_d7[lastI],ret.organic_d7[lastI],ret.growth_d7[lastI],ret.nurr_d7[lastI]],C.orange),
@@ -2081,15 +2062,22 @@ function renderCampaignTables() {
     </tbody>`;
   }
 
-  // Defer g5-2: chartVerticalMixAct
-  (_pendingTabRenders['g5-2']=_pendingTabRenders['g5-2']||[]).push(()=>makeVertStacked('chartVerticalMixAct','_activated'));
+  // switchActVertMetric — toggle between adview_activated and lead_activated in By Vertical chart
+  window.switchActVertMetric = function(metric) {
+    document.querySelectorAll('[id^="actVertChip-"]').forEach(b=>b.classList.remove('active'));
+    const chip=document.getElementById('actVertChip-'+metric); if(chip) chip.classList.add('active');
+    const suffix = metric==='adview' ? '_activated' : '_lead_activated';
+    const ctx=document.getElementById('chartVerticalMixAct');
+    if(ctx){const card=ctx.closest('.chart-card');if(card){const old=card.querySelector('.chart-controls');if(old)old.remove();}}
+    makeVertStacked('chartVerticalMixAct', suffix==='_activated'?'_activated':'_lead_activated');
+  };
 
-  // Defer g5-4: vertical trend + detail table + combined campaign chart
+  // Defer g5-4: vertical trend + activated by vertical + detail table
   updateCampSubtitle(currentCampMonth);
   (_pendingTabRenders['g5-4']=_pendingTabRenders['g5-4']||[]).push(()=>{
     makeVertStacked('chartVerticalMixAcq','_new_users');
+    makeVertStacked('chartVerticalMixAct','_activated');
     renderVertDetailTable();
-    _drawCampCombined('pty');
   });
 }
 
