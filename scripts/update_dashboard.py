@@ -363,23 +363,34 @@ try:
     vm_rows = run("""
     SELECT
       DATE_TRUNC(visit_date, MONTH) as month,
-      vertical_user as vertical,
+      LOWER(campaign) as campaign_lc,
       SUM(d0) as new_users,
       SUM(user_20adview_7d) as activated_adview
     FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
     WHERE return_status = 'new'
-      AND campaign = 'all'
-      AND channel = 'Growth'
-      AND vertical_user NOT IN ('all', 'other')
+      AND campaign NOT IN ('all', '(none)')
+      AND channel NOT IN ('all', 'Direct', 'Organic Search', 'web_to_app')
+      AND LOWER(campaign) NOT LIKE '%web_to_app%'
+      AND LOWER(campaign) NOT LIKE '%web2app%'
+      AND vertical_user = 'all'
       AND visit_date >= '2026-01-01'
     GROUP BY 1, 2
     ORDER BY 1, 2
     """)
+    # Aggregate by (month, classified_vertical) using campaign name keywords
     vm_lookup = {}
     for r in vm_rows:
-        vm_lookup[(to_date(r['month']), r['vertical'])] = r
+        m = to_date(r['month'])
+        vert = classify_vertical(str(r.get('campaign_lc', '')))
+        if vert == 'other':
+            continue
+        key = (m, vert)
+        if key not in vm_lookup:
+            vm_lookup[key] = {'new_users': 0, 'activated_adview': 0}
+        vm_lookup[key]['new_users'] += int(r['new_users'] or 0)
+        vm_lookup[key]['activated_adview'] += int(r['activated_adview'] or 0)
     def vm_arr(vert, key):
-        return [int(vm_lookup.get((m, vert), {}).get(key) or 0) for m in all_months]
+        return [vm_lookup.get((m, vert), {}).get(key, 0) for m in all_months]
     vertical_monthly = {
         'pty_new_users': vm_arr('pty', 'new_users'),
         'job_new_users': vm_arr('job', 'new_users'),
