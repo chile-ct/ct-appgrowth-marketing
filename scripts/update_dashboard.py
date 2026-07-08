@@ -325,9 +325,9 @@ try:
     ORDER BY month, new_users DESC
     """)
     def classify_camp(lc):
-        if any(k in lc for k in ['pty','property','bds','nha dat']): return 'pty'
-        if any(k in lc for k in ['job','viec lam','tuyen dung']): return 'job'
-        if any(k in lc for k in ['veh','vehicle']): return 'veh'
+        if any(k in lc for k in ['pty','property','bds','nha dat','nha_dat','_5010','_5020','_5030','nha_vua','bat_dong_san']): return 'pty'
+        if any(k in lc for k in ['job','viec lam','viec_lam','tuyen dung','tuyen_dung']): return 'job'
+        if any(k in lc for k in ['veh','vehicle','autox','_2010','_2020','_2030','_2040']): return 'veh'
         if any(k in lc for k in ['gds','elt','electronics']): return 'gds'
         return 'other'
     for r in camp_rows:
@@ -352,9 +352,9 @@ except Exception as e:
 
 # Vertical monthly breakdown — full 2026 trend
 def classify_vertical(lc):
-    if any(k in lc for k in ['pty','property','bds','nha dat']): return 'pty'
-    if any(k in lc for k in ['job','viec lam','tuyen dung']): return 'job'
-    if any(k in lc for k in ['veh','vehicle']): return 'veh'
+    if any(k in lc for k in ['pty','property','bds','nha dat','nha_dat','_5010','_5020','_5030','nha_vua','bat_dong_san']): return 'pty'
+    if any(k in lc for k in ['job','viec lam','viec_lam','tuyen dung','tuyen_dung']): return 'job'
+    if any(k in lc for k in ['veh','vehicle','autox','_2010','_2020','_2030','_2040']): return 'veh'
     if any(k in lc for k in ['gds','elt','electronics']): return 'gds'
     return 'other'
 
@@ -364,10 +364,10 @@ try:
     SELECT
       DATE_TRUNC(visit_date, MONTH) as month,
       CASE
-        WHEN LOWER(campaign) LIKE '%pty%' THEN 'pty'
-        WHEN LOWER(campaign) LIKE '%job%' OR LOWER(campaign) LIKE '%viec lam%' THEN 'job'
-        WHEN LOWER(campaign) LIKE '%veh%' THEN 'veh'
-        WHEN LOWER(campaign) LIKE '%gds%' OR LOWER(campaign) LIKE '%elt%' THEN 'gds'
+        WHEN REGEXP_CONTAINS(LOWER(campaign), r'pty|property|bds|nha.?dat|_5010|_5020|_5030|nha_vua|bat_dong_san') THEN 'pty'
+        WHEN REGEXP_CONTAINS(LOWER(campaign), r'job|viec.?lam|tuyen.?dung') THEN 'job'
+        WHEN REGEXP_CONTAINS(LOWER(campaign), r'veh|vehicle|autox|_2010|_2020|_2030|_2040') THEN 'veh'
+        WHEN REGEXP_CONTAINS(LOWER(campaign), r'gds|elt|electronics') THEN 'gds'
         ELSE 'other'
       END as vertical,
       SUM(d0) as new_users,
