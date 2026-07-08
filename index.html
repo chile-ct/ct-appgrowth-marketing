@@ -1988,6 +1988,7 @@ function renderCampaignTables() {
     { key: 'job', label: 'JOB', color: '#22c55e' },
     { key: 'veh', label: 'VEH', color: '#f97316' },
     { key: 'gds', label: 'GDS', color: '#a855f7' },
+    { key: 'other', label: 'Other', color: '#94a3b8' },
   ];
   function makeVertStacked(canvasId, metricSuffix) {
     if (!vm) return;
@@ -1995,26 +1996,14 @@ function renderCampaignTables() {
     const existing = Object.values(Chart.instances||{}).find(ch=>ch.canvas?.id===canvasId);
     if(existing) existing.destroy();
     const fmtK = v => v>=1000?(v/1000).toFixed(1)+'K':String(v);
-    const isNewUsers = metricSuffix === '_new_users';
-    const gcNew = (D.growth_channel||{}).new_users || [];
     const datasets = VERT_DEFS.map(v => vm[v.key + metricSuffix] || []);
-    const vertTotals = D.months.map((_, i) => datasets.reduce((s, d) => s + (d[i]||0), 0));
-    const colTotals = isNewUsers
-      ? D.months.map((_, i) => gcNew[i] || vertTotals[i])
-      : vertTotals;
-    const otherData = isNewUsers
-      ? D.months.map((_, i) => Math.max(0, (gcNew[i]||0) - vertTotals[i]))
-      : null;
+    const colTotals = D.months.map((_, i) => datasets.reduce((s, d) => s + (d[i]||0), 0));
     const chartDatasets = VERT_DEFS.map((v, di) => ({
       type: 'bar', label: v.label, data: datasets[di],
       backgroundColor: v.color+'cc', borderColor: v.color, borderWidth:1, borderRadius:2, stack:'s',
     }));
-    if (otherData) chartDatasets.push({
-      type: 'bar', label: 'Other', data: otherData,
-      backgroundColor: '#94a3b8cc', borderColor: '#94a3b8', borderWidth:1, borderRadius:2, stack:'s',
-    });
-    if (isNewUsers) chartDatasets.push({
-      type: 'line', label: 'Total Growth', data: colTotals,
+    if (metricSuffix === '_new_users') chartDatasets.push({
+      type: 'line', label: 'Total',data: colTotals,
       borderColor: '#1e293b', backgroundColor: '#1e293b22', borderWidth: 2,
       pointRadius: 3, pointHoverRadius: 5, tension: 0.3, stack: undefined,
     });
@@ -2042,21 +2031,17 @@ function renderCampaignTables() {
   function renderVertDetailTable() {
     const t = document.getElementById('vertDetailTable'); if(!t||!vm) return;
     const MONTHS = D.months;
-    const gcNew = (D.growth_channel||{}).new_users || [];
     const fmtK = v => v==null?'—':v>=1000?(v/1000).toFixed(1)+'K':String(Math.round(v));
     const ths = MONTHS.map((m,i)=>`<th${i===MONTHS.length-1?' class="apr"':''}>${m}</th>`).join('');
     const datasets = VERT_DEFS.map(v => vm[v.key+'_new_users']||[]);
-    const vertTotals = MONTHS.map((_,i)=>datasets.reduce((s,d)=>s+(d[i]||0),0));
-    const otherArr = MONTHS.map((_,i)=>Math.max(0,(gcNew[i]||0)-vertTotals[i]));
-    const grandTotal = MONTHS.map((_,i)=>gcNew[i]||vertTotals[i]);
+    const grandTotal = MONTHS.map((_,i)=>datasets.reduce((s,d)=>s+(d[i]||0),0));
     function row(label, arr, cls) {
       const cells = arr.map((v,i)=>`<td${i===MONTHS.length-1?' class="apr"':''}>${fmtK(v)}</td>`).join('');
       return `<tr${cls?' class="'+cls+'"':''}><td>${label}</td>${cells}</tr>`;
     }
     t.innerHTML = `<thead><tr><th>Vertical</th>${ths}</tr></thead><tbody>
       ${VERT_DEFS.map(v=>row(v.label, vm[v.key+'_new_users']||[])).join('')}
-      ${row('Other (no vertical tag)', otherArr)}
-      ${row('<strong>Total Growth</strong>', grandTotal, 'total-row')}
+      ${row('<strong>Total</strong>', grandTotal, 'total-row')}
     </tbody>`;
   }
 

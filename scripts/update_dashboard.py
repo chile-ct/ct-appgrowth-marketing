@@ -375,7 +375,7 @@ try:
     FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
     WHERE return_status = 'new'
       AND campaign NOT IN ('all', '(none)')
-      AND channel = 'Growth'
+      AND channel NOT IN ('all', 'Direct', 'Organic Search')
       AND vertical_user = 'all'
       AND LOWER(campaign) NOT LIKE '%web_to_app%'
       AND LOWER(campaign) NOT LIKE '%web2app%'
@@ -393,10 +393,12 @@ try:
         'job_new_users': vm_arr('job', 'new_users'),
         'veh_new_users': vm_arr('veh', 'new_users'),
         'gds_new_users': vm_arr('gds', 'new_users'),
+        'other_new_users': vm_arr('other', 'new_users'),
         'pty_activated': vm_arr('pty', 'activated_adview'),
         'job_activated': vm_arr('job', 'activated_adview'),
         'veh_activated': vm_arr('veh', 'activated_adview'),
         'gds_activated': vm_arr('gds', 'activated_adview'),
+        'other_activated': vm_arr('other', 'activated_adview'),
     }
     print(f"  Vertical monthly: OK ({len(vm_rows)} rows)")
 except Exception as e:
