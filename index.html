@@ -492,7 +492,7 @@ canvas { max-height: 500px; }
 
   <!-- Tab 1: Acquisition -->
   <div class="tab-content" id="g5-1">
-    <div class="chart-card" style="display:flex;flex-direction:column;margin-bottom:16px"><div class="chart-title">New App Users (Growth) vs Total — % Share</div><div style="position:relative;flex:1;min-height:240px"><canvas id="chartG5Acq"></canvas></div></div>
+    <div class="chart-card" style="display:flex;flex-direction:column;margin-bottom:16px"><div class="chart-title">New App Users (Growth) vs Total</div><div style="position:relative;flex:1;min-height:240px"><canvas id="chartG5Acq"></canvas></div></div>
     <div class="card" style="margin-bottom:16px">
       <div class="card-title">Acquisition — Growth Channel</div>
       <div style="overflow-x:auto"><table id="g5AcqTable"></table></div>
@@ -540,7 +540,7 @@ canvas { max-height: 500px; }
     <!-- Row 1: New Users + Activated by Vertical side by side -->
     <div class="charts-grid" style="margin-bottom:16px">
       <div class="chart-card">
-        <div class="chart-title">New Users by Vertical — Monthly Trend</div>
+        <div class="chart-title">New Users by Vertical</div>
         <div style="position:relative;height:280px"><canvas id="chartVerticalMixAcq"></canvas></div>
       </div>
       <div class="chart-card">
@@ -1060,7 +1060,7 @@ function makeChart(id,type,labels,datasets,opts={}) {
   const ex=Object.values(Chart.instances||{}).find(c=>c.canvas&&c.canvas.id===id);
   if(ex)ex.destroy();
   new Chart(ctx,{type,data:{labels,datasets},options:{
-    responsive:true,maintainAspectRatio:opts.noAR?false:true,
+    responsive:true,maintainAspectRatio:opts.noAR?false:true,layout:opts.topPad?{padding:{top:opts.topPad}}:{},
     plugins:{
       legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}},
       tooltip:{callbacks:{label:c=>{
@@ -1174,7 +1174,7 @@ function renderAllCharts() {
         ]
       },
       options:{
-        responsive:true,maintainAspectRatio:false,
+        responsive:true,maintainAspectRatio:false,layout:{padding:{top:40}},
         scales:{
           x:{stacked:true,grid:{display:false},ticks:{font:{size:10}}},
           y:{stacked:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>fmtK(v)}}
@@ -1259,8 +1259,8 @@ function renderAllCharts() {
     ]);
   })();
 
-  deferTo('act-1',()=>makeChart('chartActMonthCh1','bar',MONTHS,[B('Direct',act.direct_adview,C.blue),B('Organic Search',act.organic_adview,C.green),B('Growth (P+D+CRM)',act.growth_adview,C.orange)],{noAR:true}));
-  deferTo('act-1',()=>makeChart('chartActMonthCh3','bar',MONTHS,[B('Direct',act.direct_save||[],C.blue),B('Organic Search',act.organic_save||[],C.green),B('Growth (P+D+CRM)',act.growth_save||[],C.orange)],{noAR:true}));
+  deferTo('act-1',()=>makeChart('chartActMonthCh1','bar',MONTHS,[B('Direct',act.direct_adview,C.blue),B('Organic Search',act.organic_adview,C.green),B('Growth (P+D+CRM)',act.growth_adview,C.orange)],{noAR:true,topPad:40}));
+  deferTo('act-1',()=>makeChart('chartActMonthCh3','bar',MONTHS,[B('Direct',act.direct_save||[],C.blue),B('Organic Search',act.organic_save||[],C.green),B('Growth (P+D+CRM)',act.growth_save||[],C.orange)],{noAR:true,topPad:40}));
 
   // Shared daily format: integers below 1000, K notation above
   function fmtDailyVal(v) {
@@ -1402,7 +1402,7 @@ function renderAllCharts() {
     const cardNew = ctx.closest('.chart-card');
     if(cardNew) { const old=cardNew.querySelector('.chart-controls'); if(old) old.remove(); }
     new Chart(ctx,{type:'line',data:{labels:dates,datasets},
-      options:{responsive:true,maintainAspectRatio:false,
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:40}},
         plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10}}},
           tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmtDailyVal(c.parsed.y)}`}}},
         scales:{
@@ -2022,7 +2022,7 @@ function renderCampaignTables() {
       type: 'bar',
       data: { labels: D.months, datasets: chartDatasets },
       options: {
-        responsive:true, maintainAspectRatio:false, layout:{padding:{bottom:0,top:4}},
+        responsive:true, maintainAspectRatio:false, layout:{padding:{bottom:0,top:40}},
         scales:{
           x:{stacked:true,grid:{display:false},ticks:{font:{size:10}}},
           y:{stacked:true,ticks:{font:{size:10},callback:v=>fmtK(v)}}
