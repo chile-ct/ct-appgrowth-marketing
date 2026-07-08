@@ -375,7 +375,7 @@ try:
     FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
     WHERE return_status = 'new'
       AND campaign NOT IN ('all', '(none)')
-      AND channel NOT IN ('all', 'Direct', 'Organic Search')
+      AND channel = 'Growth'
       AND vertical_user = 'all'
       AND LOWER(campaign) NOT LIKE '%web_to_app%'
       AND LOWER(campaign) NOT LIKE '%web2app%'
