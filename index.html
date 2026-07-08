@@ -228,7 +228,7 @@ canvas { max-height: 500px; }
   <div class="tab-content active" id="new-1">
     <div class="chart-card" style="margin-bottom:16px">
       <div class="chart-title">New App MAU by Channel</div>
-      <div style="position:relative;height:280px"><canvas id="chartNewChannel"></canvas></div>
+      <div style="position:relative;height:280px"><canvas id="chartNewChannel" data-avg-total-only="1"></canvas></div>
     </div>
     <div class="card">
       <div class="card-title">New App MAU by Channel</div>
@@ -992,7 +992,8 @@ function injectChartControls(canvasId, isPct) {
     if (avg>=1000) return (avg/1000).toFixed(1)+'K';
     return Math.round(avg).toLocaleString('en');
   }
-  const avgLines = ds.filter(d=>d.label&&!d.hidden).map(d=>{
+  const totalOnly = canvas.dataset.avgTotalOnly === '1';
+  const avgLines = ds.filter(d=>d.label&&!d.hidden&&(!totalOnly||/^Total/i.test(d.label))).map(d=>{
     const avg = seriesAvg(d); if (avg==null) return '';
     const isRate = isPct || d.yAxisID==='y1' || (avg>0&&avg<2&&avg!==Math.round(avg));
     if (isRate) return '';
@@ -2041,6 +2042,7 @@ function renderCampaignTables() {
         }
       }
     });
+    if (isNewUsers) { const cv=document.getElementById(canvasId); if(cv) cv.dataset.avgTotalOnly='1'; }
     requestAnimationFrame(()=>injectChartControls(canvasId));
   }
 
