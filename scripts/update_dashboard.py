@@ -363,22 +363,14 @@ try:
     vm_rows = run("""
     SELECT
       DATE_TRUNC(visit_date, MONTH) as month,
-      CASE
-        WHEN REGEXP_CONTAINS(LOWER(campaign), r'pty|property|bds|nha.?dat|_5010|_5020|_5030|nha_vua|bat_dong_san') THEN 'pty'
-        WHEN REGEXP_CONTAINS(LOWER(campaign), r'job|viec.?lam|tuyen.?dung') THEN 'job'
-        WHEN REGEXP_CONTAINS(LOWER(campaign), r'veh|vehicle|autox|_2010|_2020|_2030|_2040') THEN 'veh'
-        WHEN REGEXP_CONTAINS(LOWER(campaign), r'gds|elt|electronics|world_cup|awo_rewards|app_install|digital_activate|digital_install') THEN 'gds'
-        ELSE 'other'
-      END as vertical,
+      vertical_user as vertical,
       SUM(d0) as new_users,
       SUM(user_20adview_7d) as activated_adview
     FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
     WHERE return_status = 'new'
-      AND campaign NOT IN ('all', '(none)')
+      AND campaign = 'all'
       AND channel = 'Growth'
-      AND vertical_user = 'all'
-      AND LOWER(campaign) NOT LIKE '%web_to_app%'
-      AND LOWER(campaign) NOT LIKE '%web2app%'
+      AND vertical_user NOT IN ('all', 'other')
       AND visit_date >= '2026-01-01'
     GROUP BY 1, 2
     ORDER BY 1, 2
