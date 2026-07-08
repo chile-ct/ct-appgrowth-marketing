@@ -223,7 +223,6 @@ canvas { max-height: 500px; }
   <div class="tabs" id="tabs-new">
     <button class="tab active" onclick="switchTab('new',0)">By Channel — Monthly</button>
     <button class="tab" onclick="switchTab('new',1)">By Channel — Daily</button>
-    <button class="tab" onclick="switchTab('new',2)">By Vertical</button>
   </div>
 
   <div class="tab-content active" id="new-1">
@@ -283,13 +282,6 @@ canvas { max-height: 500px; }
     </div>
   </div>
 
-  <div class="tab-content" id="new-3">
-    <div class="chart-card" style="margin-bottom:16px">
-      <div class="chart-title">New App MAU by Vertical — Monthly Trend (Growth Channel)</div>
-      <div style="position:relative;height:280px"><canvas id="chartNewVertical"></canvas></div>
-      <div class="note" style="margin-top:8px">Data coming soon — vertical breakdown for all new users not yet available. Currently showing Growth channel vertical data only.</div>
-    </div>
-  </div>
 </div>
 
 <div class="divider"></div>
@@ -1188,7 +1180,7 @@ function renderAllCharts() {
           y:{stacked:true,grid:{color:'#f3f4f6'},ticks:{font:{size:10},callback:v=>fmtK(v)}}
         },
         plugins:{
-          legend:{position:'top',labels:{font:{size:11},padding:6,boxWidth:12}},
+          legend:{position:'bottom',labels:{font:{size:11},padding:6,boxWidth:12}},
           tooltip:{callbacks:{label:c=>{
             const v=c.parsed.y; if(v==null)return null;
             const tot=ov.new_mau[c.dataIndex]||1;
@@ -2036,7 +2028,7 @@ function renderCampaignTables() {
           y:{stacked:true,ticks:{font:{size:10},callback:v=>fmtK(v)}}
         },
         plugins:{
-          legend:{position:'top',labels:{font:{size:11},padding:6,boxWidth:12}},
+          legend:{position:'bottom',labels:{font:{size:11},padding:6,boxWidth:12}},
           tooltip:{callbacks:{
             label:c=>{const v=c.parsed.y||0,tot=colTotals[c.dataIndex]||1;return ` ${c.dataset.label}: ${fmtK(v)} (${((v/tot)*100).toFixed(1)}%)`;},
             footer:items=>`Total Growth: ${fmtK(colTotals[items[0]?.dataIndex]||0)}`
