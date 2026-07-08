@@ -861,76 +861,76 @@
   },
   "vertical_monthly": {
     "pty_new_users": [
-      42327,
-      24266,
-      43329,
-      24641,
-      28541,
-      28232,
-      9569
+      42405,
+      24314,
+      43902,
+      25275,
+      29195,
+      28730,
+      9744
     ],
     "job_new_users": [
       2065,
-      1555,
-      16551,
-      37934,
-      38796,
-      45625,
-      12216
+      2019,
+      17216,
+      37944,
+      38790,
+      45612,
+      12212
     ],
     "veh_new_users": [
-      243,
-      683,
-      2114,
-      2510,
-      1903,
-      1231,
-      382
+      266,
+      691,
+      2150,
+      2539,
+      1921,
+      1236,
+      385
     ],
     "gds_new_users": [
-      1157,
-      949,
-      1924,
-      1342,
-      1435,
-      9305,
-      4774
+      1148,
+      947,
+      1400,
+      757,
+      826,
+      12364,
+      5352
     ],
     "pty_activated": [
-      11640,
-      6845,
-      12289,
-      6485,
-      8246,
-      6815,
-      1665
+      11681,
+      6876,
+      12496,
+      6687,
+      8503,
+      6959,
+      1699
     ],
     "job_activated": [
       836,
-      567,
-      4467,
-      10302,
-      11093,
-      12350,
-      2430
+      802,
+      4850,
+      10307,
+      11090,
+      12345,
+      2428
     ],
     "veh_activated": [
-      98,
-      230,
-      620,
-      642,
-      532,
-      277,
-      79
+      117,
+      235,
+      641,
+      658,
+      539,
+      280,
+      82
     ],
     "gds_activated": [
-      387,
-      334,
-      648,
-      401,
-      500,
-      1635,
-      652
+      381,
+      332,
+      472,
+      226,
+      269,
+      2900,
+      868
     ]
   },
   "attribution_assist": {
@@ -1396,7 +1396,7 @@
     },
     {
       "name": "lo_to_viec_lam",
-      "vertical": "other",
+      "vertical": "job",
       "new_users": 463,
       "activated_adview": 235,
       "activated_lead": 206,
@@ -1737,7 +1737,7 @@
     },
     {
       "name": "lo_to_viec_lam",
-      "vertical": "other",
+      "vertical": "job",
       "new_users": 659,
       "activated_adview": 379,
       "activated_lead": 381,
@@ -1759,7 +1759,7 @@
     },
     {
       "name": "digital_gds_elt_5010_gg_pmaxwfeed",
-      "vertical": "gds",
+      "vertical": "pty",
       "new_users": 501,
       "activated_adview": 166,
       "activated_lead": 158,
@@ -2056,7 +2056,7 @@
     },
     {
       "name": "digital_gds_elt_5010_gg_pmaxwfeed",
-      "vertical": "gds",
+      "vertical": "pty",
       "new_users": 535,
       "activated_adview": 161,
       "activated_lead": 172,
@@ -2408,7 +2408,7 @@
     },
     {
       "name": "digital_gds_elt_5010_gg_pmaxwfeed",
-      "vertical": "gds",
+      "vertical": "pty",
       "new_users": 563,
       "activated_adview": 213,
       "activated_lead": 230,
@@ -2694,7 +2694,7 @@
     },
     {
       "name": "world_cup_2026",
-      "vertical": "other",
+      "vertical": "gds",
       "new_users": 3529,
       "activated_adview": 1397,
       "activated_lead": 1458,
@@ -2782,7 +2782,7 @@
     },
     {
       "name": "digital_gds_elt_5010_gg_pmaxwfeed",
-      "vertical": "gds",
+      "vertical": "pty",
       "new_users": 459,
       "activated_adview": 128,
       "activated_lead": 135,
