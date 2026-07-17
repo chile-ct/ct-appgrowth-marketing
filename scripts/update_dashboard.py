@@ -172,8 +172,10 @@ months_labels = [month_label(m, today) for m in all_months]
 partial = [m for m in months_labels if m.endswith("*")]
 n = len(all_months)
 
-# Days per month
+# Days per month — partial month uses actual days elapsed (today.day - 1)
 def days_in(d):
+    if d.year == today.year and d.month == today.month:
+        return max(1, today.day - 1)
     if d.month == 12: return 31
     return (datetime.date(d.year, d.month+1, 1) - datetime.timedelta(days=1)).day
 days = [days_in(m) for m in all_months]
