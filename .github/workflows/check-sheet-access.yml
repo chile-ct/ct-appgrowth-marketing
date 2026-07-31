@@ -60,7 +60,8 @@ jobs:
           from googleapiclient.discovery import build
 
           SHEET_ID = '1eLdUTKfR9yHcUnnEfyIouZlCiVDPvR6yn3igxdoy8eE'
-          creds = Credentials.from_authorized_user_file('/tmp/gcp-creds.json')
+          creds = Credentials.from_authorized_user_file(
+              '/tmp/gcp-creds.json').with_quota_project('chotot-dwh')
           svc = build('sheets', 'v4', credentials=creds)
           try:
               res = svc.spreadsheets().values().get(
