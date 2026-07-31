@@ -30,24 +30,37 @@ jobs:
               print("NOT JSON:", e)
               raise SystemExit
           print("TYPE OF ROOT:", type(info).__name__)
-          if isinstance(info, dict):
-              print("KEYS:", sorted(info.keys()))
-              print("type field:", info.get('type'))
-              print("SERVICE ACCOUNT EMAIL:", info.get('client_email'))
-              print("PROJECT:", info.get('project_id'))
+          print("KEYS:", sorted(info.keys()))
+          print("type field:", info.get('type'))
+          print("ACCOUNT:", info.get('account'))
+          PY
+
+      - name: Show granted OAuth scopes
+        run: |
+          python - <<'PY'
+          import json, urllib.request
+          from google.oauth2.credentials import Credentials
+          from google.auth.transport.requests import Request
+
+          creds = Credentials.from_authorized_user_file('/tmp/gcp-creds.json')
+          creds.refresh(Request())
+          url = 'https://oauth2.googleapis.com/tokeninfo?access_token=' + creds.token
+          with urllib.request.urlopen(url) as r:
+              info = json.load(r)
+          print("EMAIL:", info.get('email'))
+          print("GRANTED SCOPES:")
+          for s in sorted(info.get('scope', '').split()):
+              print("  ", s)
           PY
 
       - name: Try reading raw_total
         run: |
           python - <<'PY'
-          from google.oauth2 import service_account
+          from google.oauth2.credentials import Credentials
           from googleapiclient.discovery import build
 
           SHEET_ID = '1eLdUTKfR9yHcUnnEfyIouZlCiVDPvR6yn3igxdoy8eE'
-          creds = service_account.Credentials.from_service_account_file(
-              '/tmp/gcp-creds.json',
-              scopes=['https://www.googleapis.com/auth/spreadsheets.readonly'],
-          )
+          creds = Credentials.from_authorized_user_file('/tmp/gcp-creds.json')
           svc = build('sheets', 'v4', credentials=creds)
           try:
               res = svc.spreadsheets().values().get(
