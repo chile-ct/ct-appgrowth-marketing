@@ -21,9 +21,20 @@ jobs:
         run: |
           python - <<'PY'
           import json
-          info = json.load(open('/tmp/gcp-creds.json'))
-          print("SERVICE ACCOUNT EMAIL:", info.get('client_email'))
-          print("PROJECT:", info.get('project_id'))
+          raw = open('/tmp/gcp-creds.json').read()
+          print("RAW LENGTH:", len(raw))
+          print("FIRST 40 CHARS:", repr(raw[:40]))
+          try:
+              info = json.loads(raw)
+          except Exception as e:
+              print("NOT JSON:", e)
+              raise SystemExit
+          print("TYPE OF ROOT:", type(info).__name__)
+          if isinstance(info, dict):
+              print("KEYS:", sorted(info.keys()))
+              print("type field:", info.get('type'))
+              print("SERVICE ACCOUNT EMAIL:", info.get('client_email'))
+              print("PROJECT:", info.get('project_id'))
           PY
 
       - name: Try reading raw_total
