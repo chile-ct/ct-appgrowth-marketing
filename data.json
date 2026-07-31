@@ -7117,6 +7117,88 @@
       "save_through": "23/07"
     }
   ],
+  "camp_target": [
+    {
+      "month": "Jun 2026",
+      "vertical": "pty",
+      "budget": 263041237,
+      "target_install": 28712,
+      "bau_budget": 225241237,
+      "bau_install": 26822,
+      "test_budget": 37800000,
+      "test_install": 1890
+    },
+    {
+      "month": "Jun 2026",
+      "vertical": "job",
+      "budget": 295218557,
+      "target_install": 52541,
+      "bau_budget": 257418557,
+      "bau_install": 50651,
+      "test_budget": 37800000,
+      "test_install": 1890
+    },
+    {
+      "month": "Jun 2026",
+      "vertical": "gds",
+      "budget": 161740206,
+      "target_install": 14712,
+      "bau_budget": 129340206,
+      "bau_install": 13092,
+      "test_budget": 32400000,
+      "test_install": 1620
+    },
+    {
+      "month": "May 2026",
+      "vertical": "pty",
+      "budget": 220000000,
+      "target_install": 38462,
+      "bau_budget": 0,
+      "bau_install": 0,
+      "test_budget": 0,
+      "test_install": 0
+    },
+    {
+      "month": "Jul 2026",
+      "vertical": "pty",
+      "budget": 420000000,
+      "target_install": 42314,
+      "bau_budget": 397194000,
+      "bau_install": 40972,
+      "test_budget": 22806000,
+      "test_install": 1342
+    },
+    {
+      "month": "Jul 2026",
+      "vertical": "job",
+      "budget": 315000000,
+      "target_install": 46840,
+      "bau_budget": 285012000,
+      "bau_install": 45549,
+      "test_budget": 29988000,
+      "test_install": 1291
+    },
+    {
+      "month": "Jul 2026",
+      "vertical": "gds",
+      "budget": 262500000,
+      "target_install": 18577,
+      "bau_budget": 226406250,
+      "bau_install": 17505,
+      "test_budget": 36093750,
+      "test_install": 1072
+    },
+    {
+      "month": "Jul 2026",
+      "vertical": "veh",
+      "budget": 52500000,
+      "target_install": 5526,
+      "bau_budget": 52500000,
+      "bau_install": 5526,
+      "test_budget": 0,
+      "test_install": 0
+    }
+  ],
   "daily_activation": [
     {
       "date": "2026-05-02",
@@ -9997,88 +10079,6 @@
       "adview_activated": 1630,
       "lead_activated": 1822,
       "save_activated": 901
-    }
-  ],
-  "camp_target": [
-    {
-      "month": "Jun 2026",
-      "vertical": "pty",
-      "budget": 263041237,
-      "target_install": 28712,
-      "bau_budget": 225241237,
-      "bau_install": 26822,
-      "test_budget": 37800000,
-      "test_install": 1890
-    },
-    {
-      "month": "Jun 2026",
-      "vertical": "job",
-      "budget": 295218557,
-      "target_install": 52541,
-      "bau_budget": 257418557,
-      "bau_install": 50651,
-      "test_budget": 37800000,
-      "test_install": 1890
-    },
-    {
-      "month": "Jun 2026",
-      "vertical": "gds",
-      "budget": 161740206,
-      "target_install": 14712,
-      "bau_budget": 129340206,
-      "bau_install": 13092,
-      "test_budget": 32400000,
-      "test_install": 1620
-    },
-    {
-      "month": "May 2026",
-      "vertical": "pty",
-      "budget": 220000000,
-      "target_install": 38462,
-      "bau_budget": 0,
-      "bau_install": 0,
-      "test_budget": 0,
-      "test_install": 0
-    },
-    {
-      "month": "Jul 2026",
-      "vertical": "pty",
-      "budget": 420000000,
-      "target_install": 42314,
-      "bau_budget": 397194000,
-      "bau_install": 40972,
-      "test_budget": 22806000,
-      "test_install": 1342
-    },
-    {
-      "month": "Jul 2026",
-      "vertical": "job",
-      "budget": 315000000,
-      "target_install": 46840,
-      "bau_budget": 285012000,
-      "bau_install": 45549,
-      "test_budget": 29988000,
-      "test_install": 1291
-    },
-    {
-      "month": "Jul 2026",
-      "vertical": "gds",
-      "budget": 262500000,
-      "target_install": 18577,
-      "bau_budget": 226406250,
-      "bau_install": 17505,
-      "test_budget": 36093750,
-      "test_install": 1072
-    },
-    {
-      "month": "Jul 2026",
-      "vertical": "veh",
-      "budget": 52500000,
-      "target_install": 5526,
-      "bau_budget": 52500000,
-      "bau_install": 5526,
-      "test_budget": 0,
-      "test_install": 0
     }
   ]
 }
