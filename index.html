@@ -548,7 +548,8 @@ canvas { max-height: 500px; }
   <div class="section-title">6. Detail Camp Performance — Growth Team (App)</div>
   <div class="section-subtitle">
     Performance từng campaign của <strong>8 ad account team Growth, phase App</strong> (FB: Chotot_growth_sgd, Chotot_pty_app, Chotot_job_app, Chotot_veh_app · GG: Chotot_app_pty, Chotot_app_veh, Chotot_app_job, Chotot_Growth_New)<br>
-    <span style="color:#9ca3af">Cost &amp; Install lấy từ sheet <em>raw_total</em> (phase install + activate) · D0/D1/D7/DAU/Save ad lấy từ BigQuery, cộng theo campaign name qua mọi channel · Join giữa 2 nguồn bằng campaign name</span>
+    <span style="color:#9ca3af">Cost &amp; Install lấy từ sheet <em>raw_total</em> (phase install + activate) · D0/D1/D7 từ <em>retention_mapping_activation_by_source_campaign</em> · DAU &amp; Save ad in D0 từ <em>new_user_adopt_activate</em> (<code>adopt_users</code> = save_ad d0) · cộng theo campaign name qua mọi channel, join bằng campaign name</span><br>
+    <span style="color:#f59e0b;font-size:11px">⚠ Bảng <em>new_user_adopt_activate</em> chưa có channel Facebook nên phần lớn campaign FB đang trống ở Save ad in D0 &amp; % Save ad — team DA sẽ bổ sung sau. Dấu <strong>*</strong> = cohort chưa chín đủ 7 ngày, số tuyệt đối còn thiếu (tỉ lệ % vẫn đúng).</span>
   </div>
 
   <div class="kpi-grid" style="grid-template-columns:repeat(6,1fr)" id="cd-kpis">
@@ -557,7 +558,7 @@ canvas { max-height: 500px; }
     <div class="kpi-card"><div class="kpi-label">CPI (blended)</div><div class="kpi-value" id="kpi-cd-cpi">—</div><div class="kpi-sub">Cost / Install</div></div>
     <div class="kpi-card"><div class="kpi-label">D0 (new users)</div><div class="kpi-value" id="kpi-cd-d0">—</div><div class="kpi-sub">BigQuery tracked</div></div>
     <div class="kpi-card"><div class="kpi-label">RR D1</div><div class="kpi-value" id="kpi-cd-rr1">—</div><div class="kpi-sub">D1 / D0</div></div>
-    <div class="kpi-card"><div class="kpi-label">% Save Ads</div><div class="kpi-value" id="kpi-cd-save">—</div><div class="kpi-sub">Save ad / DAU</div></div>
+    <div class="kpi-card"><div class="kpi-label">% Save ad</div><div class="kpi-value" id="kpi-cd-save">—</div><div class="kpi-sub" id="kpi-cd-save-sub">Save ad in D0 / DAU</div></div>
   </div>
 
   <div class="card">
@@ -1982,7 +1983,7 @@ function renderCampDetail() {
   // KPIs reflect the current filter, not the whole dataset.
   const sum = k => rows.reduce((s,r)=>s+(r[k]||0),0);
   const tCost=sum('cost'), tInst=sum('install'), tD0=sum('d0'), tD1=sum('d1'),
-        tDau=sum('dau'), tSave=sum('save_ad');
+        tDau=sum('dau'), tSave=sum('save_ad_d0');
   const fmtVnd = v => v>=1e9?(v/1e9).toFixed(2)+'B ₫':v>=1e6?(v/1e6).toFixed(1)+'M ₫':Math.round(v).toLocaleString('en')+' ₫';
   const fmtNum = v => v==null?'—':v.toLocaleString('en');
   const fmtPct = v => v==null?'—':(v*100).toFixed(1)+'%';
@@ -1994,6 +1995,12 @@ function renderCampDetail() {
   setTxt('kpi-cd-d0', fmtNum(tD0));
   setTxt('kpi-cd-rr1', tD0?fmtPct(tD1/tD0):'—');
   setTxt('kpi-cd-save', tDau?fmtPct(tSave/tDau):'—');
+  // Say out loud how many campaigns actually carry a save-ad number, so a small
+  // denominator can't be mistaken for a whole-team figure.
+  const savN = rows.filter(r=>r.save_ad_d0!=null).length;
+  setTxt('kpi-cd-save-sub', savN===rows.length
+    ? 'Save ad in D0 / DAU'
+    : `Chỉ ${savN}/${rows.length} campaign có data`);
 
   document.getElementById('cdFilter').innerHTML = `<div style="display:flex;flex-direction:column;gap:6px">
     ${_cdChips('Tháng:','month',['all',...months],{all:'All Months'})}
@@ -2043,8 +2050,8 @@ function renderCampDetail() {
     <th style="text-align:left">RR D1</th>
     <th style="text-align:left">RR D7</th>
     <th style="text-align:left">DAU</th>
-    <th style="text-align:left">Save Ad</th>
-    <th style="text-align:left">% Save Ads</th>
+    <th style="text-align:left">Save ad in D0</th>
+    <th style="text-align:left">% Save ad</th>
   </tr>`;
   const body = pageRows.map((r,i)=>`<tr>
     <td ${tdL} style="color:#9ca3af;font-size:11px;text-align:left">${offset+i+1}</td>
@@ -2063,7 +2070,7 @@ function renderCampDetail() {
       `<td ${tdL} style="text-align:left;color:${rrColor(r.rr_d1)};font-weight:${(r.rr_d1||0)>0.35?'700':'400'}">${fmtPct(r.rr_d1)}</td>`}
     ${cdRate(r, r.rr_d7, 'd0') || `<td ${tdL}>${fmtPct(r.rr_d7)}</td>`}
     <td ${tdL}>${fmtNum(r.dau)}</td>
-    <td ${tdL}>${fmtNum(r.save_ad)}</td>
+    <td ${tdL}>${fmtNum(r.save_ad_d0)}${r.save_partial&&r.save_ad_d0!=null?`<span style="color:#f59e0b" title="Cohort chỉ tới ${r.save_through} — số này còn thiếu ngày">*</span>`:''}</td>
     ${cdRate(r, r.save_ad_rate, 'dau') || `<td ${tdL}>${fmtPct(r.save_ad_rate)}</td>`}
   </tr>`).join('');
   tableEl.innerHTML = `<thead>${head}</thead><tbody>${body||'<tr><td colspan="14" style="text-align:center;color:#9ca3af;padding:20px">Không có campaign nào khớp filter</td></tr>'}</tbody>`;

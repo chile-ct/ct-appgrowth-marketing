@@ -485,6 +485,41 @@ try:
     """)
     act = {(to_date(r['month']), str(r['campaign'])): r for r in act_rows}
 
+    # "Save ad in D0" + its DAU denominator come from the MKT-owned adopt table,
+    # where adopt_users is documented as "New user d0 adopt (save_ad d0)".
+    #
+    # Two quirks of this table drive the SQL below:
+    #  1. report_date = first_date + 7, so the cohort month is report_date - 7.
+    #     Grouping on report_date directly would push late-month cohorts into the
+    #     following month and misalign them against cost.
+    #  2. Rows only appear once the 7-day window has fully matured, so the most
+    #     recent ~7 days of cohorts are simply absent. The ratio stays valid
+    #     (numerator and denominator cover the same days) but the absolute counts
+    #     understate the newest month — flagged as save_partial below.
+    adopt_rows = run(f"""
+    SELECT
+      DATE_TRUNC(DATE_SUB(report_date, INTERVAL 7 DAY), MONTH) as month,
+      campaign,
+      SUM(dau) as dau,
+      SUM(adopt_users) as save_ad_d0,
+      MAX(DATE_SUB(report_date, INTERVAL 7 DAY)) as max_cohort
+    FROM ct_product_analytics.new_user_adopt_activate
+    WHERE channel != 'all'
+      AND DATE_SUB(report_date, INTERVAL 7 DAY) >= '2026-01-01'
+      AND campaign IN ({in_list})
+    GROUP BY 1, 2
+    """)
+    adopt = {(to_date(r['month']), str(r['campaign'])): r for r in adopt_rows}
+
+    # Last cohort date the adopt table has matured, per month — used to mark the
+    # month whose save-ad counts are still filling in.
+    adopt_max = {}
+    for r in adopt_rows:
+        m = to_date(r['month'])
+        c = to_date(r['max_cohort']) if r['max_cohort'] else None
+        if c and (m not in adopt_max or c > adopt_max[m]):
+            adopt_max[m] = c
+
     def _int(v):
         return int(v) if v is not None else None
 
@@ -496,11 +531,24 @@ try:
             return None
         return round(num / den, 4)
 
+    def _month_end(m_date):
+        """Last day of the month m_date starts, capped at today so the current
+        month isn't reported as partial merely because it hasn't finished."""
+        nxt = datetime.date(m_date.year + (m_date.month == 12),
+                            m_date.month % 12 + 1, 1)
+        return min(nxt - datetime.timedelta(days=1), today)
+
     for (m_date, name), s in sorted(sheet_agg.items()):
         a = act.get((m_date, name), {})
-        d0, dau = _int(a.get('d0')), _int(a.get('dau'))
+        d0 = _int(a.get('d0'))
         d1, d7 = _int(a.get('d1')), _int(a.get('d7'))
-        save_ad = _int(a.get('save_ad'))
+        # DAU and save-ad-in-D0 both come from the adopt table so the % is an
+        # internally consistent ratio. Mixing in the retention table's DAU here
+        # would divide an app-only numerator by an all-platform denominator.
+        ad = adopt.get((m_date, name), {})
+        dau = _int(ad.get('dau'))
+        save_ad_d0 = _int(ad.get('save_ad_d0'))
+        last_cohort = adopt_max.get(m_date)
         cost, install = round(s['cost']), int(s['install'])
         camp_detail.append({
             'name': name,
@@ -517,13 +565,30 @@ try:
             'rr_d1': _rate(d1, d0),
             'rr_d7': _rate(d7, d0),
             'dau': dau,
-            'save_ad': save_ad,
-            'save_ad_rate': _rate(save_ad, dau),
+            'save_ad_d0': save_ad_d0,
+            'save_ad_rate': _rate(save_ad_d0, dau),
+            # True when the month's cohorts have not all matured yet, so the
+            # absolute save-ad/DAU counts are still incomplete.
+            'save_partial': bool(
+                last_cohort and last_cohort < _month_end(m_date)),
+            'save_through': last_cohort.strftime('%d/%m') if last_cohort else None,
         })
     matched = sum(1 for r in camp_detail if r['d0'] is not None)
+    save_matched = sum(1 for r in camp_detail if r['save_ad_d0'] is not None)
+    by_ch = {}
+    for r in camp_detail:
+        k = r['channel']
+        by_ch.setdefault(k, [0, 0])
+        by_ch[k][0] += 1
+        if r['save_ad_d0'] is not None:
+            by_ch[k][1] += 1
     det_months = sorted({r['month'] for r in camp_detail})
     print(f"  Camp detail: {len(camp_detail)} rows OK "
           f"({matched} matched BQ activation, months: {det_months})")
+    print(f"  Save ad in D0: {save_matched}/{len(camp_detail)} rows matched "
+          f"new_user_adopt_activate "
+          + ' '.join(f'{k}={v[1]}/{v[0]}' for k, v in sorted(by_ch.items()))
+          + " (FB coverage is expected to be low until DA backfills it)")
 except Exception as e:
     print(f"  WARNING Camp detail skipped: {e}")
     camp_detail = D.get('camp_detail', [])
