@@ -146,6 +146,7 @@ canvas { max-height: 500px; }
     <a href="#section-3" class="nav-tab">3. Activation</a>
     <a href="#section-4" class="nav-tab">4. Retention</a>
     <a href="#section-5" class="nav-tab" style="color:#f59e0b">5. Growth Performance</a>
+    <a href="#section-6" class="nav-tab" style="color:#f59e0b">6. Detail Camp Performance</a>
     <a href="#section-budget" class="nav-tab">💰 Budget</a>
   </div>
 </div>
@@ -540,7 +541,34 @@ canvas { max-height: 500px; }
 
 </div><!-- /section 5 -->
 
-<!-- ===== SECTION 6: BUDGET EDITOR ===== -->
+<div class="divider"></div>
+
+<!-- ===== SECTION 6: DETAIL CAMP PERFORMANCE ===== -->
+<div class="section" id="section-6">
+  <div class="section-title">6. Detail Camp Performance — Growth Team (App)</div>
+  <div class="section-subtitle">
+    Performance từng campaign của <strong>8 ad account team Growth, phase App</strong> (FB: Chotot_growth_sgd, Chotot_pty_app, Chotot_job_app, Chotot_veh_app · GG: Chotot_app_pty, Chotot_app_veh, Chotot_app_job, Chotot_Growth_New)<br>
+    <span style="color:#9ca3af">Cost &amp; Install lấy từ sheet <em>raw_total</em> (phase install + activate) · D0/D1/D7/DAU/Save ad lấy từ BigQuery, cộng theo campaign name qua mọi channel · Join giữa 2 nguồn bằng campaign name</span>
+  </div>
+
+  <div class="kpi-grid" style="grid-template-columns:repeat(6,1fr)" id="cd-kpis">
+    <div class="kpi-card"><div class="kpi-label">Cost</div><div class="kpi-value" id="kpi-cd-cost">—</div><div class="kpi-sub" id="kpi-cd-cost-sub">—</div></div>
+    <div class="kpi-card"><div class="kpi-label">Install</div><div class="kpi-value" id="kpi-cd-install">—</div><div class="kpi-sub">Từ ad platform</div></div>
+    <div class="kpi-card"><div class="kpi-label">CPI (blended)</div><div class="kpi-value" id="kpi-cd-cpi">—</div><div class="kpi-sub">Cost / Install</div></div>
+    <div class="kpi-card"><div class="kpi-label">D0 (new users)</div><div class="kpi-value" id="kpi-cd-d0">—</div><div class="kpi-sub">BigQuery tracked</div></div>
+    <div class="kpi-card"><div class="kpi-label">RR D1</div><div class="kpi-value" id="kpi-cd-rr1">—</div><div class="kpi-sub">D1 / D0</div></div>
+    <div class="kpi-card"><div class="kpi-label">% Save Ads</div><div class="kpi-value" id="kpi-cd-save">—</div><div class="kpi-sub">Save ad / DAU</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Campaign Detail</div>
+    <div id="cdFilter" style="margin-bottom:10px"></div>
+    <div style="overflow-x:auto"><table id="campDetailTable"></table></div>
+    <div id="cdPage" style="margin-top:10px"></div>
+  </div>
+</div><!-- /section 6 -->
+
+<!-- ===== SECTION 7: BUDGET EDITOR ===== -->
 <div class="section" id="section-budget">
   <div class="section-title">💰 Cost Budget 2026 — App Growth</div>
   <div class="section-subtitle">Nhập cost trực tiếp tại đây · Dữ liệu lưu trong browser · Nhấn <strong>Lưu</strong> để cập nhật tất cả charts ngay lập tức</div>
@@ -1880,6 +1908,145 @@ function renderOneCampTable(tableId) {
   renderCampPager(`campPage-${tableId}`, tableId, total, page, PAGE);
 }
 
+// ── Section 6: Detail Camp Performance ──────────────────────────────────────
+// Cost/install come from the raw_total sheet, activation metrics from BigQuery.
+// A campaign with spend but no BigQuery match keeps its cost columns and shows
+// "—" for activation, so unmatched spend stays visible instead of disappearing.
+const _cdState = { month: 'all', channel: 'all', vertical: 'all', sort: 'cost', page: 0 };
+
+function _cdChips(label, key, opts, labels) {
+  const chips = opts.map(o => {
+    const active = _cdState[key] === o;
+    return `<button onclick="cdFilter('${key}','${o}')" style="padding:3px 10px;border-radius:10px;border:1.5px solid ${active?'#4361ee':'#d1d5db'};background:${active?'#4361ee':'#f9fafb'};color:${active?'white':'#6b7280'};font-size:11px;font-weight:600;cursor:pointer">${(labels&&labels[o])||o}</button>`;
+  }).join('');
+  return `<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center"><span style="font-size:10px;color:#9ca3af;min-width:60px">${label}</span>${chips}</div>`;
+}
+
+window.cdFilter = function(key, val) { _cdState[key] = val; _cdState.page = 0; renderCampDetail(); };
+window.cdPage = function(pg) { _cdState.page = pg; renderCampDetail(); };
+window.cdSort = function(key) {
+  _cdState.sort = key; _cdState.page = 0; renderCampDetail();
+};
+
+function renderCampDetail() {
+  const tableEl = document.getElementById('campDetailTable');
+  if (!tableEl) return;
+  const rowsAll = (D && D.camp_detail) || [];
+
+  if (!rowsAll.length) {
+    document.getElementById('cdFilter').innerHTML = '';
+    document.getElementById('cdPage').innerHTML = '';
+    tableEl.innerHTML = `<thead><tr><th style="text-align:left">Chưa có data — sẽ xuất hiện sau lần update tiếp theo (hàng ngày 11 AM)</th></tr></thead><tbody></tbody>`;
+    return;
+  }
+
+  const MO = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  const months = [...new Set(rowsAll.map(r=>r.month))].sort((a,b)=>{
+    const [am,ay]=a.split(' '), [bm,by]=b.split(' ');
+    return +ay!==+by ? +ay-+by : MO[am]-MO[bm];
+  });
+  const verts = [...new Set(rowsAll.map(r=>r.vertical||'other'))].sort();
+
+  // Default to the latest month rather than everything, so the table opens on
+  // something readable instead of every campaign since January.
+  if (_cdState.month === 'all' && !_cdState._touched) {
+    _cdState.month = months[months.length-1];
+    _cdState._touched = true;
+  }
+
+  let rows = rowsAll.slice();
+  if (_cdState.month !== 'all')    rows = rows.filter(r=>r.month===_cdState.month);
+  if (_cdState.channel !== 'all')  rows = rows.filter(r=>r.channel===_cdState.channel);
+  if (_cdState.vertical !== 'all') rows = rows.filter(r=>(r.vertical||'other')===_cdState.vertical);
+
+  const SORTS = {cost:'cost', install:'install', cpi:'cpi', d0:'d0', rr_d1:'rr_d1', save_ad_rate:'save_ad_rate'};
+  const sk = SORTS[_cdState.sort] || 'cost';
+  rows.sort((a,b)=>(b[sk]==null?-1:b[sk])-(a[sk]==null?-1:a[sk]));
+
+  // KPIs reflect the current filter, not the whole dataset.
+  const sum = k => rows.reduce((s,r)=>s+(r[k]||0),0);
+  const tCost=sum('cost'), tInst=sum('install'), tD0=sum('d0'), tD1=sum('d1'),
+        tDau=sum('dau'), tSave=sum('save_ad');
+  const fmtVnd = v => v>=1e9?(v/1e9).toFixed(2)+'B ₫':v>=1e6?(v/1e6).toFixed(1)+'M ₫':Math.round(v).toLocaleString('en')+' ₫';
+  const fmtNum = v => v==null?'—':v.toLocaleString('en');
+  const fmtPct = v => v==null?'—':(v*100).toFixed(1)+'%';
+  const setTxt = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  setTxt('kpi-cd-cost', fmtVnd(tCost));
+  setTxt('kpi-cd-cost-sub', `${rows.length} campaign · ${_cdState.month==='all'?'tất cả tháng':_cdState.month}`);
+  setTxt('kpi-cd-install', fmtNum(tInst));
+  setTxt('kpi-cd-cpi', tInst?Math.round(tCost/tInst).toLocaleString('en')+' ₫':'—');
+  setTxt('kpi-cd-d0', fmtNum(tD0));
+  setTxt('kpi-cd-rr1', tD0?fmtPct(tD1/tD0):'—');
+  setTxt('kpi-cd-save', tDau?fmtPct(tSave/tDau):'—');
+
+  document.getElementById('cdFilter').innerHTML = `<div style="display:flex;flex-direction:column;gap:6px">
+    ${_cdChips('Tháng:','month',['all',...months],{all:'All Months'})}
+    ${_cdChips('Channel:','channel',['all','FB','GG'],{all:'All'})}
+    ${_cdChips('Vertical:','vertical',['all',...verts],{all:'All'})}
+    ${_cdChips('Sort:','sort',['cost','install','cpi','d0','rr_d1','save_ad_rate'],
+        {cost:'Cost',install:'Install',cpi:'CPI',d0:'D0',rr_d1:'RR D1',save_ad_rate:'% Save'})}
+  </div>`;
+
+  const PAGE = 15;
+  const total = rows.length;
+  const page = Math.min(_cdState.page, Math.max(0, Math.ceil(total/PAGE)-1));
+  _cdState.page = page;
+  const pageRows = rows.slice(page*PAGE, (page+1)*PAGE);
+  const offset = page*PAGE;
+
+  const chBadge = c => {
+    const [bg,col] = c==='FB' ? ['#e0e7ff','#3730a3'] : ['#fef3c7','#92400e'];
+    return `<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:${bg};color:${col};font-weight:600">${c}</span>`;
+  };
+  const rrColor = v => v==null?'#9ca3af':v>0.35?'#10b981':v>0.25?'#374151':'#ef4444';
+  const tdL = `style="text-align:left"`;
+  const head = `<tr>
+    <th style="text-align:left">#</th>
+    <th style="text-align:left">Campaign</th>
+    <th style="text-align:left">Ch</th>
+    <th style="text-align:left">Vertical</th>
+    <th style="text-align:left">Cost</th>
+    <th style="text-align:left">Install</th>
+    <th style="text-align:left">CPI</th>
+    <th style="text-align:left">D0</th>
+    <th style="text-align:left">D1</th>
+    <th style="text-align:left">RR D1</th>
+    <th style="text-align:left">RR D7</th>
+    <th style="text-align:left">DAU</th>
+    <th style="text-align:left">Save Ad</th>
+    <th style="text-align:left">% Save Ads</th>
+  </tr>`;
+  const body = pageRows.map((r,i)=>`<tr>
+    <td ${tdL} style="color:#9ca3af;font-size:11px;text-align:left">${offset+i+1}</td>
+    <td style="text-align:left;max-width:300px;font-size:11px;word-break:break-all;line-height:1.35" title="${r.name}">${r.name}</td>
+    <td ${tdL}>${chBadge(r.channel)}</td>
+    <td ${tdL}>${_campVertBadge(r.vertical||'other')}</td>
+    <td ${tdL} style="text-align:left;font-weight:600">${fmtVnd(r.cost||0)}</td>
+    <td ${tdL}>${fmtNum(r.install)}</td>
+    <td ${tdL}>${r.cpi==null?'—':r.cpi.toLocaleString('en')+' ₫'}</td>
+    <td ${tdL}>${fmtNum(r.d0)}</td>
+    <td ${tdL}>${fmtNum(r.d1)}</td>
+    <td ${tdL} style="text-align:left;color:${rrColor(r.rr_d1)};font-weight:${(r.rr_d1||0)>0.35?'700':'400'}">${fmtPct(r.rr_d1)}</td>
+    <td ${tdL}>${fmtPct(r.rr_d7)}</td>
+    <td ${tdL}>${fmtNum(r.dau)}</td>
+    <td ${tdL}>${fmtNum(r.save_ad)}</td>
+    <td ${tdL}>${fmtPct(r.save_ad_rate)}</td>
+  </tr>`).join('');
+  tableEl.innerHTML = `<thead>${head}</thead><tbody>${body||'<tr><td colspan="14" style="text-align:center;color:#9ca3af;padding:20px">Không có campaign nào khớp filter</td></tr>'}</tbody>`;
+
+  const totalPages = Math.max(1, Math.ceil(total/PAGE));
+  const btn = (disabled, label, target) =>
+    `<button onclick="cdPage(${disabled?page:target})" style="padding:4px 12px;border-radius:6px;border:1px solid #d1d5db;background:${disabled?'#f9fafb':'white'};color:${disabled?'#d1d5db':'#374151'};cursor:${disabled?'default':'pointer'};font-size:12px" ${disabled?'disabled':''}>${label}</button>`;
+  const unmatched = rows.filter(r=>r.d0==null).length;
+  document.getElementById('cdPage').innerHTML = total===0 ? '' :
+    `<div style="display:flex;align-items:center;gap:10px;font-size:12px;color:#6b7280;flex-wrap:wrap">
+      ${btn(page===0,'‹',page-1)}
+      <span>${offset+1}–${Math.min((page+1)*PAGE,total)} / ${total} campaigns &nbsp;(trang ${page+1}/${totalPages})</span>
+      ${btn(page>=totalPages-1,'›',page+1)}
+      ${unmatched?`<span style="color:#f59e0b">· ${unmatched} campaign có cost nhưng không match data BigQuery</span>`:''}
+    </div>`;
+}
+
 function renderCampaignTables() {
   if (!D || !D.campaigns || !D.campaigns.length) {
     const msg = `<thead><tr><th>Campaign data sẽ xuất hiện sau lần update tiếp theo (hàng ngày 11 AM)</th></tr></thead><tbody></tbody>`;
@@ -2086,10 +2253,12 @@ function renderCampaignTables() {
   });
 
   // Section 2 — By Vertical tab (new-3): New App MAU by Vertical (Growth channel)
-  deferTo('new-3',()=>makeVertStacked('chartNewVertical','_new_users'));
+  // deferTo() is scoped to renderAllCharts, so push onto _pendingTabRenders
+  // directly here (same pattern as g5-4 above).
+  (_pendingTabRenders['new-3']=_pendingTabRenders['new-3']||[]).push(()=>makeVertStacked('chartNewVertical','_new_users'));
 
   // Section 3 — By Vertical tab (act-3): Activated by Vertical
-  deferTo('act-3',()=>makeVertStacked('chartActVertical','_activated'));
+  (_pendingTabRenders['act-3']=_pendingTabRenders['act-3']||[]).push(()=>makeVertStacked('chartActVertical','_activated'));
   window.switchActVertTabMetric = function(metric) {
     document.querySelectorAll('[id^="actVertTabChip-"]').forEach(b=>b.classList.remove('active'));
     const chip=document.getElementById('actVertTabChip-'+metric); if(chip) chip.classList.add('active');
@@ -2332,7 +2501,10 @@ async function initDashboard() {
   updateS2KPICards(D.months.length-1);
   updateS3KPICards(D.months.length-1);
   updateS5KPIs();
-  renderCampaignTables();
+  // Isolated so a failure in one table block can't abort the rest of init
+  // (a scope bug in renderCampaignTables used to silently kill everything below).
+  try { renderCampaignTables(); } catch (e) { console.error('renderCampaignTables failed:', e); }
+  try { renderCampDetail(); } catch (e) { console.error('renderCampDetail failed:', e); }
 
   // Partial month badge — show "* Tháng 6: data đến DD/MM/YYYY"
   if (D.partial_months && D.partial_months.length && D.updated_at) {

@@ -352,6 +352,182 @@ except Exception as e:
     print(f"  WARNING Campaigns skipped: {e}")
     campaigns = D.get('campaigns', [])
 
+# ── Detail Camp Performance — Growth team, App phase ────────────────────────
+# cost + install come from the Google Sheet "[CT] App Growth - performance
+# tracking 2026", tab raw_total. Activation metrics come from BigQuery.
+# The two are joined on campaign name.
+#
+# The sheet is read through the docs.google.com CSV export endpoint rather than
+# the Sheets API on purpose: GOOGLE_CREDENTIALS is a user (authorized_user) ADC
+# token whose account lacks serviceusage.serviceUsageConsumer on chotot-dwh, so
+# any *.googleapis.com call needing a quota project returns 403. docs.google.com
+# does not enforce a quota project, so a plain Bearer request works.
+SHEET_ID = '1eLdUTKfR9yHcUnnEfyIouZlCiVDPvR6yn3igxdoy8eE'
+SHEET_GID = '2065956136'   # raw_total
+
+# Growth team / App phase ad accounts -> ad channel
+GROWTH_ACCOUNTS = {
+    'chotot_growth_sgd': 'FB',
+    'chotot_pty_app':    'FB',
+    'chotot_job_app':    'FB',
+    'chotot_veh_app':    'FB',
+    'chotot_app_pty':    'GG',
+    'chotot_app_veh':    'GG',
+    'chotot_app_job':    'GG',
+    'chotot_growth_new': 'GG',
+}
+SHEET_PHASES = {'install', 'activate'}
+
+
+def _sheet_token():
+    """Access token for the Drive/Docs export endpoint.
+
+    Handles both a service-account key and a user ADC token so the script keeps
+    working if GOOGLE_CREDENTIALS is ever swapped for a proper service account.
+    """
+    from google.auth.transport.requests import Request as GRequest
+    path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '/tmp/gcp-creds.json')
+    with open(path) as f:
+        info = json.load(f)
+    if info.get('type') == 'service_account':
+        from google.oauth2 import service_account
+        creds = service_account.Credentials.from_service_account_info(
+            info, scopes=['https://www.googleapis.com/auth/drive.readonly'])
+    else:
+        from google.oauth2.credentials import Credentials as UserCredentials
+        creds = UserCredentials.from_authorized_user_info(info)
+    creds.refresh(GRequest())
+    return creds.token
+
+
+def _sheet_num(v):
+    """Sheet numbers carry display thousands separators, e.g. "483,546"."""
+    s = str(v or '').replace(',', '').replace('₫', '').strip()
+    if not s:
+        return 0.0
+    try:
+        return float(s)
+    except ValueError:
+        return 0.0
+
+
+def fetch_camp_cost():
+    """Aggregate cost + install by (month, campaign) for the growth accounts."""
+    import csv, io, urllib.request
+    url = (f'https://docs.google.com/spreadsheets/d/{SHEET_ID}'
+           f'/export?format=csv&gid={SHEET_GID}')
+    req = urllib.request.Request(
+        url, headers={'Authorization': 'Bearer ' + _sheet_token()})
+    with urllib.request.urlopen(req, timeout=90) as r:
+        text = r.read().decode('utf-8', 'replace')
+
+    reader = csv.reader(io.StringIO(text))
+    next(reader, None)  # header row
+    agg, seen, bad_dates = {}, 0, 0
+    for row in reader:
+        # Columns N onward hold an unrelated account_name/channel lookup block,
+        # so hard-stop at column M.
+        row = (row + [''] * 13)[:13]
+        date_s, account, camp = row[0].strip(), row[1].strip(), row[2].strip()
+        phase, vertical = row[10].strip().lower(), row[11].strip().lower()
+        if not date_s or not camp:
+            continue
+        channel = GROWTH_ACCOUNTS.get(account.lower())
+        if channel is None or phase not in SHEET_PHASES:
+            continue
+        try:
+            mth, _dy, yr = (int(x) for x in date_s.split('/'))  # M/D/YYYY
+            m_date = datetime.date(yr, mth, 1)
+        except (ValueError, TypeError):
+            bad_dates += 1
+            continue
+        seen += 1
+        e = agg.setdefault((m_date, camp), {
+            'cost': 0.0, 'install': 0.0, 'channel': channel,
+            'vertical': vertical or 'other', 'phases': set(),
+        })
+        e['cost'] += _sheet_num(row[6])
+        e['install'] += _sheet_num(row[5])
+        e['phases'].add(phase)
+    if bad_dates:
+        print(f"  Sheet: {bad_dates} rows with unparseable dates skipped")
+    print(f"  Sheet: {seen} growth rows -> {len(agg)} campaign-months")
+    return agg
+
+
+camp_detail = []
+try:
+    sheet_agg = fetch_camp_cost()
+    if not sheet_agg:
+        raise RuntimeError('no growth rows found in raw_total')
+
+    names = sorted({c for _m, c in sheet_agg})
+    in_list = ','.join(
+        "'" + n.replace('\\', '\\\\').replace("'", "\\'") + "'" for n in names)
+    # channel != 'all' because that value is a pre-aggregated total of the real
+    # channels; d0 is summed across the remaining channels per campaign name.
+    act_rows = run(f"""
+    SELECT
+      DATE_TRUNC(visit_date, MONTH) as month,
+      campaign,
+      SUM(dau) as dau,
+      SUM(d0) as d0,
+      SUM(d1) as d1,
+      SUM(d7) as d7,
+      SUM(save_ad) as save_ad
+    FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
+    WHERE return_status = 'new'
+      AND vertical_user = 'all'
+      AND channel != 'all'
+      AND visit_date >= '2026-01-01'
+      AND campaign IN ({in_list})
+    GROUP BY 1, 2
+    """)
+    act = {(to_date(r['month']), str(r['campaign'])): r for r in act_rows}
+
+    def _int(v):
+        return int(v) if v is not None else None
+
+    def _rate(num, den):
+        """Unlike safe_div, a real zero numerator stays 0.0 instead of becoming
+        None — a campaign with genuinely 0 D7 retention must not render as "—".
+        """
+        if num is None or not den:
+            return None
+        return round(num / den, 4)
+
+    for (m_date, name), s in sorted(sheet_agg.items()):
+        a = act.get((m_date, name), {})
+        d0, dau = _int(a.get('d0')), _int(a.get('dau'))
+        d1, d7 = _int(a.get('d1')), _int(a.get('d7'))
+        save_ad = _int(a.get('save_ad'))
+        cost, install = round(s['cost']), int(s['install'])
+        camp_detail.append({
+            'name': name,
+            'month': m_date.strftime('%b %Y'),
+            'channel': s['channel'],
+            'vertical': s['vertical'],
+            'phase': '+'.join(sorted(s['phases'])),
+            'cost': cost,
+            'install': install,
+            'cpi': round(cost / install) if install else None,
+            'd0': d0,
+            'd1': d1,
+            'd7': d7,
+            'rr_d1': _rate(d1, d0),
+            'rr_d7': _rate(d7, d0),
+            'dau': dau,
+            'save_ad': save_ad,
+            'save_ad_rate': _rate(save_ad, dau),
+        })
+    matched = sum(1 for r in camp_detail if r['d0'] is not None)
+    det_months = sorted({r['month'] for r in camp_detail})
+    print(f"  Camp detail: {len(camp_detail)} rows OK "
+          f"({matched} matched BQ activation, months: {det_months})")
+except Exception as e:
+    print(f"  WARNING Camp detail skipped: {e}")
+    camp_detail = D.get('camp_detail', [])
+
 # Vertical monthly breakdown — full 2026 trend
 def classify_vertical(lc):
     if any(k in lc for k in ['pty','property','bds','nha dat','nha_dat','_5010','_5020','_5030','nha_vua','bat_dong_san']): return 'pty'
@@ -523,6 +699,7 @@ out = {
     "vertical_monthly": vertical_monthly,
     "attribution_assist": attribution_assist,
     "campaigns": campaigns,
+    "camp_detail": camp_detail,
     "daily_activation": [
         {
             "date": str(r["visit_date"]),
