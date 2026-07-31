@@ -562,7 +562,7 @@ canvas { max-height: 500px; }
   </div>
 
   <div class="card" style="margin-bottom:16px">
-    <div class="card-title">Progress vs Target — theo tháng &amp; vertical</div>
+    <div class="card-title" id="cpTitle">Progress vs Target</div>
     <div style="overflow-x:auto"><table id="campTargetTable"></table></div>
     <div id="cpNote" style="font-size:10px;color:#9ca3af;margin-top:8px"></div>
   </div>
@@ -1935,7 +1935,13 @@ function _cdChips(label, key, opts, labels) {
   return `<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center"><span style="font-size:10px;color:#9ca3af;min-width:60px">${label}</span>${chips}</div>`;
 }
 
-window.cdFilter = function(key, val) { _cdState[key] = val; _cdState.page = 0; renderCampDetail(); };
+// renderCampDetail runs first because it resolves the default month into
+// _cdState, which renderCampTarget then reads.
+window.cdFilter = function(key, val) {
+  _cdState[key] = val; _cdState.page = 0;
+  renderCampDetail();
+  try { renderCampTarget(); } catch (e) { console.error('renderCampTarget failed:', e); }
+};
 window.cdPage = function(pg) { _cdState.page = pg; renderCampDetail(); };
 window.cdSort = function(key) {
   _cdState.sort = key; _cdState.page = 0; renderCampDetail();
@@ -1984,9 +1990,32 @@ function renderCampTarget() {
 
   // Only months that actually have a target belong in a progress table; a month
   // with spend but no target is listed in the footnote instead of shown as 0%.
-  const months = [...new Set(tgts.map(t=>t.month))].sort(_monthAsc).reverse();
+  const allMonths = [...new Set(tgts.map(t=>t.month))].sort(_monthAsc).reverse();
   const actMonths = new Set(acts.map(r=>r.month));
-  const noTarget = [...actMonths].filter(m=>!months.includes(m)).sort(_monthAsc).reverse();
+  const noTarget = [...actMonths].filter(m=>!allMonths.includes(m)).sort(_monthAsc).reverse();
+
+  // This table follows the Tháng / Vertical chips of the Campaign Detail card
+  // below, so picking a month there drills the progress figures to that month.
+  const selM = _cdState.month, selV = _cdState.vertical;
+  const months = selM === 'all' ? allMonths : allMonths.filter(m=>m===selM);
+
+  const titleEl = document.getElementById('cpTitle');
+  if (titleEl) {
+    titleEl.textContent = 'Progress vs Target — '
+      + (selM === 'all' ? 'tất cả tháng' : selM)
+      + (selV === 'all' ? '' : ' · ' + selV);
+  }
+
+  // A month with no target row at all cannot show progress; say so instead of
+  // rendering an empty table the reader has to interpret.
+  if (!months.length) {
+    tableEl.innerHTML = `<thead><tr><th style="background:#1e1b4b;color:#fff;padding:6px 8px;font-size:10px;text-align:left">Tháng</th></tr></thead>`
+      + `<tbody><tr><td style="padding:8px;text-align:left;color:#6b7280">`
+      + `<strong>${selM}</strong> chưa có target trong tab <em>target</em> của sheet nên không tính được % progress.`
+      + ` Các tháng có target: ${allMonths.join(', ')}.</td></tr></tbody>`;
+    if (noteEl) noteEl.innerHTML = '';
+    return;
+  }
 
   const fmtVnd = v => v==null?'—':v>=1e9?(v/1e9).toFixed(2)+'B ₫':v>=1e6?(v/1e6).toFixed(1)+'M ₫':Math.round(v).toLocaleString('en')+' ₫';
   const fmtNum = v => v==null?'—':Math.round(v).toLocaleString('en');
@@ -2013,11 +2042,14 @@ function renderCampTarget() {
   const MUTED = '#c7cbd1';
 
   let body = '', footNotes = [];
+  const emptyMonths = [];
   months.forEach((m, mi) => {
-    const verts = [...new Set([
+    let verts = [...new Set([
       ...tgts.filter(t=>t.month===m).map(t=>t.vertical),
       ...acts.filter(r=>r.month===m).map(r=>r.vertical||'other'),
     ])].sort(_vSort);
+    if (selV !== 'all') verts = verts.filter(v=>v===selV);
+    if (!verts.length) { emptyMonths.push(m); return; }
 
     // Totals cover only verticals that have a target, otherwise the numerator
     // spans more verticals than the denominator and the month reads e.g. 240%.
@@ -2038,7 +2070,10 @@ function renderCampTarget() {
 
     const isRunning = (D.partial_months||[]).some(p=>p.replace('*','').trim()===m);
     const bg = mi % 2 ? '#fbfcfe' : '#fff';
-    const rowsFor = verts.length + 1;
+    // A TOTAL of one row is just that row repeated, so drop it when a single
+    // vertical is on screen.
+    const showTotal = verts.length > 1;
+    const rowsFor = verts.length + (showTotal ? 1 : 0);
 
     verts.forEach((v, vi) => {
       const t = T[K(m,v)], a = A[K(m,v)];
@@ -2065,6 +2100,7 @@ function renderCampTarget() {
       </tr>`;
     });
 
+    if (!showTotal) return;
     const pBT = pct(tot.cost, tot.budget), pIT = pct(tot.inst, tot.tInst);
     const cpiTT = tot.tInst ? Math.round(tot.budget/tot.tInst) : null;
     const cpiAT = tot.inst ? Math.round(tot.cost/tot.inst) : null;
@@ -2096,7 +2132,17 @@ function renderCampTarget() {
       `<strong>Target</strong> lấy từ tab <em>target</em> (cột A–H). <strong>Actual</strong> tính từ raw_total — cùng nguồn với bảng Campaign Detail bên dưới, <em>không</em> dùng cột "Actual spend/install" trong tab target (điền tay, tháng 7 còn trống, và ô job tháng 5 đang cộng gộp cả gds).`,
       running.length ? `<span style="color:#f59e0b">* ${running.join(', ')} là tháng đang chạy — % còn tăng tiếp, đọc theo pace chứ đừng đọc là kết quả cuối.</span>` : '',
       ...footNotes.map(n=>`<span style="color:#f59e0b">† ${n}</span>`),
-      noTarget.length ? `${noTarget.join(', ')} có spend nhưng chưa có target trong sheet nên không hiện ở bảng này.` : '',
+      // Targets are not split by ad channel, so applying the FB/GG chip here
+      // would divide one channel's spend by both channels' budget.
+      _cdState.channel !== 'all'
+        ? `<span style="color:#f59e0b">⚠ Filter <strong>${_cdState.channel}</strong> không áp dụng cho bảng này — target trong sheet không tách theo channel, nếu chỉ lấy spend của ${_cdState.channel} chia cho budget cả 2 channel thì % sẽ sai. Bảng này luôn là FB + GG.</span>`
+        : '',
+      emptyMonths.length
+        ? `${emptyMonths.join(', ')}: không có dòng nào khớp filter vertical <strong>${selV}</strong>.`
+        : '',
+      selM === 'all' && noTarget.length
+        ? `${noTarget.join(', ')} có spend nhưng chưa có target trong sheet nên không hiện ở bảng này.` : '',
+      `Bảng này chạy theo tab <strong>Tháng</strong> và <strong>Vertical</strong> ở bảng Campaign Detail bên dưới — chọn tháng nào thì % progress nhảy theo tháng đó.`,
       `<span style="color:#10b981;font-weight:600">xanh</span> = đạt (install ≥95% target · budget dùng 90–105% · CPI ≤ target) · <span style="color:#f59e0b;font-weight:600">vàng</span> = chưa dùng hết budget <em>và</em> install cũng không đạt · <span style="color:#ef4444;font-weight:600">đỏ</span> = install &lt;80%, vượt budget &gt;105%, hoặc CPI cao hơn target &gt;10%. Tiêu ít budget mà vẫn đạt install thì để màu trung tính — đó là hiệu quả, không phải miss.`,
     ].filter(Boolean).map(s=>`<div style="margin-bottom:3px">${s}</div>`).join('');
   }
@@ -2716,8 +2762,10 @@ async function initDashboard() {
   // Isolated so a failure in one table block can't abort the rest of init
   // (a scope bug in renderCampaignTables used to silently kill everything below).
   try { renderCampaignTables(); } catch (e) { console.error('renderCampaignTables failed:', e); }
-  try { renderCampTarget(); } catch (e) { console.error('renderCampTarget failed:', e); }
+  // Order matters: renderCampDetail defaults _cdState.month to the latest month,
+  // and renderCampTarget filters on that same state.
   try { renderCampDetail(); } catch (e) { console.error('renderCampDetail failed:', e); }
+  try { renderCampTarget(); } catch (e) { console.error('renderCampTarget failed:', e); }
 
   // Partial month badge — show "* Tháng 6: data đến DD/MM/YYYY"
   if (D.partial_months && D.partial_months.length && D.updated_at) {
