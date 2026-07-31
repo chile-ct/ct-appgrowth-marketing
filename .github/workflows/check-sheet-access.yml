@@ -1,0 +1,50 @@
+name: Check Sheet Access (temporary)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install google-auth google-api-python-client
+
+      - name: Setup GCP credentials
+        run: echo '${{ secrets.GOOGLE_CREDENTIALS }}' > /tmp/gcp-creds.json
+
+      - name: Show service account email
+        run: |
+          python - <<'PY'
+          import json
+          info = json.load(open('/tmp/gcp-creds.json'))
+          print("SERVICE ACCOUNT EMAIL:", info.get('client_email'))
+          print("PROJECT:", info.get('project_id'))
+          PY
+
+      - name: Try reading raw_total
+        run: |
+          python - <<'PY'
+          from google.oauth2 import service_account
+          from googleapiclient.discovery import build
+
+          SHEET_ID = '1eLdUTKfR9yHcUnnEfyIouZlCiVDPvR6yn3igxdoy8eE'
+          creds = service_account.Credentials.from_service_account_file(
+              '/tmp/gcp-creds.json',
+              scopes=['https://www.googleapis.com/auth/spreadsheets.readonly'],
+          )
+          svc = build('sheets', 'v4', credentials=creds)
+          try:
+              res = svc.spreadsheets().values().get(
+                  spreadsheetId=SHEET_ID, range='raw_total!A1:M3').execute()
+              print("OK - read succeeded")
+              for row in res.get('values', []):
+                  print(row)
+          except Exception as e:
+              print("FAILED:", type(e).__name__)
+              print(e)
+          PY
