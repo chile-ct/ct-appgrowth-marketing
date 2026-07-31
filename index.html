@@ -2030,12 +2030,15 @@ function renderCampDetail() {
   // A muted cell = the rate is arithmetically correct but the denominator is
   // too small to draw a conclusion from. Never colour these green/red.
   const LOW = 'style="text-align:left;color:#c7cbd1"';
-  // v == null means the campaign has no BigQuery match at all — that is missing
-  // data, not low volume, so don't mislabel it as untrustworthy volume.
-  const cdRate = (r, v, den) => v == null
-    ? `<td ${LOW} title="Không có data BigQuery cho campaign này">—</td>`
+  // v == null means the campaign has no match in the source table — that is
+  // missing data, not low volume, so don't mislabel it as untrustworthy volume.
+  // `why` names the actual source so an empty cell is diagnosable at a glance.
+  const cdRate = (r, v, den, why) => v == null
+    ? `<td ${LOW} title="${why||'Không có data BigQuery cho campaign này'}">—</td>`
     : (_cdEnough(r, den) ? null
       : `<td ${LOW} title="Volume quá thấp (${den} = ${r[den]||0}) — tỉ lệ này không đáng tin">${fmtPct(v)}</td>`);
+  const WHY_ADOPT = 'Campaign này không có trong bảng new_user_adopt_activate '
+    + '(bảng đó chưa có channel Facebook) — DA sẽ bổ sung';
   const tdL = `style="text-align:left"`;
   const head = `<tr>
     <th style="text-align:left">#</th>
@@ -2069,9 +2072,10 @@ function renderCampDetail() {
     ${cdRate(r, r.rr_d1, 'd0') ||
       `<td ${tdL} style="text-align:left;color:${rrColor(r.rr_d1)};font-weight:${(r.rr_d1||0)>0.35?'700':'400'}">${fmtPct(r.rr_d1)}</td>`}
     ${cdRate(r, r.rr_d7, 'd0') || `<td ${tdL}>${fmtPct(r.rr_d7)}</td>`}
-    <td ${tdL}>${fmtNum(r.dau)}</td>
-    <td ${tdL}>${fmtNum(r.save_ad_d0)}${r.save_partial&&r.save_ad_d0!=null?`<span style="color:#f59e0b" title="Cohort chỉ tới ${r.save_through} — số này còn thiếu ngày">*</span>`:''}</td>
-    ${cdRate(r, r.save_ad_rate, 'dau') || `<td ${tdL}>${fmtPct(r.save_ad_rate)}</td>`}
+    ${r.dau==null ? `<td ${LOW} title="${WHY_ADOPT}">—</td>` : `<td ${tdL}>${fmtNum(r.dau)}</td>`}
+    ${r.save_ad_d0==null ? `<td ${LOW} title="${WHY_ADOPT}">—</td>`
+      : `<td ${tdL}>${fmtNum(r.save_ad_d0)}${r.save_partial?`<span style="color:#f59e0b" title="Cohort chỉ tới ${r.save_through} — số này còn thiếu ngày">*</span>`:''}</td>`}
+    ${cdRate(r, r.save_ad_rate, 'dau', WHY_ADOPT) || `<td ${tdL}>${fmtPct(r.save_ad_rate)}</td>`}
   </tr>`).join('');
   tableEl.innerHTML = `<thead>${head}</thead><tbody>${body||'<tr><td colspan="14" style="text-align:center;color:#9ca3af;padding:20px">Không có campaign nào khớp filter</td></tr>'}</tbody>`;
 
