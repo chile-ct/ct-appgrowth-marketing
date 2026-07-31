@@ -363,7 +363,13 @@ except Exception as e:
 # any *.googleapis.com call needing a quota project returns 403. docs.google.com
 # does not enforce a quota project, so a plain Bearer request works.
 SHEET_ID = '1eLdUTKfR9yHcUnnEfyIouZlCiVDPvR6yn3igxdoy8eE'
-SHEET_GID = '2065956136'   # raw_total
+SHEET_GID = '2065956136'         # raw_total
+SHEET_TARGET_GID = '2028964073'  # target
+
+# The target tab's Month column is a bare month number, and the workbook itself
+# is per-year ("[CT] App Growth - performance tracking 2026"), so the year has
+# to be supplied here. Bump this when a 2027 workbook replaces it.
+TARGET_YEAR = 2026
 
 # Growth team / App phase ad accounts -> ad channel
 GROWTH_ACCOUNTS = {
@@ -411,20 +417,22 @@ def _sheet_num(v):
         return 0.0
 
 
-def fetch_camp_cost():
-    """Aggregate cost + install by (month, campaign) for the growth accounts."""
+def _sheet_csv(gid):
+    """Read one tab of the workbook as a list of CSV rows."""
     import csv, io, urllib.request
     url = (f'https://docs.google.com/spreadsheets/d/{SHEET_ID}'
-           f'/export?format=csv&gid={SHEET_GID}')
+           f'/export?format=csv&gid={gid}')
     req = urllib.request.Request(
         url, headers={'Authorization': 'Bearer ' + _sheet_token()})
     with urllib.request.urlopen(req, timeout=90) as r:
         text = r.read().decode('utf-8', 'replace')
+    return list(csv.reader(io.StringIO(text)))
 
-    reader = csv.reader(io.StringIO(text))
-    next(reader, None)  # header row
+
+def fetch_camp_cost():
+    """Aggregate cost + install by (month, campaign) for the growth accounts."""
     agg, seen, bad_dates = {}, 0, 0
-    for row in reader:
+    for row in _sheet_csv(SHEET_GID)[1:]:  # [1:] drops the header row
         # Columns N onward hold an unrelated account_name/channel lookup block,
         # so hard-stop at column M.
         row = (row + [''] * 13)[:13]
@@ -453,6 +461,57 @@ def fetch_camp_cost():
         print(f"  Sheet: {bad_dates} rows with unparseable dates skipped")
     print(f"  Sheet: {seen} growth rows -> {len(agg)} campaign-months")
     return agg
+
+
+def fetch_targets():
+    """Monthly budget / install targets per vertical from the `target` tab.
+
+    Only columns A-H (the Input + Formula target columns) are read. Columns I/J,
+    "Actual spend" and "Actual install", are deliberately NOT used as the actual
+    values for the progress table, for two reasons:
+      1. They are maintained by hand and lag reality — they were still empty for
+         July on 2026-07-31 despite 880M ₫ having been spent.
+      2. At least one is wrong: May 2026 `job` reads 318,439,532 ₫, which is the
+         May job spend (143,582,736) plus the May gds spend (174,856,794) added
+         together, i.e. gds is counted twice in that column.
+    Actuals are therefore computed from camp_detail, off the same raw_total rows
+    the rest of section 6 uses. I/J are still read here purely to warn in the log
+    when the sheet disagrees with us, which is how the May bug surfaced.
+
+    Returns (target_rows, sheet_actuals) where sheet_actuals maps
+    (month_label, vertical) -> (cost, install) for the non-empty cells only.
+    """
+    out, sheet_actuals = [], {}
+    for row in _sheet_csv(SHEET_TARGET_GID):
+        row = (row + [''] * 12)[:12]
+        mth_s, vertical = row[0].strip(), row[1].strip().lower()
+        if not mth_s.isdigit() or not 1 <= int(mth_s) <= 12 or not vertical:
+            continue  # header rows and the trailing blank block
+        label = datetime.date(TARGET_YEAR, int(mth_s), 1).strftime('%b %Y')
+
+        a_cost, a_install = row[8].strip(), row[9].strip()
+        if a_cost or a_install:
+            sheet_actuals[(label, vertical)] = (
+                _sheet_num(a_cost), _sheet_num(a_install))
+
+        budget, t_install = _sheet_num(row[2]), _sheet_num(row[3])
+        # Future months sit in the tab as placeholder rows of zeros; keeping them
+        # would render as "0% of 0 ₫" noise.
+        if not budget and not t_install:
+            continue
+        out.append({
+            'month': label,
+            'vertical': vertical,
+            'budget': round(budget),
+            'target_install': round(t_install),
+            'bau_budget': round(_sheet_num(row[4])),
+            'bau_install': round(_sheet_num(row[5])),
+            'test_budget': round(_sheet_num(row[6])),
+            'test_install': round(_sheet_num(row[7])),
+        })
+    print(f"  Targets: {len(out)} month-vertical rows with a target "
+          f"({sorted({r['month'] for r in out})})")
+    return out, sheet_actuals
 
 
 camp_detail = []
@@ -592,6 +651,30 @@ try:
 except Exception as e:
     print(f"  WARNING Camp detail skipped: {e}")
     camp_detail = D.get('camp_detail', [])
+
+# Monthly targets per vertical, for the progress table in section 6.
+camp_target = D.get('camp_target', [])
+try:
+    camp_target, sheet_actuals = fetch_targets()
+
+    # Tripwire: our actuals and the sheet's hand-typed ones should agree, since
+    # both ultimately describe the same spend. Warn instead of failing — a stale
+    # or half-filled Actual column is normal mid-month and is not our problem.
+    ours = {}
+    for r in camp_detail:
+        k = (r['month'], r['vertical'])
+        e = ours.setdefault(k, [0.0, 0.0])
+        e[0] += r['cost']
+        e[1] += r['install']
+    for k, (s_cost, s_inst) in sorted(sheet_actuals.items()):
+        o_cost, o_inst = ours.get(k, (0.0, 0.0))
+        if s_cost and o_cost and abs(s_cost - o_cost) / s_cost > 0.10:
+            print(f"  NOTE target tab Actual spend disagrees for {k[0]} {k[1]}: "
+                  f"sheet {s_cost:,.0f} vs raw_total {o_cost:,.0f} "
+                  f"({(o_cost - s_cost) / s_cost:+.1%}) — the dashboard uses "
+                  f"raw_total")
+except Exception as e:
+    print(f"  WARNING Targets skipped: {e}")
 
 # Vertical monthly breakdown — full 2026 trend
 def classify_vertical(lc):
@@ -765,6 +848,7 @@ out = {
     "attribution_assist": attribution_assist,
     "campaigns": campaigns,
     "camp_detail": camp_detail,
+    "camp_target": camp_target,
     "daily_activation": [
         {
             "date": str(r["visit_date"]),
