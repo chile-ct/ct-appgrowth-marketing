@@ -1948,6 +1948,14 @@ window.cdSort = function(key) {
 };
 
 const _MO = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+const _MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+// "Jul 2026" -> "Jun 2026", rolling the year back over January.
+function _prevMonthLabel(m) {
+  const [mm, yy] = String(m||'').split(' ');
+  const i = _MO[mm];
+  if (i == null || !yy) return null;
+  return i === 0 ? `Dec ${+yy - 1}` : `${_MONTH_NAMES[i-1]} ${yy}`;
+}
 const _monthAsc = (a,b) => {
   const [am,ay]=a.split(' '), [bm,by]=b.split(' ');
   return +ay!==+by ? +ay-+by : _MO[am]-_MO[bm];
@@ -2009,10 +2017,16 @@ function renderCampTarget() {
   // A month with no target row at all cannot show progress; say so instead of
   // rendering an empty table the reader has to interpret.
   if (!months.length) {
+    // Offer a way out rather than a dead end: the latest month that does have a
+    // target is one click away. This matters because the section defaults to the
+    // newest month, which early in a new month has no target set yet.
+    const jump = allMonths.map(m =>
+      `<button onclick="cdFilter('month','${m}')" style="padding:2px 8px;margin-left:4px;border-radius:8px;border:1.5px solid #4361ee;background:#f9fafb;color:#4361ee;font-size:10px;font-weight:600;cursor:pointer">${m}</button>`
+    ).join('');
     tableEl.innerHTML = `<thead><tr><th style="background:#1e1b4b;color:#fff;padding:6px 8px;font-size:10px;text-align:left">Tháng</th></tr></thead>`
       + `<tbody><tr><td style="padding:8px;text-align:left;color:#6b7280">`
       + `<strong>${selM}</strong> chưa có target trong tab <em>target</em> của sheet nên không tính được % progress.`
-      + ` Các tháng có target: ${allMonths.join(', ')}.</td></tr></tbody>`;
+      + `<br><span style="font-size:11px">Xem tháng có target:</span>${jump}</td></tr></tbody>`;
     if (noteEl) noteEl.innerHTML = '';
     return;
   }
@@ -2035,6 +2049,23 @@ function renderCampTarget() {
   // CPI: under target is good.
   const cpiCol = (a,t) => (a==null||!t)?'#9ca3af': a<=t?'#10b981': a<=t*1.1?'#374151':'#ef4444';
 
+  // Month-on-month delta shown small beside each actual, so a month reads as a
+  // trend and not only as achievement against target. Deliberately kept grey
+  // rather than green/red: spending or installing *more* is neither good nor bad
+  // on its own, that judgement belongs to the % columns next to it. The arrow
+  // already carries the direction.
+  const momPct = (cur, prev) => (prev && cur != null) ? (cur - prev) / prev : null;
+  const momTag = (d, why, partial) => {
+    if (d == null) {
+      return `<span style="font-size:9px;color:#dde1e6;margin-left:5px;font-weight:400" title="${why}">—</span>`;
+    }
+    const arrow = d >= 0 ? '▲' : '▼';
+    // A month still in progress compared against a full previous month always
+    // looks catastrophic, so it is greyed further and says why on hover.
+    const col = partial ? '#dde1e6' : '#9ca3af';
+    return `<span style="font-size:9px;color:${col};margin-left:5px;font-weight:400" title="${why}">${arrow}${Math.abs(d*100).toFixed(1)}%</span>`;
+  };
+
   const th = 'style="background:#1e1b4b;color:#fff;padding:6px 8px;font-size:10px;text-align:right;white-space:nowrap"';
   const thL = 'style="background:#1e1b4b;color:#fff;padding:6px 8px;font-size:10px;text-align:left;white-space:nowrap"';
   const td = 'style="padding:5px 8px;text-align:right;border-bottom:1px solid #eef1f5;white-space:nowrap"';
@@ -2054,12 +2085,13 @@ function renderCampTarget() {
     // Totals cover only verticals that have a target, otherwise the numerator
     // spans more verticals than the denominator and the month reads e.g. 240%.
     const tot = {budget:0, cost:0, tInst:0, inst:0};
-    const skipped = [];
+    const skipped = [], countedVerts = [];
     verts.forEach(v => {
       const t = T[K(m,v)], a = A[K(m,v)] || {cost:0, install:0};
       if (t && (t.budget || t.target_install)) {
         tot.budget += t.budget||0; tot.cost += a.cost;
         tot.tInst += t.target_install||0; tot.inst += a.install;
+        countedVerts.push(v);
       } else if (a.cost) {
         skipped.push(`${v} (${fmtVnd(a.cost)})`);
       }
@@ -2084,19 +2116,28 @@ function renderCampTarget() {
       const pI = (tInst && inst!=null) ? pct(inst,tInst) : null;
       const cpiT = (budget && tInst) ? Math.round(budget/tInst) : null;
       const cpiA = inst ? Math.round(cost/inst) : null;
+
+      // vs the previous month's full actual for the same vertical
+      const pm = _prevMonthLabel(m);
+      const pa = pm ? A[K(pm,v)] : null;
+      const cpiP = (pa && pa.install) ? pa.cost/pa.install : null;
+      const noPrev = `Không có data ${v} tháng ${pm||'trước'} để so sánh`;
+      const vs = extra => (isRunning
+        ? `${m} chưa hết tháng — đang so số chưa đủ tháng với trọn tháng ${pm}, nên sẽ luôn âm. ${extra}`
+        : `vs ${pm}: ${extra}`);
       const tdNone = `style="padding:5px 8px;text-align:right;border-bottom:1px solid #eef1f5;color:${MUTED}" `
         + `title="Vertical này không có target tháng ${m} trong sheet"`;
       body += `<tr style="background:${bg}">
         ${vi===0 ? `<td rowspan="${rowsFor}" style="padding:5px 8px;text-align:left;border-bottom:1px solid #e2e8f0;border-right:1px solid #eef1f5;font-weight:700;vertical-align:top;white-space:nowrap">${m}${isRunning?' <span style="color:#f59e0b" title="Tháng đang chạy — actual chưa đủ tháng">*</span>':''}</td>` : ''}
         <td ${tdL}>${v}</td>
         ${hasT ? `<td ${td}>${fmtVnd(budget)}</td>` : `<td ${tdNone}>—</td>`}
-        <td ${td}>${fmtVnd(cost)}</td>
+        <td ${td}>${fmtVnd(cost)}${momTag(momPct(cost, pa&&pa.cost), pa?vs(fmtVnd(pa.cost)):noPrev, isRunning)}</td>
         <td style="padding:5px 8px;text-align:right;border-bottom:1px solid #eef1f5;font-weight:700;color:${budCol(pB,pI)}">${fmtPct(pB)}</td>
         ${hasT ? `<td ${td}>${fmtNum(tInst)}</td>` : `<td ${tdNone}>—</td>`}
-        <td ${td}>${fmtNum(inst)}</td>
+        <td ${td}>${fmtNum(inst)}${momTag(momPct(inst, pa&&pa.install), pa?vs(fmtNum(pa.install)+' install'):noPrev, isRunning)}</td>
         <td style="padding:5px 8px;text-align:right;border-bottom:1px solid #eef1f5;font-weight:700;color:${instCol(pI)}">${fmtPct(pI)}</td>
         <td ${td}>${cpiT?cpiT.toLocaleString('en')+' ₫':'—'}</td>
-        <td style="padding:5px 8px;text-align:right;border-bottom:1px solid #eef1f5;color:${cpiCol(cpiA,cpiT)}">${cpiA?cpiA.toLocaleString('en')+' ₫':'—'}</td>
+        <td style="padding:5px 8px;text-align:right;border-bottom:1px solid #eef1f5;color:${cpiCol(cpiA,cpiT)}">${cpiA?cpiA.toLocaleString('en')+' ₫':'—'}${momTag(momPct(cpiA, cpiP), cpiP?vs(Math.round(cpiP).toLocaleString('en')+' ₫'):noPrev, isRunning)}</td>
       </tr>`;
     });
 
@@ -2105,16 +2146,38 @@ function renderCampTarget() {
     const cpiTT = tot.tInst ? Math.round(tot.budget/tot.tInst) : null;
     const cpiAT = tot.inst ? Math.round(tot.cost/tot.inst) : null;
     const tdT = 'style="padding:6px 8px;text-align:right;border-bottom:2px solid #d1d5db;font-weight:700;white-space:nowrap"';
+
+    // The previous-month total must cover exactly the verticals counted in this
+    // month's total. Summing "whatever the previous month happened to have"
+    // would compare 4 verticals against 3 and read as growth that isn't there.
+    const pmT = _prevMonthLabel(m);
+    let pTot = null, missPrev = [];
+    if (pmT) {
+      pTot = {cost:0, install:0};
+      countedVerts.forEach(v => {
+        const pa = A[K(pmT,v)];
+        if (pa) { pTot.cost += pa.cost; pTot.install += pa.install; }
+        else missPrev.push(v);
+      });
+      if (!pTot.cost) pTot = null;
+    }
+    const cpiPT = (pTot && pTot.install) ? pTot.cost/pTot.install : null;
+    const gap = missPrev.length
+      ? ` (${pmT} không có ${missPrev.join(', ')} nên phần đó tính là 0 — mức tăng đang bị thổi lên)` : '';
+    const vsT = extra => (isRunning
+      ? `${m} chưa hết tháng — đang so số chưa đủ tháng với trọn tháng ${pmT}, nên sẽ luôn âm. ${extra}${gap}`
+      : `vs ${pmT}: ${extra}${gap}`);
+    const noPrevT = `Không có data tháng ${pmT||'trước'} để so sánh`;
     body += `<tr style="background:#f1f5f9">
       <td style="padding:6px 8px;text-align:left;border-bottom:2px solid #d1d5db;font-weight:700">TOTAL${skipped.length?`<span style="color:#f59e0b" title="Chỉ gồm vertical có target">†</span>`:''}</td>
       <td ${tdT}>${fmtVnd(tot.budget)}</td>
-      <td ${tdT}>${fmtVnd(tot.cost)}</td>
+      <td ${tdT}>${fmtVnd(tot.cost)}${momTag(momPct(tot.cost, pTot&&pTot.cost), pTot?vsT(fmtVnd(pTot.cost)):noPrevT, isRunning)}</td>
       <td style="padding:6px 8px;text-align:right;border-bottom:2px solid #d1d5db;font-weight:800;color:${budCol(pBT,pIT)}">${fmtPct(pBT)}</td>
       <td ${tdT}>${fmtNum(tot.tInst)}</td>
-      <td ${tdT}>${fmtNum(tot.inst)}</td>
+      <td ${tdT}>${fmtNum(tot.inst)}${momTag(momPct(tot.inst, pTot&&pTot.install), pTot?vsT(fmtNum(pTot.install)+' install'):noPrevT, isRunning)}</td>
       <td style="padding:6px 8px;text-align:right;border-bottom:2px solid #d1d5db;font-weight:800;color:${instCol(pIT)}">${fmtPct(pIT)}</td>
       <td ${tdT}>${cpiTT?cpiTT.toLocaleString('en')+' ₫':'—'}</td>
-      <td style="padding:6px 8px;text-align:right;border-bottom:2px solid #d1d5db;font-weight:700;color:${cpiCol(cpiAT,cpiTT)}">${cpiAT?cpiAT.toLocaleString('en')+' ₫':'—'}</td>
+      <td style="padding:6px 8px;text-align:right;border-bottom:2px solid #d1d5db;font-weight:700;color:${cpiCol(cpiAT,cpiTT)}">${cpiAT?cpiAT.toLocaleString('en')+' ₫':'—'}${momTag(momPct(cpiAT, cpiPT), cpiPT?vsT(Math.round(cpiPT).toLocaleString('en')+' ₫'):noPrevT, isRunning)}</td>
     </tr>`;
   });
 
@@ -2143,6 +2206,7 @@ function renderCampTarget() {
       selM === 'all' && noTarget.length
         ? `${noTarget.join(', ')} có spend nhưng chưa có target trong sheet nên không hiện ở bảng này.` : '',
       `Bảng này chạy theo tab <strong>Tháng</strong> và <strong>Vertical</strong> ở bảng Campaign Detail bên dưới — chọn tháng nào thì % progress nhảy theo tháng đó.`,
+      `Số nhỏ màu xám cạnh Actual spend / Actual install / CPI actual là <strong>thay đổi so với trọn tháng trước</strong> (▲ tăng, ▼ giảm) — hover để xem số gốc của tháng trước. Để xám vì tiêu nhiều hay ít tự nó không phải tốt hay xấu, phần đánh giá nằm ở cột % bên cạnh.`,
       `<span style="color:#10b981;font-weight:600">xanh</span> = đạt (install ≥95% target · budget dùng 90–105% · CPI ≤ target) · <span style="color:#f59e0b;font-weight:600">vàng</span> = chưa dùng hết budget <em>và</em> install cũng không đạt · <span style="color:#ef4444;font-weight:600">đỏ</span> = install &lt;80%, vượt budget &gt;105%, hoặc CPI cao hơn target &gt;10%. Tiêu ít budget mà vẫn đạt install thì để màu trung tính — đó là hiệu quả, không phải miss.`,
     ].filter(Boolean).map(s=>`<div style="margin-bottom:3px">${s}</div>`).join('');
   }
