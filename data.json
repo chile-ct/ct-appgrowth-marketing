@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-03",
+  "updated_at": "2026-08-04",
   "months": [
     "Jan 2026",
     "Feb 2026",
@@ -22,7 +22,7 @@
       1490370,
       1490027,
       1552347,
-      347353
+      445346
     ],
     "mau_login": [
       1030263,
@@ -32,7 +32,7 @@
       1211845,
       1220678,
       1263106,
-      312718
+      396887
     ],
     "mau_nonlogin": [
       364334,
@@ -42,7 +42,7 @@
       278525,
       269349,
       289241,
-      34635
+      48459
     ],
     "avg_dau": [
       225026,
@@ -52,7 +52,7 @@
       235047,
       231745,
       233535,
-      227968
+      231183
     ],
     "total_ct_mau": [
       6258813,
@@ -62,7 +62,7 @@
       5977086,
       6521358,
       7321100,
-      798530
+      1106592
     ],
     "web_other_mau": [
       4864216,
@@ -72,7 +72,7 @@
       4486716,
       5031331,
       5768753,
-      451177
+      661246
     ],
     "new_mau": [
       261240,
@@ -82,7 +82,7 @@
       295432,
       305346,
       337906,
-      23130
+      35152
     ],
     "new_login_mau": [
       120641,
@@ -92,7 +92,7 @@
       196158,
       214382,
       226082,
-      14888
+      22726
     ],
     "avg_new_dau": [
       8427,
@@ -102,7 +102,7 @@
       9530,
       10178,
       10900,
-      11565
+      11717
     ],
     "returning_mau": [
       1133357,
@@ -112,7 +112,7 @@
       1194938,
       1184681,
       1214441,
-      324223
+      410194
     ],
     "pct_new": [
       0.1873,
@@ -122,7 +122,7 @@
       0.1982,
       0.2049,
       0.2177,
-      0.0666
+      0.0789
     ],
     "login_rate": [
       0.7388,
@@ -132,7 +132,7 @@
       0.8131,
       0.8192,
       0.8137,
-      0.9003
+      0.8912
     ],
     "new_login_rate": [
       0.4618,
@@ -142,7 +142,7 @@
       0.664,
       0.7021,
       0.6691,
-      0.6437
+      0.6465
     ],
     "pct_app_ct": [
       0.2228,
@@ -152,7 +152,7 @@
       0.2493,
       0.2285,
       0.212,
-      0.435
+      0.4024
     ]
   },
   "acquisition": {
@@ -164,7 +164,7 @@
       154075,
       155779,
       161352,
-      10591
+      16149
     ],
     "organic": [
       55700,
@@ -174,7 +174,7 @@
       52983,
       51571,
       53069,
-      3379
+      5142
     ],
     "growth": [
       54439,
@@ -184,7 +184,7 @@
       80457,
       91121,
       114546,
-      8567
+      12989
     ],
     "other": [
       8511,
@@ -194,7 +194,7 @@
       7917,
       6875,
       8939,
-      593
+      872
     ],
     "direct_daily": [
       4600,
@@ -204,7 +204,7 @@
       4970,
       5193,
       5205,
-      5296
+      5383
     ],
     "organic_daily": [
       1797,
@@ -214,7 +214,7 @@
       1709,
       1719,
       1712,
-      1690
+      1714
     ],
     "growth_daily": [
       1756,
@@ -224,7 +224,7 @@
       2595,
       3037,
       3695,
-      4284
+      4330
     ],
     "other_daily": [
       275,
@@ -234,7 +234,7 @@
       255,
       229,
       288,
-      296
+      291
     ],
     "growth_pct_total": [
       0.2084,
@@ -244,7 +244,7 @@
       0.2723,
       0.2984,
       0.339,
-      0.3704
+      0.3695
     ]
   },
   "activation": {
@@ -255,8 +255,8 @@
       87006,
       92531,
       89572,
-      88910,
-      3771
+      89502,
+      6396
     ],
     "lead_total": [
       66422,
@@ -265,8 +265,8 @@
       77935,
       78547,
       81602,
-      83905,
-      3996
+      84318,
+      6575
     ],
     "save_total": [
       18009,
@@ -276,7 +276,7 @@
       22770,
       23344,
       25971,
-      1850
+      2798
     ],
     "adview_rate": [
       0.299,
@@ -285,8 +285,8 @@
       0.2964,
       0.3132,
       0.2933,
-      0.2631,
-      0.163
+      0.2649,
+      0.182
     ],
     "lead_rate": [
       0.2543,
@@ -295,8 +295,8 @@
       0.2655,
       0.2659,
       0.2672,
-      0.2483,
-      0.1728
+      0.2495,
+      0.187
     ],
     "save_rate": [
       0.0689,
@@ -306,7 +306,7 @@
       0.0771,
       0.0765,
       0.0769,
-      0.08
+      0.0796
     ],
     "adview_daily": [
       2520,
@@ -315,8 +315,8 @@
       2900,
       2985,
       2986,
-      2868,
-      1886
+      2887,
+      2132
     ],
     "lead_daily": [
       2143,
@@ -325,8 +325,8 @@
       2598,
       2534,
       2720,
-      2707,
-      1998
+      2720,
+      2192
     ],
     "save_daily": [
       581,
@@ -336,7 +336,7 @@
       735,
       778,
       838,
-      925
+      933
     ],
     "direct_adview": [
       43962,
@@ -345,8 +345,8 @@
       49572,
       50396,
       49679,
-      48751,
-      2185
+      49059,
+      3654
     ],
     "organic_adview": [
       16446,
@@ -355,8 +355,8 @@
       15040,
       16401,
       14910,
-      13756,
-      484
+      13872,
+      880
     ],
     "growth_adview": [
       15369,
@@ -365,8 +365,8 @@
       20354,
       23322,
       23476,
-      24330,
-      972
+      24489,
+      1653
     ],
     "direct_lead": [
       35891,
@@ -375,8 +375,8 @@
       42636,
       41708,
       44439,
-      44971,
-      2141
+      45177,
+      3491
     ],
     "organic_lead": [
       14556,
@@ -385,8 +385,8 @@
       14117,
       14313,
       13679,
-      13289,
-      562
+      13372,
+      932
     ],
     "growth_lead": [
       13406,
@@ -395,8 +395,8 @@
       18888,
       20051,
       21896,
-      23481,
-      1133
+      23599,
+      1902
     ],
     "direct_save": [
       9805,
@@ -406,7 +406,7 @@
       12008,
       12750,
       14152,
-      1026
+      1552
     ],
     "organic_save": [
       3720,
@@ -416,7 +416,7 @@
       3804,
       3495,
       3639,
-      234
+      358
     ],
     "growth_save": [
       3626,
@@ -426,7 +426,7 @@
       6081,
       6526,
       7293,
-      507
+      766
     ],
     "direct_adview_daily": [
       1418,
@@ -435,8 +435,8 @@
       1652,
       1626,
       1656,
-      1573,
-      1092
+      1583,
+      1218
     ],
     "organic_adview_daily": [
       531,
@@ -445,8 +445,8 @@
       501,
       529,
       497,
-      444,
-      242
+      447,
+      293
     ],
     "growth_adview_daily": [
       496,
@@ -455,8 +455,8 @@
       678,
       752,
       783,
-      785,
-      486
+      790,
+      551
     ],
     "direct_lead_daily": [
       1158,
@@ -465,8 +465,8 @@
       1421,
       1345,
       1481,
-      1451,
-      1070
+      1457,
+      1164
     ],
     "organic_lead_daily": [
       470,
@@ -475,8 +475,8 @@
       471,
       462,
       456,
-      429,
-      281
+      431,
+      311
     ],
     "growth_lead_daily": [
       432,
@@ -485,8 +485,8 @@
       630,
       647,
       730,
-      757,
-      566
+      761,
+      634
     ],
     "direct_save_daily": [
       316,
@@ -496,7 +496,7 @@
       387,
       425,
       457,
-      513
+      517
     ],
     "organic_save_daily": [
       120,
@@ -506,7 +506,7 @@
       123,
       116,
       117,
-      117
+      119
     ],
     "growth_save_daily": [
       117,
@@ -516,7 +516,7 @@
       196,
       218,
       235,
-      254
+      255
     ]
   },
   "retention": {
@@ -528,7 +528,7 @@
       0.44027204441812456,
       0.3995723403435666,
       0.39363992449596674,
-      0.19053344787572632
+      0.24894800515477475
     ],
     "total_d7": [
       0.35492271709913975,
@@ -537,7 +537,7 @@
       0.35093707063895224,
       0.34945475918538726,
       0.312329584774685,
-      0.26002472584144615,
+      0.2703576778034581,
       0.0
     ],
     "total_m1": [
@@ -546,7 +546,7 @@
       0.6188930436887063,
       0.6449432298034866,
       0.630739799733289,
-      0.521803169805576,
+      0.5284782621812685,
       null,
       null
     ],
@@ -558,7 +558,7 @@
       0.5093652504833774,
       0.5021259763466853,
       0.4973741882692337,
-      0.24396335614692757
+      0.32296007261739407
     ],
     "app_d7": [
       0.42813019183649076,
@@ -567,7 +567,7 @@
       0.42175664914910743,
       0.4197253427501098,
       0.414847283354071,
-      0.34425607860959395,
+      0.35771421730382763,
       0.0
     ],
     "app_m1": [
@@ -576,7 +576,7 @@
       0.7543153721252418,
       0.7653879790368942,
       0.7556673094555686,
-      0.6921791868076407,
+      0.7003042665147947,
       null,
       null
     ],
@@ -588,7 +588,7 @@
       0.29655086131886627,
       0.2352046798602633,
       0.22892199723618611,
-      0.10138052878388984
+      0.12985599874525797
     ],
     "web_d7": [
       0.19592032361716033,
@@ -597,7 +597,7 @@
       0.20074808024391436,
       0.20328450624533442,
       0.14801952293432574,
-      0.12627514943743237,
+      0.1316456689098623,
       0.0
     ],
     "web_m1": [
@@ -606,7 +606,7 @@
       0.3532190114768761,
       0.3895128012934517,
       0.3708773541843978,
-      0.24873330696579088,
+      0.25308443468560815,
       null,
       null
     ],
@@ -618,7 +618,7 @@
       0.3739601116440398,
       0.3593154399339804,
       0.3433692689668234,
-      0.16031128404669262
+      0.2141556668183887
     ],
     "nurr_d7": [
       0.15441317177345898,
@@ -627,7 +627,7 @@
       0.14885100932682022,
       0.150157168793865,
       0.14456189989651694,
-      0.10483577425359332,
+      0.10944634660969049,
       0.0
     ],
     "nurr_m1": [
@@ -648,7 +648,7 @@
       0.3595979416274658,
       0.36189400309376946,
       0.35629163697208194,
-      0.1713719195543386
+      0.2296736640039631
     ],
     "direct_d7": [
       0.14778280225751042,
@@ -657,7 +657,7 @@
       0.145116544210793,
       0.14620422590118773,
       0.1470246538765188,
-      0.1107303318563505,
+      0.11559507947820159,
       0.0
     ],
     "direct_m1": [
@@ -678,7 +678,7 @@
       0.4172803141875307,
       0.39547420061662564,
       0.3901147562607172,
-      0.1982835158330867
+      0.2514585764294049
     ],
     "organic_d7": [
       0.17707360861759425,
@@ -687,7 +687,7 @@
       0.16895433462800255,
       0.1715758468335788,
       0.1650733939617227,
-      0.12259511202396879,
+      0.1274755506981477,
       0.0
     ],
     "organic_m1": [
@@ -708,7 +708,7 @@
       0.3682010501095988,
       0.33841646134381037,
       0.30504457336918067,
-      0.1301942319011183
+      0.17722895309102205
     ],
     "growth_d7": [
       0.14888714028776978,
@@ -717,7 +717,7 @@
       0.14161012685765564,
       0.14335780190650965,
       0.13155090896983418,
-      0.09024338474600255,
+      0.09438234045563888,
       0.0
     ],
     "growth_m1": [
@@ -740,7 +740,7 @@
       80457,
       91121,
       114546,
-      8567
+      12989
     ],
     "avg_new_dau": [
       1756,
@@ -750,7 +750,7 @@
       2595,
       3037,
       3695,
-      4284
+      4330
     ],
     "adview_activated": [
       15369,
@@ -759,8 +759,8 @@
       20354,
       23322,
       23476,
-      24330,
-      972
+      24489,
+      1653
     ],
     "lead_activated": [
       13406,
@@ -769,8 +769,8 @@
       18888,
       20051,
       21896,
-      23481,
-      1133
+      23599,
+      1902
     ],
     "adview_rate": [
       0.2823,
@@ -779,8 +779,8 @@
       0.2685,
       0.2899,
       0.2576,
-      0.2124,
-      0.1135
+      0.2138,
+      0.1273
     ],
     "lead_rate": [
       0.2463,
@@ -789,8 +789,8 @@
       0.2492,
       0.2492,
       0.2403,
-      0.205,
-      0.1323
+      0.206,
+      0.1464
     ],
     "adview_daily": [
       496,
@@ -799,8 +799,8 @@
       678,
       752,
       783,
-      785,
-      486
+      790,
+      551
     ],
     "lead_daily": [
       432,
@@ -809,8 +809,8 @@
       630,
       647,
       730,
-      757,
-      566
+      761,
+      634
     ],
     "nurr_d1": [
       0.36325314748201437,
@@ -820,7 +820,7 @@
       0.3682010501095988,
       0.33841646134381037,
       0.30504457336918067,
-      0.1301942319011183
+      0.17722895309102205
     ],
     "nurr_d7": [
       0.14888714028776978,
@@ -829,7 +829,7 @@
       0.14161012685765564,
       0.14335780190650965,
       0.13155090896983418,
-      0.09024338474600255,
+      0.09438234045563888,
       0.0
     ],
     "nurr_m1": [
@@ -869,7 +869,7 @@
       0.2723,
       0.2984,
       0.339,
-      0.3704
+      0.3695
     ],
     "retained_d1": [
       19775,
@@ -879,7 +879,7 @@
       29624,
       30837,
       34942,
-      1115
+      2302
     ],
     "retained_d7": [
       8105,
@@ -888,7 +888,7 @@
       10733,
       11534,
       11987,
-      10337,
+      10811,
       0
     ],
     "retained_m1": [
@@ -961,7 +961,7 @@
       29195,
       29916,
       48513,
-      3562
+      5460
     ],
     "job_new_users": [
       2065,
@@ -971,7 +971,7 @@
       38790,
       47066,
       41290,
-      2571
+      3882
     ],
     "veh_new_users": [
       266,
@@ -981,7 +981,7 @@
       1921,
       1295,
       3959,
-      236
+      356
     ],
     "gds_new_users": [
       1148,
@@ -991,7 +991,7 @@
       824,
       8838,
       22450,
-      2240
+      3360
     ],
     "pty_activated": [
       11681,
@@ -1000,8 +1000,8 @@
       6687,
       8637,
       7188,
-      9602,
-      367
+      9660,
+      646
     ],
     "job_activated": [
       836,
@@ -1010,8 +1010,8 @@
       10307,
       11229,
       12662,
-      9940,
-      410
+      10009,
+      680
     ],
     "veh_activated": [
       117,
@@ -1020,8 +1020,8 @@
       658,
       543,
       297,
-      954,
-      40
+      958,
+      60
     ],
     "gds_activated": [
       381,
@@ -1030,8 +1030,8 @@
       226,
       271,
       1504,
-      3669,
-      184
+      3700,
+      304
     ]
   },
   "attribution_assist": {
@@ -1043,7 +1043,7 @@
       0.031,
       0.0554,
       0.0496,
-      0.0448
+      0.0439
     ],
     "organic_pct": [
       0.2311,
@@ -1053,7 +1053,7 @@
       0.2801,
       0.2758,
       0.3022,
-      0.3196
+      0.3151
     ]
   },
   "campaigns": [
@@ -1300,17 +1300,6 @@
       "month": "Jan 2026"
     },
     {
-      "name": "zalo",
-      "vertical": "other",
-      "new_users": 165,
-      "activated_adview": 56,
-      "activated_lead": 85,
-      "activation_rate": 0.3394,
-      "nurr_d1": 0.4121,
-      "nurr_d7": 0.1212,
-      "month": "Jan 2026"
-    },
-    {
       "name": "digital_app_activate_android_veh_mc",
       "vertical": "veh",
       "new_users": 165,
@@ -1319,6 +1308,17 @@
       "activation_rate": 0.4606,
       "nurr_d1": 0.4727,
       "nurr_d7": 0.1697,
+      "month": "Jan 2026"
+    },
+    {
+      "name": "zalo",
+      "vertical": "other",
+      "new_users": 165,
+      "activated_adview": 56,
+      "activated_lead": 85,
+      "activation_rate": 0.3394,
+      "nurr_d1": 0.4121,
+      "nurr_d7": 0.1212,
       "month": "Jan 2026"
     },
     {
@@ -2686,6 +2686,17 @@
       "month": "May 2026"
     },
     {
+      "name": "digital_dau_pty_let_room_hcm_pmax_lead_2025",
+      "vertical": "pty",
+      "new_users": 192,
+      "activated_adview": 105,
+      "activated_lead": 73,
+      "activation_rate": 0.5469,
+      "nurr_d1": 0.3438,
+      "nurr_d7": 0.1562,
+      "month": "May 2026"
+    },
+    {
       "name": "digital_dau_pty_let_houses_hcm_pmax_adview_2025",
       "vertical": "pty",
       "new_users": 192,
@@ -2694,17 +2705,6 @@
       "activation_rate": 0.3281,
       "nurr_d1": 0.276,
       "nurr_d7": 0.1302,
-      "month": "May 2026"
-    },
-    {
-      "name": "digital_job_appinstall_fb_atc_broad_kiemdinhphim_asset",
-      "vertical": "job",
-      "new_users": 192,
-      "activated_adview": 20,
-      "activated_lead": 24,
-      "activation_rate": 0.1042,
-      "nurr_d1": 0.2292,
-      "nurr_d7": 0.0521,
       "month": "May 2026"
     },
     {
@@ -2994,17 +2994,6 @@
       "month": "Jun 2026"
     },
     {
-      "name": "digital_gg_job_vnd_dau_banhang_demandgen",
-      "vertical": "job",
-      "new_users": 186,
-      "activated_adview": 64,
-      "activated_lead": 64,
-      "activation_rate": 0.3441,
-      "nurr_d1": 0.3656,
-      "nurr_d7": 0.1129,
-      "month": "Jun 2026"
-    },
-    {
       "name": "digital_elt_bl_mf_clicklink_web",
       "vertical": "gds",
       "new_users": 186,
@@ -3013,6 +3002,17 @@
       "activation_rate": 0.2957,
       "nurr_d1": 0.4355,
       "nurr_d7": 0.1989,
+      "month": "Jun 2026"
+    },
+    {
+      "name": "digital_gg_job_vnd_dau_banhang_demandgen",
+      "vertical": "job",
+      "new_users": 186,
+      "activated_adview": 64,
+      "activated_lead": 64,
+      "activation_rate": 0.3441,
+      "nurr_d1": 0.3656,
+      "nurr_d7": 0.1129,
       "month": "Jun 2026"
     },
     {
@@ -3041,88 +3041,88 @@
       "name": "pty_appinstall_mass_android",
       "vertical": "pty",
       "new_users": 22931,
-      "activated_adview": 3833,
-      "activated_lead": 3745,
-      "activation_rate": 0.1672,
+      "activated_adview": 3852,
+      "activated_lead": 3761,
+      "activation_rate": 0.168,
       "nurr_d1": 0.2538,
-      "nurr_d7": 0.078,
+      "nurr_d7": 0.0807,
       "month": "Jul 2026"
     },
     {
       "name": "job_appinstall_inapp_android_adview_7d",
       "vertical": "job",
       "new_users": 21864,
-      "activated_adview": 5943,
-      "activated_lead": 5782,
-      "activation_rate": 0.2718,
+      "activated_adview": 5989,
+      "activated_lead": 5814,
+      "activation_rate": 0.2739,
       "nurr_d1": 0.3434,
-      "nurr_d7": 0.1032,
+      "nurr_d7": 0.1083,
       "month": "Jul 2026"
     },
     {
       "name": "gds_appinstall_mass_android",
       "vertical": "gds",
       "new_users": 17044,
-      "activated_adview": 2340,
-      "activated_lead": 2272,
-      "activation_rate": 0.1373,
+      "activated_adview": 2355,
+      "activated_lead": 2277,
+      "activation_rate": 0.1382,
       "nurr_d1": 0.2467,
-      "nurr_d7": 0.0653,
+      "nurr_d7": 0.0677,
       "month": "Jul 2026"
     },
     {
       "name": "pty_appinstall_inapp_action_user_android_view_item_list",
       "vertical": "pty",
       "new_users": 10107,
-      "activated_adview": 2753,
-      "activated_lead": 2595,
-      "activation_rate": 0.2724,
+      "activated_adview": 2767,
+      "activated_lead": 2607,
+      "activation_rate": 0.2738,
       "nurr_d1": 0.4176,
-      "nurr_d7": 0.132,
+      "nurr_d7": 0.1376,
       "month": "Jul 2026"
     },
     {
       "name": "job_appinstall_mass_android",
       "vertical": "job",
       "new_users": 9227,
-      "activated_adview": 1085,
-      "activated_lead": 1131,
-      "activation_rate": 0.1176,
+      "activated_adview": 1092,
+      "activated_lead": 1136,
+      "activation_rate": 0.1183,
       "nurr_d1": 0.2074,
-      "nurr_d7": 0.0596,
+      "nurr_d7": 0.0622,
       "month": "Jul 2026"
     },
     {
       "name": "job_appinstall_inapp_android_make_lead_30d",
       "vertical": "job",
       "new_users": 7302,
-      "activated_adview": 2157,
-      "activated_lead": 1900,
-      "activation_rate": 0.2954,
+      "activated_adview": 2170,
+      "activated_lead": 1911,
+      "activation_rate": 0.2972,
       "nurr_d1": 0.413,
-      "nurr_d7": 0.1271,
+      "nurr_d7": 0.1342,
       "month": "Jul 2026"
     },
     {
       "name": "gds_appinstall_inapp_android_adview_7d",
       "vertical": "gds",
       "new_users": 3747,
-      "activated_adview": 1020,
-      "activated_lead": 934,
-      "activation_rate": 0.2722,
+      "activated_adview": 1034,
+      "activated_lead": 943,
+      "activation_rate": 0.276,
       "nurr_d1": 0.3389,
-      "nurr_d7": 0.0966,
+      "nurr_d7": 0.107,
       "month": "Jul 2026"
     },
     {
       "name": "pty_appinstall_inapp_action_user_android_make_lead_30d",
       "vertical": "pty",
       "new_users": 3606,
-      "activated_adview": 840,
-      "activated_lead": 806,
-      "activation_rate": 0.2329,
+      "activated_adview": 844,
+      "activated_lead": 810,
+      "activation_rate": 0.2341,
       "nurr_d1": 0.3866,
-      "nurr_d7": 0.1179,
+      "nurr_d7": 0.1195,
       "month": "Jul 2026"
     },
     {
@@ -3140,11 +3140,11 @@
       "name": "pty_appinstall_mass_android_b2s_0726",
       "vertical": "pty",
       "new_users": 1974,
-      "activated_adview": 250,
-      "activated_lead": 269,
-      "activation_rate": 0.1266,
+      "activated_adview": 254,
+      "activated_lead": 273,
+      "activation_rate": 0.1287,
       "nurr_d1": 0.19,
-      "nurr_d7": 0.0466,
+      "nurr_d7": 0.0517,
       "month": "Jul 2026"
     },
     {
@@ -3152,43 +3152,43 @@
       "vertical": "gds",
       "new_users": 1829,
       "activated_adview": 333,
-      "activated_lead": 365,
+      "activated_lead": 366,
       "activation_rate": 0.1821,
       "nurr_d1": 0.3253,
-      "nurr_d7": 0.0858,
+      "nurr_d7": 0.0875,
       "month": "Jul 2026"
     },
     {
       "name": "gg_growth_pty_app_android_install_app_maxinstall_thodia_bau_072126_HCM",
       "vertical": "pty",
       "new_users": 1743,
-      "activated_adview": 308,
-      "activated_lead": 303,
-      "activation_rate": 0.1767,
+      "activated_adview": 312,
+      "activated_lead": 308,
+      "activation_rate": 0.179,
       "nurr_d1": 0.2679,
-      "nurr_d7": 0.0465,
+      "nurr_d7": 0.0579,
       "month": "Jul 2026"
     },
     {
       "name": "gg_growth_pty_app_android_install_app_maxinstall_thodia_bau_072126_VN",
       "vertical": "pty",
       "new_users": 1236,
-      "activated_adview": 102,
-      "activated_lead": 112,
-      "activation_rate": 0.0825,
+      "activated_adview": 105,
+      "activated_lead": 113,
+      "activation_rate": 0.085,
       "nurr_d1": 0.1586,
-      "nurr_d7": 0.0162,
+      "nurr_d7": 0.0218,
       "month": "Jul 2026"
     },
     {
       "name": "gg_growth_pty_app_android_install_app_maxinstall_b2s_bau_072226_2026theme",
       "vertical": "pty",
       "new_users": 1054,
-      "activated_adview": 124,
+      "activated_adview": 127,
       "activated_lead": 119,
-      "activation_rate": 0.1176,
+      "activation_rate": 0.1205,
       "nurr_d1": 0.1774,
-      "nurr_d7": 0.0342,
+      "nurr_d7": 0.0408,
       "month": "Jul 2026"
     },
     {
@@ -3210,7 +3210,7 @@
       "activated_lead": 251,
       "activation_rate": 0.2726,
       "nurr_d1": 0.4485,
-      "nurr_d7": 0.1415,
+      "nurr_d7": 0.1467,
       "month": "Jul 2026"
     },
     {
@@ -3228,22 +3228,22 @@
       "name": "digital_gds_elt_5010_gg_pmaxwfeed",
       "vertical": "pty",
       "new_users": 768,
-      "activated_adview": 144,
-      "activated_lead": 168,
-      "activation_rate": 0.1875,
+      "activated_adview": 145,
+      "activated_lead": 169,
+      "activation_rate": 0.1888,
       "nurr_d1": 0.2591,
-      "nurr_d7": 0.0781,
+      "nurr_d7": 0.082,
       "month": "Jul 2026"
     },
     {
       "name": "Share_ad_via_iOS",
       "vertical": "other",
       "new_users": 752,
-      "activated_adview": 508,
-      "activated_lead": 461,
-      "activation_rate": 0.6755,
+      "activated_adview": 510,
+      "activated_lead": 462,
+      "activation_rate": 0.6782,
       "nurr_d1": 0.4322,
-      "nurr_d7": 0.1197,
+      "nurr_d7": 0.125,
       "month": "Jul 2026"
     },
     {
@@ -3254,7 +3254,7 @@
       "activated_lead": 116,
       "activation_rate": 0.2208,
       "nurr_d1": 0.2554,
-      "nurr_d7": 0.0534,
+      "nurr_d7": 0.0548,
       "month": "Jul 2026"
     },
     {
@@ -3265,29 +3265,29 @@
       "activated_lead": 103,
       "activation_rate": 0.1355,
       "nurr_d1": 0.2033,
-      "nurr_d7": 0.0527,
+      "nurr_d7": 0.0587,
       "month": "Jul 2026"
     },
     {
       "name": "digital_gg_job_vnd_dwa_banhang_pmax",
       "vertical": "job",
       "new_users": 562,
-      "activated_adview": 211,
-      "activated_lead": 223,
-      "activation_rate": 0.3754,
+      "activated_adview": 212,
+      "activated_lead": 224,
+      "activation_rate": 0.3772,
       "nurr_d1": 0.2972,
-      "nurr_d7": 0.0979,
+      "nurr_d7": 0.1014,
       "month": "Jul 2026"
     },
     {
       "name": "veh_appinstall_inapp_action_user_android_adview_7d",
       "vertical": "veh",
       "new_users": 562,
-      "activated_adview": 167,
-      "activated_lead": 141,
-      "activation_rate": 0.2972,
+      "activated_adview": 169,
+      "activated_lead": 142,
+      "activation_rate": 0.3007,
       "nurr_d1": 0.3345,
-      "nurr_d7": 0.0996,
+      "nurr_d7": 0.105,
       "month": "Jul 2026"
     },
     {
@@ -3316,33 +3316,33 @@
       "name": "digital_dau_veh_car_all_gg_pmax_adview_vnd",
       "vertical": "veh",
       "new_users": 437,
-      "activated_adview": 62,
-      "activated_lead": 57,
-      "activation_rate": 0.1419,
+      "activated_adview": 63,
+      "activated_lead": 58,
+      "activation_rate": 0.1442,
       "nurr_d1": 0.2174,
-      "nurr_d7": 0.0847,
+      "nurr_d7": 0.087,
       "month": "Jul 2026"
     },
     {
       "name": "zalo",
       "vertical": "other",
       "new_users": 390,
-      "activated_adview": 133,
+      "activated_adview": 134,
       "activated_lead": 175,
-      "activation_rate": 0.341,
+      "activation_rate": 0.3436,
       "nurr_d1": 0.3846,
-      "nurr_d7": 0.0949,
+      "nurr_d7": 0.1026,
       "month": "Jul 2026"
     },
     {
       "name": "digital_veh_mc_tf_web_gg_pmaxwfeed",
       "vertical": "veh",
       "new_users": 377,
-      "activated_adview": 83,
+      "activated_adview": 84,
       "activated_lead": 81,
-      "activation_rate": 0.2202,
+      "activation_rate": 0.2228,
       "nurr_d1": 0.3156,
-      "nurr_d7": 0.1088,
+      "nurr_d7": 0.1141,
       "month": "Jul 2026"
     },
     {
@@ -3353,7 +3353,7 @@
       "activated_lead": 113,
       "activation_rate": 0.3539,
       "nurr_d1": 0.3202,
-      "nurr_d7": 0.0646,
+      "nurr_d7": 0.073,
       "month": "Jul 2026"
     },
     {
@@ -3361,10 +3361,10 @@
       "vertical": "gds",
       "new_users": 339,
       "activated_adview": 89,
-      "activated_lead": 97,
+      "activated_lead": 99,
       "activation_rate": 0.2625,
       "nurr_d1": 0.3805,
-      "nurr_d7": 0.1327,
+      "nurr_d7": 0.1357,
       "month": "Jul 2026"
     }
   ],
@@ -3383,11 +3383,11 @@
       "d7": 289,
       "rr_d1": 0.554,
       "rr_d7": 0.2053,
-      "dau": 121,
-      "save_ad_d0": 9,
-      "save_ad_rate": 0.0744,
+      "dau": null,
+      "save_ad_d0": null,
+      "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "31/01"
+      "save_through": null
     },
     {
       "name": "digital_activate_install7d_app_reach",
@@ -3403,11 +3403,11 @@
       "d7": 185,
       "rr_d1": 0.5095,
       "rr_d7": 0.1765,
-      "dau": 37,
-      "save_ad_d0": 2,
-      "save_ad_rate": 0.0541,
+      "dau": null,
+      "save_ad_d0": null,
+      "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "31/01"
+      "save_through": null
     },
     {
       "name": "digital_activate_install7d_web",
@@ -3427,7 +3427,7 @@
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "31/01"
+      "save_through": null
     },
     {
       "name": "digital_activate_install7d_web_reach",
@@ -3443,11 +3443,11 @@
       "d7": 348,
       "rr_d1": 0.466,
       "rr_d7": 0.1623,
-      "dau": 32,
-      "save_ad_d0": 2,
-      "save_ad_rate": 0.0625,
+      "dau": null,
+      "save_ad_d0": null,
+      "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "31/01"
+      "save_through": null
     },
     {
       "name": "digital_app_activate_android_gds_mobile",
@@ -3463,11 +3463,11 @@
       "d7": 59,
       "rr_d1": 0.4377,
       "rr_d7": 0.1634,
-      "dau": 177,
-      "save_ad_d0": 11,
-      "save_ad_rate": 0.0621,
+      "dau": null,
+      "save_ad_d0": null,
+      "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "31/01"
+      "save_through": null
     },
     {
       "name": "digital_app_activate_android_veh_mc",
@@ -3483,11 +3483,11 @@
       "d7": 44,
       "rr_d1": 0.4747,
       "rr_d7": 0.1712,
-      "dau": 149,
-      "save_ad_d0": 12,
-      "save_ad_rate": 0.0805,
+      "dau": null,
+      "save_ad_d0": null,
+      "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "31/01"
+      "save_through": null
     },
     {
       "name": "digital_app_install_android_mobile_hcm_make_lead",
@@ -3503,11 +3503,11 @@
       "d7": 1719,
       "rr_d1": 0.4285,
       "rr_d7": 0.1753,
-      "dau": 7965,
-      "save_ad_d0": 428,
-      "save_ad_rate": 0.0537,
+      "dau": null,
+      "save_ad_d0": null,
+      "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "31/01"
+      "save_through": null
     },
     {
       "name": "digital_app_install_android_tet_fb_adview_signup",
@@ -3527,7 +3527,7 @@
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "31/01"
+      "save_through": null
     },
     {
       "name": "digital_app_install_android_tet_fb_adview_uudai",
@@ -3547,7 +3547,7 @@
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "31/01"
+      "save_through": null
     },
     {
       "name": "digital_app_install_android_tet_fb_adview_visited_web_signup",
@@ -3567,7 +3567,7 @@
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "31/01"
+      "save_through": null
     },
     {
       "name": "digital_app_install_android_tet_fb_adview_visited_web_uudai",
@@ -3587,7 +3587,7 @@
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "31/01"
+      "save_through": null
     },
     {
       "name": "digital_activate_install7d_app",
@@ -3603,11 +3603,11 @@
       "d7": 142,
       "rr_d1": 0.5007,
       "rr_d7": 0.1851,
-      "dau": 59,
-      "save_ad_d0": 3,
-      "save_ad_rate": 0.0508,
+      "dau": null,
+      "save_ad_d0": null,
+      "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "28/02"
+      "save_through": null
     },
     {
       "name": "digital_activate_install7d_app_reach",
@@ -3623,11 +3623,11 @@
       "d7": 91,
       "rr_d1": 0.4857,
       "rr_d7": 0.1733,
-      "dau": 14,
-      "save_ad_d0": 0,
-      "save_ad_rate": 0.0,
+      "dau": null,
+      "save_ad_d0": null,
+      "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "28/02"
+      "save_through": null
     },
     {
       "name": "digital_activate_install7d_web",
@@ -3647,7 +3647,7 @@
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "28/02"
+      "save_through": null
     },
     {
       "name": "digital_activate_install7d_web_reach",
@@ -3663,11 +3663,11 @@
       "d7": 149,
       "rr_d1": 0.4936,
       "rr_d7": 0.1739,
-      "dau": 12,
-      "save_ad_d0": 0,
-      "save_ad_rate": 0.0,
+      "dau": null,
+      "save_ad_d0": null,
+      "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "28/02"
+      "save_through": null
     },
     {
       "name": "digital_app_activate_android_gds_mobile",
@@ -3683,11 +3683,11 @@
       "d7": 15,
       "rr_d1": 0.35,
       "rr_d7": 0.1071,
-      "dau": 87,
-      "save_ad_d0": 15,
-      "save_ad_rate": 0.1724,
+      "dau": null,
+      "save_ad_d0": null,
+      "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "28/02"
+      "save_through": null
     },
     {
       "name": "digital_app_activate_android_veh_mc",
@@ -3703,11 +3703,11 @@
       "d7": 26,
       "rr_d1": 0.3495,
       "rr_d7": 0.1398,
-      "dau": 100,
-      "save_ad_d0": 6,
-      "save_ad_rate": 0.06,
+      "dau": null,
+      "save_ad_d0": null,
+      "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "28/02"
+      "save_through": null
     },
     {
       "name": "digital_app_install_android_mobile_hcm_make_lead",
@@ -3723,11 +3723,11 @@
       "d7": 1644,
       "rr_d1": 0.3969,
       "rr_d7": 0.1606,
-      "dau": 8450,
-      "save_ad_d0": 537,
-      "save_ad_rate": 0.0636,
+      "dau": null,
+      "save_ad_d0": null,
+      "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "28/02"
+      "save_through": null
     },
     {
       "name": "digital_app_install_android_tet_fb_adview_signup",
@@ -3747,7 +3747,7 @@
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "28/02"
+      "save_through": null
     },
     {
       "name": "digital_app_install_android_tet_fb_adview_uudai",
@@ -3767,7 +3767,7 @@
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "28/02"
+      "save_through": null
     },
     {
       "name": "digital_app_install_android_tet_fb_adview_visited_web_signup",
@@ -3787,7 +3787,7 @@
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "28/02"
+      "save_through": null
     },
     {
       "name": "digital_app_install_android_tet_fb_adview_visited_web_uudai",
@@ -3807,7 +3807,7 @@
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": false,
-      "save_through": "28/02"
+      "save_through": null
     },
     {
       "name": "digital_activate_install7d_app",
@@ -3823,9 +3823,9 @@
       "d7": 147,
       "rr_d1": 0.5532,
       "rr_d7": 0.2112,
-      "dau": 53,
-      "save_ad_d0": 1,
-      "save_ad_rate": 0.0189,
+      "dau": 171,
+      "save_ad_d0": 7,
+      "save_ad_rate": 0.0409,
       "save_partial": false,
       "save_through": "31/03"
     },
@@ -3843,9 +3843,9 @@
       "d7": 169,
       "rr_d1": 0.5641,
       "rr_d7": 0.1762,
-      "dau": 12,
-      "save_ad_d0": 1,
-      "save_ad_rate": 0.0833,
+      "dau": 225,
+      "save_ad_d0": 14,
+      "save_ad_rate": 0.0622,
       "save_partial": false,
       "save_through": "31/03"
     },
@@ -3863,9 +3863,9 @@
       "d7": 89,
       "rr_d1": 0.4567,
       "rr_d7": 0.1328,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 183,
+      "save_ad_d0": 9,
+      "save_ad_rate": 0.0492,
       "save_partial": false,
       "save_through": "31/03"
     },
@@ -3883,9 +3883,9 @@
       "d7": 183,
       "rr_d1": 0.5234,
       "rr_d7": 0.1404,
-      "dau": 12,
-      "save_ad_d0": 0,
-      "save_ad_rate": 0.0,
+      "dau": 266,
+      "save_ad_d0": 9,
+      "save_ad_rate": 0.0338,
       "save_partial": false,
       "save_through": "31/03"
     },
@@ -3903,9 +3903,9 @@
       "d7": 35,
       "rr_d1": 0.3222,
       "rr_d7": 0.1464,
-      "dau": 135,
-      "save_ad_d0": 19,
-      "save_ad_rate": 0.1407,
+      "dau": 23,
+      "save_ad_d0": 4,
+      "save_ad_rate": 0.1739,
       "save_partial": false,
       "save_through": "31/03"
     },
@@ -3923,9 +3923,9 @@
       "d7": 45,
       "rr_d1": 0.4706,
       "rr_d7": 0.1557,
-      "dau": 171,
-      "save_ad_d0": 15,
-      "save_ad_rate": 0.0877,
+      "dau": 69,
+      "save_ad_d0": 11,
+      "save_ad_rate": 0.1594,
       "save_partial": false,
       "save_through": "31/03"
     },
@@ -3943,9 +3943,9 @@
       "d7": 3219,
       "rr_d1": 0.4134,
       "rr_d7": 0.1734,
-      "dau": 15444,
-      "save_ad_d0": 1033,
-      "save_ad_rate": 0.0669,
+      "dau": 4295,
+      "save_ad_d0": 269,
+      "save_ad_rate": 0.0626,
       "save_partial": false,
       "save_through": "31/03"
     },
@@ -4043,9 +4043,9 @@
       "d7": 562,
       "rr_d1": 0.3602,
       "rr_d7": 0.1497,
-      "dau": 3174,
-      "save_ad_d0": 236,
-      "save_ad_rate": 0.0744,
+      "dau": 2656,
+      "save_ad_d0": 208,
+      "save_ad_rate": 0.0783,
       "save_partial": false,
       "save_through": "31/03"
     },
@@ -4063,9 +4063,9 @@
       "d7": 323,
       "rr_d1": 0.4198,
       "rr_d7": 0.165,
-      "dau": 1612,
-      "save_ad_d0": 113,
-      "save_ad_rate": 0.0701,
+      "dau": 1814,
+      "save_ad_d0": 115,
+      "save_ad_rate": 0.0634,
       "save_partial": false,
       "save_through": "31/03"
     },
@@ -4083,9 +4083,9 @@
       "d7": 1272,
       "rr_d1": 0.3428,
       "rr_d7": 0.1352,
-      "dau": 7868,
-      "save_ad_d0": 479,
-      "save_ad_rate": 0.0609,
+      "dau": 4436,
+      "save_ad_d0": 304,
+      "save_ad_rate": 0.0685,
       "save_partial": false,
       "save_through": "31/03"
     },
@@ -4103,9 +4103,9 @@
       "d7": 1045,
       "rr_d1": 0.4231,
       "rr_d7": 0.1706,
-      "dau": 5156,
-      "save_ad_d0": 327,
-      "save_ad_rate": 0.0634,
+      "dau": 90,
+      "save_ad_d0": 5,
+      "save_ad_rate": 0.0556,
       "save_partial": false,
       "save_through": "31/03"
     },
@@ -4123,9 +4123,9 @@
       "d7": 1563,
       "rr_d1": 0.358,
       "rr_d7": 0.1564,
-      "dau": 8397,
-      "save_ad_d0": 733,
-      "save_ad_rate": 0.0873,
+      "dau": 1926,
+      "save_ad_d0": 138,
+      "save_ad_rate": 0.0717,
       "save_partial": false,
       "save_through": "31/03"
     },
@@ -4143,9 +4143,9 @@
       "d7": 737,
       "rr_d1": 0.429,
       "rr_d7": 0.1639,
-      "dau": 3815,
-      "save_ad_d0": 236,
-      "save_ad_rate": 0.0619,
+      "dau": 1230,
+      "save_ad_d0": 87,
+      "save_ad_rate": 0.0707,
       "save_partial": false,
       "save_through": "31/03"
     },
@@ -4163,9 +4163,9 @@
       "d7": 1744,
       "rr_d1": 0.4455,
       "rr_d7": 0.1773,
-      "dau": 7980,
-      "save_ad_d0": 516,
-      "save_ad_rate": 0.0647,
+      "dau": 675,
+      "save_ad_d0": 37,
+      "save_ad_rate": 0.0548,
       "save_partial": false,
       "save_through": "31/03"
     },
@@ -4183,9 +4183,9 @@
       "d7": 2566,
       "rr_d1": 0.3332,
       "rr_d7": 0.1362,
-      "dau": 15539,
-      "save_ad_d0": 1087,
-      "save_ad_rate": 0.07,
+      "dau": 2529,
+      "save_ad_d0": 185,
+      "save_ad_rate": 0.0732,
       "save_partial": false,
       "save_through": "31/03"
     },
@@ -4203,9 +4203,9 @@
       "d7": 130,
       "rr_d1": 0.5006,
       "rr_d7": 0.1603,
-      "dau": 100,
-      "save_ad_d0": 3,
-      "save_ad_rate": 0.03,
+      "dau": 802,
+      "save_ad_d0": 26,
+      "save_ad_rate": 0.0324,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4223,9 +4223,9 @@
       "d7": 158,
       "rr_d1": 0.5049,
       "rr_d7": 0.1549,
-      "dau": 36,
-      "save_ad_d0": 2,
-      "save_ad_rate": 0.0556,
+      "dau": 992,
+      "save_ad_d0": 44,
+      "save_ad_rate": 0.0444,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4243,9 +4243,9 @@
       "d7": 175,
       "rr_d1": 0.5124,
       "rr_d7": 0.188,
-      "dau": 189,
-      "save_ad_d0": 14,
-      "save_ad_rate": 0.0741,
+      "dau": 970,
+      "save_ad_d0": 55,
+      "save_ad_rate": 0.0567,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4263,9 +4263,9 @@
       "d7": 201,
       "rr_d1": 0.4988,
       "rr_d7": 0.1652,
-      "dau": 32,
-      "save_ad_d0": 4,
-      "save_ad_rate": 0.125,
+      "dau": 1230,
+      "save_ad_d0": 64,
+      "save_ad_rate": 0.052,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4283,9 +4283,9 @@
       "d7": 12,
       "rr_d1": 0.2232,
       "rr_d7": 0.1071,
-      "dau": 82,
-      "save_ad_d0": 15,
-      "save_ad_rate": 0.1829,
+      "dau": 112,
+      "save_ad_d0": 16,
+      "save_ad_rate": 0.1429,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4303,9 +4303,9 @@
       "d7": 45,
       "rr_d1": 0.4,
       "rr_d7": 0.1343,
-      "dau": 185,
-      "save_ad_d0": 19,
-      "save_ad_rate": 0.1027,
+      "dau": 305,
+      "save_ad_d0": 24,
+      "save_ad_rate": 0.0787,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4323,9 +4323,9 @@
       "d7": 2143,
       "rr_d1": 0.3943,
       "rr_d7": 0.1656,
-      "dau": 10628,
-      "save_ad_d0": 642,
-      "save_ad_rate": 0.0604,
+      "dau": 12297,
+      "save_ad_d0": 810,
+      "save_ad_rate": 0.0659,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4343,9 +4343,9 @@
       "d7": 3,
       "rr_d1": 0.5714,
       "rr_d7": 0.1429,
-      "dau": 21,
-      "save_ad_d0": 1,
-      "save_ad_rate": 0.0476,
+      "dau": 73,
+      "save_ad_d0": 8,
+      "save_ad_rate": 0.1096,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4363,9 +4363,9 @@
       "d7": 2,
       "rr_d1": 0.3729,
       "rr_d7": 0.0339,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 111,
+      "save_ad_d0": 4,
+      "save_ad_rate": 0.036,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4383,9 +4383,9 @@
       "d7": 4,
       "rr_d1": 0.4848,
       "rr_d7": 0.1212,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 74,
+      "save_ad_d0": 8,
+      "save_ad_rate": 0.1081,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4403,9 +4403,9 @@
       "d7": 7,
       "rr_d1": 0.359,
       "rr_d7": 0.1795,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 79,
+      "save_ad_d0": 1,
+      "save_ad_rate": 0.0127,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4423,9 +4423,9 @@
       "d7": 4,
       "rr_d1": 0.4516,
       "rr_d7": 0.129,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 85,
+      "save_ad_d0": 1,
+      "save_ad_rate": 0.0118,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4443,9 +4443,9 @@
       "d7": 1,
       "rr_d1": 0.25,
       "rr_d7": 0.125,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 75,
+      "save_ad_d0": 2,
+      "save_ad_rate": 0.0267,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4463,9 +4463,9 @@
       "d7": 2,
       "rr_d1": 0.1538,
       "rr_d7": 0.1538,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 53,
+      "save_ad_d0": 4,
+      "save_ad_rate": 0.0755,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4483,9 +4483,9 @@
       "d7": 0,
       "rr_d1": 0.375,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 32,
+      "save_ad_d0": 1,
+      "save_ad_rate": 0.0312,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4503,9 +4503,9 @@
       "d7": 1611,
       "rr_d1": 0.357,
       "rr_d7": 0.1511,
-      "dau": 9080,
-      "save_ad_d0": 714,
-      "save_ad_rate": 0.0786,
+      "dau": 11080,
+      "save_ad_d0": 920,
+      "save_ad_rate": 0.083,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4523,9 +4523,9 @@
       "d7": 2569,
       "rr_d1": 0.4439,
       "rr_d7": 0.17,
-      "dau": 12731,
-      "save_ad_d0": 828,
-      "save_ad_rate": 0.065,
+      "dau": 15110,
+      "save_ad_d0": 989,
+      "save_ad_rate": 0.0655,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4543,9 +4543,9 @@
       "d7": 1908,
       "rr_d1": 0.3144,
       "rr_d7": 0.1185,
-      "dau": 13607,
-      "save_ad_d0": 921,
-      "save_ad_rate": 0.0677,
+      "dau": 13452,
+      "save_ad_d0": 862,
+      "save_ad_rate": 0.0641,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4563,9 +4563,9 @@
       "d7": 80,
       "rr_d1": 0.3926,
       "rr_d7": 0.1408,
-      "dau": 486,
-      "save_ad_d0": 31,
-      "save_ad_rate": 0.0638,
+      "dau": 493,
+      "save_ad_d0": 40,
+      "save_ad_rate": 0.0811,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4583,9 +4583,9 @@
       "d7": 1029,
       "rr_d1": 0.3501,
       "rr_d7": 0.142,
-      "dau": 6141,
-      "save_ad_d0": 513,
-      "save_ad_rate": 0.0835,
+      "dau": 5506,
+      "save_ad_d0": 480,
+      "save_ad_rate": 0.0872,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4603,9 +4603,9 @@
       "d7": 1136,
       "rr_d1": 0.4402,
       "rr_d7": 0.1571,
-      "dau": 6095,
-      "save_ad_d0": 381,
-      "save_ad_rate": 0.0625,
+      "dau": 10255,
+      "save_ad_d0": 618,
+      "save_ad_rate": 0.0603,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4623,9 +4623,9 @@
       "d7": 414,
       "rr_d1": 0.4599,
       "rr_d7": 0.1694,
-      "dau": 2041,
-      "save_ad_d0": 129,
-      "save_ad_rate": 0.0632,
+      "dau": 5516,
+      "save_ad_d0": 391,
+      "save_ad_rate": 0.0709,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4643,9 +4643,9 @@
       "d7": 1001,
       "rr_d1": 0.2915,
       "rr_d7": 0.1123,
-      "dau": 7401,
-      "save_ad_d0": 438,
-      "save_ad_rate": 0.0592,
+      "dau": 6781,
+      "save_ad_d0": 359,
+      "save_ad_rate": 0.0529,
       "save_partial": false,
       "save_through": "30/04"
     },
@@ -4663,9 +4663,9 @@
       "d7": 128,
       "rr_d1": 0.472,
       "rr_d7": 0.1492,
-      "dau": 127,
-      "save_ad_d0": 7,
-      "save_ad_rate": 0.0551,
+      "dau": 806,
+      "save_ad_d0": 46,
+      "save_ad_rate": 0.0571,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -4683,9 +4683,9 @@
       "d7": 190,
       "rr_d1": 0.5428,
       "rr_d7": 0.1766,
-      "dau": 35,
-      "save_ad_d0": 2,
-      "save_ad_rate": 0.0571,
+      "dau": 979,
+      "save_ad_d0": 50,
+      "save_ad_rate": 0.0511,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -4703,9 +4703,9 @@
       "d7": 174,
       "rr_d1": 0.501,
       "rr_d7": 0.1654,
-      "dau": 307,
-      "save_ad_d0": 23,
-      "save_ad_rate": 0.0749,
+      "dau": 940,
+      "save_ad_d0": 55,
+      "save_ad_rate": 0.0585,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -4723,9 +4723,9 @@
       "d7": 248,
       "rr_d1": 0.5048,
       "rr_d7": 0.1715,
-      "dau": 35,
-      "save_ad_d0": 1,
-      "save_ad_rate": 0.0286,
+      "dau": 1250,
+      "save_ad_d0": 65,
+      "save_ad_rate": 0.052,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -4743,9 +4743,9 @@
       "d7": 30,
       "rr_d1": 0.3504,
       "rr_d7": 0.2564,
-      "dau": 76,
-      "save_ad_d0": 21,
-      "save_ad_rate": 0.2763,
+      "dau": 127,
+      "save_ad_d0": 29,
+      "save_ad_rate": 0.2283,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -4763,9 +4763,9 @@
       "d7": 62,
       "rr_d1": 0.5024,
       "rr_d7": 0.3024,
-      "dau": 119,
-      "save_ad_d0": 11,
-      "save_ad_rate": 0.0924,
+      "dau": 189,
+      "save_ad_d0": 22,
+      "save_ad_rate": 0.1164,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -4783,9 +4783,9 @@
       "d7": 1879,
       "rr_d1": 0.368,
       "rr_d7": 0.141,
-      "dau": 11375,
-      "save_ad_d0": 813,
-      "save_ad_rate": 0.0715,
+      "dau": 11441,
+      "save_ad_d0": 749,
+      "save_ad_rate": 0.0655,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -4803,9 +4803,9 @@
       "d7": 27,
       "rr_d1": 0.3423,
       "rr_d7": 0.1038,
-      "dau": 258,
-      "save_ad_d0": 27,
-      "save_ad_rate": 0.1047,
+      "dau": 237,
+      "save_ad_d0": 26,
+      "save_ad_rate": 0.1097,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -4823,9 +4823,9 @@
       "d7": 8,
       "rr_d1": 0.3409,
       "rr_d7": 0.0909,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 88,
+      "save_ad_d0": 5,
+      "save_ad_rate": 0.0568,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -4843,9 +4843,9 @@
       "d7": 2,
       "rr_d1": 0.3239,
       "rr_d7": 0.0282,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 111,
+      "save_ad_d0": 4,
+      "save_ad_rate": 0.036,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -4863,9 +4863,9 @@
       "d7": 12,
       "rr_d1": 0.2547,
       "rr_d7": 0.0566,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 296,
+      "save_ad_d0": 9,
+      "save_ad_rate": 0.0304,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -4883,9 +4883,9 @@
       "d7": 4,
       "rr_d1": 0.3333,
       "rr_d7": 0.1111,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 73,
+      "save_ad_d0": 3,
+      "save_ad_rate": 0.0411,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -4903,9 +4903,9 @@
       "d7": 0,
       "rr_d1": 0.1818,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 64,
+      "save_ad_d0": 1,
+      "save_ad_rate": 0.0156,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -4923,9 +4923,9 @@
       "d7": 1,
       "rr_d1": 0.1053,
       "rr_d7": 0.0526,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 30,
+      "save_ad_d0": 2,
+      "save_ad_rate": 0.0667,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -4943,9 +4943,9 @@
       "d7": 3,
       "rr_d1": 0.44,
       "rr_d7": 0.12,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 53,
+      "save_ad_d0": 5,
+      "save_ad_rate": 0.0943,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -4963,9 +4963,9 @@
       "d7": 0,
       "rr_d1": 0.3636,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 31,
+      "save_ad_d0": 1,
+      "save_ad_rate": 0.0323,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -4983,9 +4983,9 @@
       "d7": 1,
       "rr_d1": 0.4167,
       "rr_d7": 0.0417,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 30,
+      "save_ad_d0": 2,
+      "save_ad_rate": 0.0667,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5003,9 +5003,9 @@
       "d7": 4,
       "rr_d1": 0.2558,
       "rr_d7": 0.093,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 65,
+      "save_ad_d0": 2,
+      "save_ad_rate": 0.0308,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5023,9 +5023,9 @@
       "d7": 2,
       "rr_d1": 0.4348,
       "rr_d7": 0.087,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 24,
+      "save_ad_d0": 1,
+      "save_ad_rate": 0.0417,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5043,9 +5043,9 @@
       "d7": 5,
       "rr_d1": 0.25,
       "rr_d7": 0.1042,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 53,
+      "save_ad_d0": 2,
+      "save_ad_rate": 0.0377,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5063,9 +5063,9 @@
       "d7": 1,
       "rr_d1": 0.3333,
       "rr_d7": 0.037,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 29,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5083,9 +5083,9 @@
       "d7": 2,
       "rr_d1": 0.2222,
       "rr_d7": 0.0741,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 36,
+      "save_ad_d0": 1,
+      "save_ad_rate": 0.0278,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5103,9 +5103,9 @@
       "d7": 1,
       "rr_d1": 0.2,
       "rr_d7": 0.0182,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 98,
+      "save_ad_d0": 7,
+      "save_ad_rate": 0.0714,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5123,9 +5123,9 @@
       "d7": 6,
       "rr_d1": 0.3412,
       "rr_d7": 0.0706,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 33,
+      "save_ad_d0": 3,
+      "save_ad_rate": 0.0909,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5143,9 +5143,9 @@
       "d7": 14,
       "rr_d1": 0.4048,
       "rr_d7": 0.1667,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 43,
+      "save_ad_d0": 4,
+      "save_ad_rate": 0.093,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5163,9 +5163,9 @@
       "d7": 8,
       "rr_d1": 0.4565,
       "rr_d7": 0.1739,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 50,
+      "save_ad_d0": 3,
+      "save_ad_rate": 0.06,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5183,9 +5183,9 @@
       "d7": 13,
       "rr_d1": 0.3409,
       "rr_d7": 0.0985,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 167,
+      "save_ad_d0": 11,
+      "save_ad_rate": 0.0659,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5203,9 +5203,9 @@
       "d7": 2,
       "rr_d1": 0.5357,
       "rr_d7": 0.0714,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 44,
+      "save_ad_d0": 2,
+      "save_ad_rate": 0.0455,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5223,9 +5223,9 @@
       "d7": 6,
       "rr_d1": 0.5152,
       "rr_d7": 0.1818,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 38,
+      "save_ad_d0": 1,
+      "save_ad_rate": 0.0263,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5243,9 +5243,9 @@
       "d7": 8,
       "rr_d1": 0.2364,
       "rr_d7": 0.1455,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 15,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5263,9 +5263,9 @@
       "d7": 9,
       "rr_d1": 0.4157,
       "rr_d7": 0.1011,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 35,
+      "save_ad_d0": 2,
+      "save_ad_rate": 0.0571,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5283,9 +5283,9 @@
       "d7": 15,
       "rr_d1": 0.3469,
       "rr_d7": 0.1531,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 31,
+      "save_ad_d0": 1,
+      "save_ad_rate": 0.0323,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5303,9 +5303,9 @@
       "d7": 7,
       "rr_d1": 0.3433,
       "rr_d7": 0.1045,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 27,
+      "save_ad_d0": 4,
+      "save_ad_rate": 0.1481,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5323,9 +5323,9 @@
       "d7": 0,
       "rr_d1": 0.25,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 8,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5343,9 +5343,9 @@
       "d7": 3,
       "rr_d1": 0.3721,
       "rr_d7": 0.0698,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 19,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5363,9 +5363,9 @@
       "d7": 2427,
       "rr_d1": 0.3709,
       "rr_d7": 0.1504,
-      "dau": 13928,
-      "save_ad_d0": 1212,
-      "save_ad_rate": 0.087,
+      "dau": 18981,
+      "save_ad_d0": 1628,
+      "save_ad_rate": 0.0858,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5383,9 +5383,9 @@
       "d7": 1775,
       "rr_d1": 0.4597,
       "rr_d7": 0.1781,
-      "dau": 8452,
-      "save_ad_d0": 643,
-      "save_ad_rate": 0.0761,
+      "dau": 10565,
+      "save_ad_d0": 808,
+      "save_ad_rate": 0.0765,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5403,9 +5403,9 @@
       "d7": 1491,
       "rr_d1": 0.2961,
       "rr_d7": 0.1071,
-      "dau": 11838,
-      "save_ad_d0": 709,
-      "save_ad_rate": 0.0599,
+      "dau": 14828,
+      "save_ad_d0": 876,
+      "save_ad_rate": 0.0591,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5423,9 +5423,9 @@
       "d7": 91,
       "rr_d1": 0.2675,
       "rr_d7": 0.1159,
-      "dau": 646,
-      "save_ad_d0": 36,
-      "save_ad_rate": 0.0557,
+      "dau": 794,
+      "save_ad_d0": 41,
+      "save_ad_rate": 0.0516,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5443,9 +5443,9 @@
       "d7": 4,
       "rr_d1": 0.2424,
       "rr_d7": 0.1212,
-      "dau": 35,
-      "save_ad_d0": 4,
-      "save_ad_rate": 0.1143,
+      "dau": 20,
+      "save_ad_d0": 1,
+      "save_ad_rate": 0.05,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5463,9 +5463,9 @@
       "d7": 119,
       "rr_d1": 0.3404,
       "rr_d7": 0.1402,
-      "dau": 738,
-      "save_ad_d0": 67,
-      "save_ad_rate": 0.0908,
+      "dau": 669,
+      "save_ad_d0": 61,
+      "save_ad_rate": 0.0912,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5483,9 +5483,9 @@
       "d7": 1391,
       "rr_d1": 0.397,
       "rr_d7": 0.161,
-      "dau": 7307,
-      "save_ad_d0": 434,
-      "save_ad_rate": 0.0594,
+      "dau": 5355,
+      "save_ad_d0": 309,
+      "save_ad_rate": 0.0577,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5503,9 +5503,9 @@
       "d7": 2365,
       "rr_d1": 0.4634,
       "rr_d7": 0.1897,
-      "dau": 10374,
-      "save_ad_d0": 679,
-      "save_ad_rate": 0.0655,
+      "dau": 11647,
+      "save_ad_d0": 738,
+      "save_ad_rate": 0.0634,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5523,9 +5523,9 @@
       "d7": 845,
       "rr_d1": 0.3055,
       "rr_d7": 0.115,
-      "dau": 6212,
-      "save_ad_d0": 414,
-      "save_ad_rate": 0.0666,
+      "dau": 11173,
+      "save_ad_d0": 746,
+      "save_ad_rate": 0.0668,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5543,9 +5543,9 @@
       "d7": 90,
       "rr_d1": 0.2794,
       "rr_d7": 0.0921,
-      "dau": 796,
-      "save_ad_d0": 41,
-      "save_ad_rate": 0.0515,
+      "dau": 990,
+      "save_ad_d0": 48,
+      "save_ad_rate": 0.0485,
       "save_partial": false,
       "save_through": "31/05"
     },
@@ -5563,7 +5563,7 @@
       "d7": 25,
       "rr_d1": 0.5045,
       "rr_d7": 0.2252,
-      "dau": 5,
+      "dau": 1,
       "save_ad_d0": 0,
       "save_ad_rate": 0.0,
       "save_partial": false,
@@ -5603,7 +5603,7 @@
       "d7": 24,
       "rr_d1": 0.5351,
       "rr_d7": 0.2105,
-      "dau": 10,
+      "dau": 5,
       "save_ad_d0": 0,
       "save_ad_rate": 0.0,
       "save_partial": false,
@@ -5623,9 +5623,9 @@
       "d7": 19,
       "rr_d1": 0.506,
       "rr_d7": 0.2289,
-      "dau": 3,
-      "save_ad_d0": 0,
-      "save_ad_rate": 0.0,
+      "dau": null,
+      "save_ad_d0": null,
+      "save_ad_rate": null,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -5643,9 +5643,9 @@
       "d7": 2,
       "rr_d1": 0.0959,
       "rr_d7": 0.0274,
-      "dau": 67,
-      "save_ad_d0": 26,
-      "save_ad_rate": 0.3881,
+      "dau": 50,
+      "save_ad_d0": 23,
+      "save_ad_rate": 0.46,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -5663,9 +5663,9 @@
       "d7": 4,
       "rr_d1": 0.5217,
       "rr_d7": 0.1739,
-      "dau": 16,
-      "save_ad_d0": 2,
-      "save_ad_rate": 0.125,
+      "dau": null,
+      "save_ad_d0": null,
+      "save_ad_rate": null,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -5683,9 +5683,9 @@
       "d7": 832,
       "rr_d1": 0.3271,
       "rr_d7": 0.1362,
-      "dau": 5507,
-      "save_ad_d0": 368,
-      "save_ad_rate": 0.0668,
+      "dau": 5750,
+      "save_ad_d0": 364,
+      "save_ad_rate": 0.0633,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -5703,9 +5703,9 @@
       "d7": 23,
       "rr_d1": 0.1878,
       "rr_d7": 0.0379,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 764,
+      "save_ad_d0": 23,
+      "save_ad_rate": 0.0301,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -5723,9 +5723,9 @@
       "d7": 24,
       "rr_d1": 0.1862,
       "rr_d7": 0.0573,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 494,
+      "save_ad_d0": 14,
+      "save_ad_rate": 0.0283,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -5743,9 +5743,9 @@
       "d7": 0,
       "rr_d1": 0.0,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 5,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -5763,9 +5763,9 @@
       "d7": 0,
       "rr_d1": 0.0,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 3,
+      "save_ad_d0": 1,
+      "save_ad_rate": 0.3333,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -5783,9 +5783,9 @@
       "d7": 0,
       "rr_d1": 0.0,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 3,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -5823,9 +5823,9 @@
       "d7": 0,
       "rr_d1": 0.0,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 2,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -5843,9 +5843,9 @@
       "d7": 0,
       "rr_d1": 0.0,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 4,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -5863,9 +5863,9 @@
       "d7": 0,
       "rr_d1": 0.1667,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 4,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -5883,9 +5883,9 @@
       "d7": 1,
       "rr_d1": 0.0,
       "rr_d7": 0.1667,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 6,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -5903,9 +5903,9 @@
       "d7": 2,
       "rr_d1": 0.5,
       "rr_d7": 0.3333,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 6,
+      "save_ad_d0": 1,
+      "save_ad_rate": 0.1667,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -5923,9 +5923,9 @@
       "d7": 2,
       "rr_d1": 0.1429,
       "rr_d7": 0.2857,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 7,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -5943,9 +5943,9 @@
       "d7": 0,
       "rr_d1": 0.0,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 1,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -5963,9 +5963,9 @@
       "d7": 0,
       "rr_d1": 0.0,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 3,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -5983,9 +5983,9 @@
       "d7": 0,
       "rr_d1": 0.0,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 3,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6003,9 +6003,9 @@
       "d7": 0,
       "rr_d1": 0.0,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 2,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6023,9 +6023,9 @@
       "d7": 0,
       "rr_d1": 0.6667,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 3,
+      "save_ad_d0": 1,
+      "save_ad_rate": 0.3333,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6043,9 +6043,9 @@
       "d7": 0,
       "rr_d1": 0.25,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 4,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6063,9 +6063,9 @@
       "d7": 0,
       "rr_d1": 0.0,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 4,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6083,9 +6083,9 @@
       "d7": 0,
       "rr_d1": 0.0,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 1,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6103,9 +6103,9 @@
       "d7": null,
       "rr_d1": null,
       "rr_d7": null,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 2,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6123,9 +6123,9 @@
       "d7": 0,
       "rr_d1": 1.0,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 3,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6143,9 +6143,9 @@
       "d7": 58,
       "rr_d1": 0.2355,
       "rr_d7": 0.0602,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 1464,
+      "save_ad_d0": 78,
+      "save_ad_rate": 0.0533,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6303,9 +6303,9 @@
       "d7": 0,
       "rr_d1": 0.0,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 3,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6463,9 +6463,9 @@
       "d7": 62,
       "rr_d1": 0.2547,
       "rr_d7": 0.106,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 857,
+      "save_ad_d0": 37,
+      "save_ad_rate": 0.0432,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6503,9 +6503,9 @@
       "d7": 0,
       "rr_d1": 0.0,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 6,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6563,9 +6563,9 @@
       "d7": 74,
       "rr_d1": 0.2264,
       "rr_d7": 0.0813,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 1463,
+      "save_ad_d0": 48,
+      "save_ad_rate": 0.0328,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6623,9 +6623,9 @@
       "d7": 49,
       "rr_d1": 0.2735,
       "rr_d7": 0.1314,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 625,
+      "save_ad_d0": 19,
+      "save_ad_rate": 0.0304,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6643,9 +6643,9 @@
       "d7": 0,
       "rr_d1": 0.2857,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 5,
+      "save_ad_d0": 1,
+      "save_ad_rate": 0.2,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6663,9 +6663,9 @@
       "d7": 1,
       "rr_d1": 0.1667,
       "rr_d7": 0.0833,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 12,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6683,9 +6683,9 @@
       "d7": 25,
       "rr_d1": 0.3607,
       "rr_d7": 0.2049,
-      "dau": 107,
-      "save_ad_d0": 8,
-      "save_ad_rate": 0.0748,
+      "dau": 122,
+      "save_ad_d0": 9,
+      "save_ad_rate": 0.0738,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6703,9 +6703,9 @@
       "d7": 14,
       "rr_d1": 0.448,
       "rr_d7": 0.112,
-      "dau": 116,
-      "save_ad_d0": 5,
-      "save_ad_rate": 0.0431,
+      "dau": 125,
+      "save_ad_d0": 6,
+      "save_ad_rate": 0.048,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6723,9 +6723,9 @@
       "d7": 132,
       "rr_d1": 0.3248,
       "rr_d7": 0.1352,
-      "dau": 844,
-      "save_ad_d0": 70,
-      "save_ad_rate": 0.0829,
+      "dau": 1625,
+      "save_ad_d0": 148,
+      "save_ad_rate": 0.0911,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6743,9 +6743,9 @@
       "d7": 657,
       "rr_d1": 0.2793,
       "rr_d7": 0.0975,
-      "dau": 6163,
-      "save_ad_d0": 354,
-      "save_ad_rate": 0.0574,
+      "dau": 10666,
+      "save_ad_d0": 594,
+      "save_ad_rate": 0.0557,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6763,9 +6763,9 @@
       "d7": 3938,
       "rr_d1": 0.368,
       "rr_d7": 0.1509,
-      "dau": 22913,
-      "save_ad_d0": 2014,
-      "save_ad_rate": 0.0879,
+      "dau": 26823,
+      "save_ad_d0": 2346,
+      "save_ad_rate": 0.0875,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6783,9 +6783,9 @@
       "d7": 1,
       "rr_d1": 0.5556,
       "rr_d7": 0.1111,
-      "dau": 9,
-      "save_ad_d0": 1,
-      "save_ad_rate": 0.1111,
+      "dau": 58,
+      "save_ad_d0": 3,
+      "save_ad_rate": 0.0517,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6803,9 +6803,9 @@
       "d7": 6,
       "rr_d1": 0.2239,
       "rr_d7": 0.0896,
-      "dau": 59,
+      "dau": 68,
       "save_ad_d0": 3,
-      "save_ad_rate": 0.0508,
+      "save_ad_rate": 0.0441,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6823,9 +6823,9 @@
       "d7": 1915,
       "rr_d1": 0.4302,
       "rr_d7": 0.1662,
-      "dau": 9885,
-      "save_ad_d0": 668,
-      "save_ad_rate": 0.0676,
+      "dau": 11475,
+      "save_ad_d0": 771,
+      "save_ad_rate": 0.0672,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6843,9 +6843,9 @@
       "d7": 1070,
       "rr_d1": 0.2561,
       "rr_d7": 0.0869,
-      "dau": 10800,
-      "save_ad_d0": 571,
-      "save_ad_rate": 0.0529,
+      "dau": 12971,
+      "save_ad_d0": 616,
+      "save_ad_rate": 0.0475,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6863,9 +6863,9 @@
       "d7": 773,
       "rr_d1": 0.3545,
       "rr_d7": 0.1639,
-      "dau": 3873,
-      "save_ad_d0": 232,
-      "save_ad_rate": 0.0599,
+      "dau": 5432,
+      "save_ad_d0": 327,
+      "save_ad_rate": 0.0602,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6883,9 +6883,9 @@
       "d7": 2203,
       "rr_d1": 0.4174,
       "rr_d7": 0.1727,
-      "dau": 10652,
-      "save_ad_d0": 704,
-      "save_ad_rate": 0.0661,
+      "dau": 12442,
+      "save_ad_d0": 833,
+      "save_ad_rate": 0.067,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6903,9 +6903,9 @@
       "d7": 1406,
       "rr_d1": 0.2676,
       "rr_d7": 0.1024,
-      "dau": 11978,
-      "save_ad_d0": 712,
-      "save_ad_rate": 0.0594,
+      "dau": 14827,
+      "save_ad_d0": 793,
+      "save_ad_rate": 0.0535,
       "save_partial": false,
       "save_through": "30/06"
     },
@@ -6920,14 +6920,14 @@
       "cpi": 11010,
       "d0": 2200,
       "d1": 746,
-      "d7": 204,
+      "d7": 207,
       "rr_d1": 0.3391,
-      "rr_d7": 0.0927,
-      "dau": 1893,
-      "save_ad_d0": 104,
-      "save_ad_rate": 0.0549,
+      "rr_d7": 0.0941,
+      "dau": 1084,
+      "save_ad_d0": 63,
+      "save_ad_rate": 0.0581,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "digital_gds_appinstall_fb_atc_broad_040626",
@@ -6943,11 +6943,11 @@
       "d7": 19,
       "rr_d1": 0.1732,
       "rr_d7": 0.0621,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 134,
+      "save_ad_d0": 2,
+      "save_ad_rate": 0.0149,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "digital_gds_appinstall_fb_atc_web_visitor_l180d_040626",
@@ -6963,11 +6963,11 @@
       "d7": 7,
       "rr_d1": 0.2,
       "rr_d7": 0.0424,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 82,
+      "save_ad_d0": 5,
+      "save_ad_rate": 0.061,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "digital_gds_appinstall_fb_test_retar_live_shortcut24",
@@ -6987,7 +6987,7 @@
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "digital_gds_appinstall_fb_test_retar_live_shortcut25",
@@ -7007,7 +7007,7 @@
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "digital_job_appinstall_fb_atc_broad_040626",
@@ -7023,11 +7023,11 @@
       "d7": 58,
       "rr_d1": 0.2493,
       "rr_d7": 0.0565,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 471,
+      "save_ad_d0": 33,
+      "save_ad_rate": 0.0701,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "digital_job_appinstall_fb_atc_web_visitor_l180d_040626",
@@ -7043,11 +7043,11 @@
       "d7": 39,
       "rr_d1": 0.2986,
       "rr_d7": 0.0766,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 183,
+      "save_ad_d0": 10,
+      "save_ad_rate": 0.0546,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "digital_job_appinstall_fb_test_retar_live_shortcut26",
@@ -7067,7 +7067,7 @@
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "digital_pty_appinstall_fb_atc_b2s_0726",
@@ -7080,14 +7080,14 @@
       "cpi": 14235,
       "d0": 908,
       "d1": 242,
-      "d7": 49,
+      "d7": 51,
       "rr_d1": 0.2665,
-      "rr_d7": 0.054,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "rr_d7": 0.0562,
+      "dau": 735,
+      "save_ad_d0": 54,
+      "save_ad_rate": 0.0735,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "digital_pty_appinstall_fb_atc_broad_040626",
@@ -7103,11 +7103,11 @@
       "d7": 54,
       "rr_d1": 0.1722,
       "rr_d7": 0.0495,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 513,
+      "save_ad_d0": 17,
+      "save_ad_rate": 0.0331,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "digital_pty_appinstall_fb_atc_web_visitor_l180d_040626",
@@ -7123,11 +7123,11 @@
       "d7": 53,
       "rr_d1": 0.2139,
       "rr_d7": 0.1021,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 254,
+      "save_ad_d0": 12,
+      "save_ad_rate": 0.0472,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "digital_veh_appinstall_fb_atc_broad_040626",
@@ -7143,11 +7143,11 @@
       "d7": 0,
       "rr_d1": 0.0,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 1,
+      "save_ad_d0": 0,
+      "save_ad_rate": 0.0,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "fb_growth_pty_app_android_install_app_pro_b2s_bau_072126_2026theme",
@@ -7160,14 +7160,14 @@
       "cpi": 8126,
       "d0": 144,
       "d1": 39,
-      "d7": 0,
+      "d7": 2,
       "rr_d1": 0.2708,
-      "rr_d7": 0.0,
+      "rr_d7": 0.0139,
       "dau": null,
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "fb_growth_pty_app_android_install_app_pro_thodia_bau_072126_HCM_atc",
@@ -7180,14 +7180,14 @@
       "cpi": 58934,
       "d0": 83,
       "d1": 20,
-      "d7": 3,
+      "d7": 4,
       "rr_d1": 0.241,
-      "rr_d7": 0.0361,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "rr_d7": 0.0482,
+      "dau": 44,
+      "save_ad_d0": 3,
+      "save_ad_rate": 0.0682,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "fb_growth_pty_app_android_install_app_pro_thodia_bau_072126_VN_atc",
@@ -7203,11 +7203,11 @@
       "d7": 5,
       "rr_d1": 0.1633,
       "rr_d7": 0.051,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 45,
+      "save_ad_d0": 1,
+      "save_ad_rate": 0.0222,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "fb_growth_pty_app_android_install_app_rtg_thodia_bau_072126_VN_atc",
@@ -7223,11 +7223,11 @@
       "d7": 6,
       "rr_d1": 0.2818,
       "rr_d7": 0.0545,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 49,
+      "save_ad_d0": 2,
+      "save_ad_rate": 0.0408,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "gds_appinstall_inapp_android_adview_7d",
@@ -7240,14 +7240,14 @@
       "cpi": 9562,
       "d0": 4222,
       "d1": 1489,
-      "d7": 429,
+      "d7": 476,
       "rr_d1": 0.3527,
-      "rr_d7": 0.1016,
-      "dau": 2772,
-      "save_ad_d0": 239,
-      "save_ad_rate": 0.0862,
+      "rr_d7": 0.1127,
+      "dau": 4148,
+      "save_ad_d0": 339,
+      "save_ad_rate": 0.0817,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "gds_appinstall_mass_android",
@@ -7260,14 +7260,14 @@
       "cpi": 7039,
       "d0": 18805,
       "d1": 4679,
-      "d7": 1295,
+      "d7": 1338,
       "rr_d1": 0.2488,
-      "rr_d7": 0.0689,
-      "dau": 13979,
-      "save_ad_d0": 681,
-      "save_ad_rate": 0.0487,
+      "rr_d7": 0.0712,
+      "dau": 16598,
+      "save_ad_d0": 732,
+      "save_ad_rate": 0.0441,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "gg_growth_gds_app_android_install_app_maxinstall_b2s_bau_073126",
@@ -7283,11 +7283,11 @@
       "d7": 0,
       "rr_d1": 0.1538,
       "rr_d7": 0.0,
-      "dau": null,
-      "save_ad_d0": null,
-      "save_ad_rate": null,
+      "dau": 704,
+      "save_ad_d0": 7,
+      "save_ad_rate": 0.0099,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "gg_growth_pty_app_android_install_app_maxinstall_b2s_bau_072226_2026theme",
@@ -7300,14 +7300,14 @@
       "cpi": 10983,
       "d0": 1137,
       "d1": 205,
-      "d7": 46,
+      "d7": 55,
       "rr_d1": 0.1803,
-      "rr_d7": 0.0405,
-      "dau": 561,
-      "save_ad_d0": 16,
-      "save_ad_rate": 0.0285,
+      "rr_d7": 0.0484,
+      "dau": 1439,
+      "save_ad_d0": 62,
+      "save_ad_rate": 0.0431,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "gg_growth_pty_app_android_install_app_maxinstall_thodia_bau_072126_HCM",
@@ -7320,14 +7320,14 @@
       "cpi": 8675,
       "d0": 1942,
       "d1": 531,
-      "d7": 92,
+      "d7": 116,
       "rr_d1": 0.2734,
-      "rr_d7": 0.0474,
-      "dau": 817,
-      "save_ad_d0": 54,
-      "save_ad_rate": 0.0661,
+      "rr_d7": 0.0597,
+      "dau": 2274,
+      "save_ad_d0": 139,
+      "save_ad_rate": 0.0611,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "gg_growth_pty_app_android_install_app_maxinstall_thodia_bau_072126_VN",
@@ -7340,14 +7340,14 @@
       "cpi": 10599,
       "d0": 1331,
       "d1": 211,
-      "d7": 22,
+      "d7": 31,
       "rr_d1": 0.1585,
-      "rr_d7": 0.0165,
-      "dau": 454,
-      "save_ad_d0": 22,
-      "save_ad_rate": 0.0485,
+      "rr_d7": 0.0233,
+      "dau": 1711,
+      "save_ad_d0": 74,
+      "save_ad_rate": 0.0432,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "job_appinstall_inapp_android_adview_7d",
@@ -7360,14 +7360,14 @@
       "cpi": 5609,
       "d0": 24210,
       "d1": 8460,
-      "d7": 2546,
+      "d7": 2667,
       "rr_d1": 0.3494,
-      "rr_d7": 0.1052,
-      "dau": 18094,
-      "save_ad_d0": 1554,
-      "save_ad_rate": 0.0859,
+      "rr_d7": 0.1102,
+      "dau": 19486,
+      "save_ad_d0": 1664,
+      "save_ad_rate": 0.0854,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "job_appinstall_inapp_android_adview_7d_test_AWO",
@@ -7383,11 +7383,11 @@
       "d7": 8,
       "rr_d1": 0.2532,
       "rr_d7": 0.1013,
-      "dau": 74,
-      "save_ad_d0": 2,
-      "save_ad_rate": 0.027,
+      "dau": 30,
+      "save_ad_d0": 1,
+      "save_ad_rate": 0.0333,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "job_appinstall_inapp_android_make_lead_30d",
@@ -7400,14 +7400,14 @@
       "cpi": 8766,
       "d0": 8465,
       "d1": 3645,
-      "d7": 1116,
+      "d7": 1181,
       "rr_d1": 0.4306,
-      "rr_d7": 0.1318,
-      "dau": 6235,
-      "save_ad_d0": 432,
-      "save_ad_rate": 0.0693,
+      "rr_d7": 0.1395,
+      "dau": 6460,
+      "save_ad_d0": 456,
+      "save_ad_rate": 0.0706,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "job_appinstall_mass_android",
@@ -7420,14 +7420,14 @@
       "cpi": 8318,
       "d0": 10426,
       "d1": 2235,
-      "d7": 653,
+      "d7": 678,
       "rr_d1": 0.2144,
-      "rr_d7": 0.0626,
-      "dau": 8116,
-      "save_ad_d0": 351,
-      "save_ad_rate": 0.0432,
+      "rr_d7": 0.065,
+      "dau": 7814,
+      "save_ad_d0": 330,
+      "save_ad_rate": 0.0422,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "pty_appinstall_inapp_action_user_android_make_lead_30d",
@@ -7440,14 +7440,14 @@
       "cpi": 10298,
       "d0": 4308,
       "d1": 1696,
-      "d7": 530,
+      "d7": 537,
       "rr_d1": 0.3937,
-      "rr_d7": 0.123,
-      "dau": 3228,
-      "save_ad_d0": 193,
-      "save_ad_rate": 0.0598,
+      "rr_d7": 0.1247,
+      "dau": 3288,
+      "save_ad_d0": 197,
+      "save_ad_rate": 0.0599,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "pty_appinstall_inapp_action_user_android_view_item_list",
@@ -7460,14 +7460,14 @@
       "cpi": 9230,
       "d0": 11881,
       "d1": 5138,
-      "d7": 1626,
+      "d7": 1698,
       "rr_d1": 0.4325,
-      "rr_d7": 0.1369,
-      "dau": 8894,
-      "save_ad_d0": 615,
-      "save_ad_rate": 0.0691,
+      "rr_d7": 0.1429,
+      "dau": 9508,
+      "save_ad_d0": 626,
+      "save_ad_rate": 0.0658,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "pty_appinstall_mass_android",
@@ -7480,14 +7480,14 @@
       "cpi": 7351,
       "d0": 25439,
       "d1": 6600,
-      "d7": 2028,
+      "d7": 2098,
       "rr_d1": 0.2594,
-      "rr_d7": 0.0797,
-      "dau": 19697,
-      "save_ad_d0": 1075,
+      "rr_d7": 0.0825,
+      "dau": 21799,
+      "save_ad_d0": 1190,
       "save_ad_rate": 0.0546,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "pty_appinstall_mass_android_b2s_0726",
@@ -7500,14 +7500,14 @@
       "cpi": 10079,
       "d0": 2169,
       "d1": 434,
-      "d7": 106,
+      "d7": 118,
       "rr_d1": 0.2001,
-      "rr_d7": 0.0489,
-      "dau": 1270,
-      "save_ad_d0": 61,
-      "save_ad_rate": 0.048,
+      "rr_d7": 0.0544,
+      "dau": 2580,
+      "save_ad_d0": 109,
+      "save_ad_rate": 0.0422,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "veh_appinstall_inapp_action_user_android_adview_7d",
@@ -7520,14 +7520,14 @@
       "cpi": 10647,
       "d0": 622,
       "d1": 207,
-      "d7": 62,
+      "d7": 66,
       "rr_d1": 0.3328,
-      "rr_d7": 0.0997,
-      "dau": 433,
-      "save_ad_d0": 41,
-      "save_ad_rate": 0.0947,
+      "rr_d7": 0.1061,
+      "dau": 690,
+      "save_ad_d0": 68,
+      "save_ad_rate": 0.0986,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "veh_appinstall_inapp_action_user_android_make_lead_30d",
@@ -7540,14 +7540,14 @@
       "cpi": 6663,
       "d0": 1084,
       "d1": 500,
-      "d7": 149,
+      "d7": 157,
       "rr_d1": 0.4613,
-      "rr_d7": 0.1375,
-      "dau": 820,
-      "save_ad_d0": 51,
-      "save_ad_rate": 0.0622,
+      "rr_d7": 0.1448,
+      "dau": 1103,
+      "save_ad_d0": 64,
+      "save_ad_rate": 0.058,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "veh_appinstall_mass_android",
@@ -7560,14 +7560,14 @@
       "cpi": 9259,
       "d0": 685,
       "d1": 140,
-      "d7": 37,
+      "d7": 41,
       "rr_d1": 0.2044,
-      "rr_d7": 0.054,
-      "dau": 550,
-      "save_ad_d0": 25,
-      "save_ad_rate": 0.0455,
+      "rr_d7": 0.0599,
+      "dau": 764,
+      "save_ad_d0": 29,
+      "save_ad_rate": 0.038,
       "save_partial": true,
-      "save_through": "26/07"
+      "save_through": "27/07"
     },
     {
       "name": "digital_app_install_android_mobile_hcm_make_lead",
@@ -7575,13 +7575,13 @@
       "channel": "GG",
       "vertical": "gds",
       "phase": "install",
-      "cost": 853455,
-      "install": 153,
-      "cpi": 5578,
-      "d0": 164,
-      "d1": 28,
+      "cost": 2374953,
+      "install": 286,
+      "cpi": 8304,
+      "d0": 298,
+      "d1": 71,
       "d7": 0,
-      "rr_d1": 0.1707,
+      "rr_d1": 0.2383,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7595,13 +7595,13 @@
       "channel": "FB",
       "vertical": "pty",
       "phase": "install",
-      "cost": 782273,
-      "install": 107,
-      "cpi": 7311,
-      "d0": 53,
-      "d1": 5,
+      "cost": 1505249,
+      "install": 157,
+      "cpi": 9588,
+      "d0": 79,
+      "d1": 13,
       "d7": 0,
-      "rr_d1": 0.0943,
+      "rr_d1": 0.1646,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7615,13 +7615,13 @@
       "channel": "FB",
       "vertical": "pty",
       "phase": "install",
-      "cost": 943659,
-      "install": 17,
-      "cpi": 55509,
-      "d0": 17,
+      "cost": 1709834,
+      "install": 29,
+      "cpi": 58960,
+      "d0": 30,
       "d1": 1,
       "d7": 0,
-      "rr_d1": 0.0588,
+      "rr_d1": 0.0333,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7635,13 +7635,13 @@
       "channel": "FB",
       "vertical": "pty",
       "phase": "install",
-      "cost": 864596,
-      "install": 21,
-      "cpi": 41171,
-      "d0": 19,
-      "d1": 1,
+      "cost": 1638514,
+      "install": 28,
+      "cpi": 58518,
+      "d0": 28,
+      "d1": 3,
       "d7": 0,
-      "rr_d1": 0.0526,
+      "rr_d1": 0.1071,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7655,13 +7655,13 @@
       "channel": "FB",
       "vertical": "pty",
       "phase": "install",
-      "cost": 844015,
-      "install": 17,
-      "cpi": 49648,
-      "d0": 20,
-      "d1": 3,
+      "cost": 1545392,
+      "install": 31,
+      "cpi": 49851,
+      "d0": 31,
+      "d1": 4,
       "d7": 0,
-      "rr_d1": 0.15,
+      "rr_d1": 0.129,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7675,13 +7675,13 @@
       "channel": "GG",
       "vertical": "gds",
       "phase": "install",
-      "cost": 4338884,
-      "install": 441,
-      "cpi": 9839,
-      "d0": 500,
-      "d1": 63,
+      "cost": 6451568,
+      "install": 700,
+      "cpi": 9217,
+      "d0": 795,
+      "d1": 154,
       "d7": 0,
-      "rr_d1": 0.126,
+      "rr_d1": 0.1937,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7695,13 +7695,13 @@
       "channel": "GG",
       "vertical": "gds",
       "phase": "install",
-      "cost": 9253587,
-      "install": 1295,
-      "cpi": 7146,
-      "d0": 1509,
-      "d1": 164,
+      "cost": 13819045,
+      "install": 1887,
+      "cpi": 7323,
+      "d0": 2207,
+      "d1": 340,
       "d7": 0,
-      "rr_d1": 0.1087,
+      "rr_d1": 0.1541,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7715,13 +7715,13 @@
       "channel": "GG",
       "vertical": "gds",
       "phase": "install",
-      "cost": 4030572,
-      "install": 368,
-      "cpi": 10953,
-      "d0": 398,
-      "d1": 18,
+      "cost": 6077677,
+      "install": 549,
+      "cpi": 11070,
+      "d0": 598,
+      "d1": 39,
       "d7": 0,
-      "rr_d1": 0.0452,
+      "rr_d1": 0.0652,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7735,13 +7735,13 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 2006478,
-      "install": 228,
-      "cpi": 8800,
-      "d0": 242,
-      "d1": 31,
+      "cost": 3057075,
+      "install": 340,
+      "cpi": 8991,
+      "d0": 370,
+      "d1": 52,
       "d7": 0,
-      "rr_d1": 0.1281,
+      "rr_d1": 0.1405,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7755,13 +7755,13 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 3018985,
-      "install": 245,
-      "cpi": 12322,
-      "d0": 280,
-      "d1": 20,
+      "cost": 4577201,
+      "install": 434,
+      "cpi": 10547,
+      "d0": 480,
+      "d1": 50,
       "d7": 0,
-      "rr_d1": 0.0714,
+      "rr_d1": 0.1042,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7775,13 +7775,13 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 3008521,
-      "install": 263,
-      "cpi": 11439,
-      "d0": 306,
-      "d1": 18,
+      "cost": 4607171,
+      "install": 417,
+      "cpi": 11048,
+      "d0": 470,
+      "d1": 31,
       "d7": 0,
-      "rr_d1": 0.0588,
+      "rr_d1": 0.066,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7795,13 +7795,13 @@
       "channel": "GG",
       "vertical": "job",
       "phase": "install",
-      "cost": 9333463,
-      "install": 1571,
-      "cpi": 5941,
-      "d0": 1684,
-      "d1": 292,
+      "cost": 14050506,
+      "install": 2364,
+      "cpi": 5944,
+      "d0": 2532,
+      "d1": 573,
       "d7": 0,
-      "rr_d1": 0.1734,
+      "rr_d1": 0.2263,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7815,13 +7815,13 @@
       "channel": "GG",
       "vertical": "job",
       "phase": "install",
-      "cost": 4653032,
-      "install": 369,
-      "cpi": 12610,
-      "d0": 482,
-      "d1": 119,
+      "cost": 7207572,
+      "install": 541,
+      "cpi": 13323,
+      "d0": 716,
+      "d1": 239,
       "d7": 0,
-      "rr_d1": 0.2469,
+      "rr_d1": 0.3338,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7835,13 +7835,13 @@
       "channel": "GG",
       "vertical": "job",
       "phase": "install",
-      "cost": 4529899,
-      "install": 546,
-      "cpi": 8297,
-      "d0": 626,
-      "d1": 58,
+      "cost": 6840700,
+      "install": 801,
+      "cpi": 8540,
+      "d0": 926,
+      "d1": 129,
       "d7": 0,
-      "rr_d1": 0.0927,
+      "rr_d1": 0.1393,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7855,13 +7855,13 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 2177034,
-      "install": 398,
-      "cpi": 5470,
-      "d0": 465,
-      "d1": 82,
+      "cost": 4818583,
+      "install": 666,
+      "cpi": 7235,
+      "d0": 778,
+      "d1": 198,
       "d7": 0,
-      "rr_d1": 0.1763,
+      "rr_d1": 0.2545,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7875,13 +7875,13 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 6010928,
-      "install": 288,
-      "cpi": 20871,
-      "d0": 403,
-      "d1": 84,
+      "cost": 8726498,
+      "install": 451,
+      "cpi": 19349,
+      "d0": 630,
+      "d1": 160,
       "d7": 0,
-      "rr_d1": 0.2084,
+      "rr_d1": 0.254,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7895,13 +7895,13 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 11279998,
-      "install": 1329,
-      "cpi": 8488,
-      "d0": 1522,
-      "d1": 190,
+      "cost": 16823306,
+      "install": 1890,
+      "cpi": 8901,
+      "d0": 2198,
+      "d1": 361,
       "d7": 0,
-      "rr_d1": 0.1248,
+      "rr_d1": 0.1642,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7915,13 +7915,13 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 3352098,
-      "install": 330,
-      "cpi": 10158,
-      "d0": 359,
-      "d1": 38,
+      "cost": 5008491,
+      "install": 489,
+      "cpi": 10242,
+      "d0": 538,
+      "d1": 65,
       "d7": 0,
-      "rr_d1": 0.1058,
+      "rr_d1": 0.1208,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7935,13 +7935,13 @@
       "channel": "GG",
       "vertical": "veh",
       "phase": "install",
-      "cost": 543311,
-      "install": 43,
-      "cpi": 12635,
-      "d0": 50,
-      "d1": 4,
+      "cost": 897390,
+      "install": 74,
+      "cpi": 12127,
+      "d0": 91,
+      "d1": 13,
       "d7": 0,
-      "rr_d1": 0.08,
+      "rr_d1": 0.1429,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7955,13 +7955,13 @@
       "channel": "GG",
       "vertical": "veh",
       "phase": "install",
-      "cost": 531056,
-      "install": 30,
-      "cpi": 17702,
-      "d0": 32,
-      "d1": 8,
+      "cost": 781045,
+      "install": 47,
+      "cpi": 16618,
+      "d0": 52,
+      "d1": 12,
       "d7": 0,
-      "rr_d1": 0.25,
+      "rr_d1": 0.2308,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -7975,13 +7975,13 @@
       "channel": "GG",
       "vertical": "veh",
       "phase": "install",
-      "cost": 575904,
-      "install": 50,
-      "cpi": 11518,
-      "d0": 58,
-      "d1": 8,
+      "cost": 844047,
+      "install": 81,
+      "cpi": 10420,
+      "d0": 86,
+      "d1": 11,
       "d7": 0,
-      "rr_d1": 0.1379,
+      "rr_d1": 0.1279,
       "rr_d7": 0.0,
       "dau": null,
       "save_ad_d0": null,
@@ -8073,38 +8073,6 @@
     }
   ],
   "daily_activation": [
-    {
-      "date": "2026-05-05",
-      "channel": "Direct",
-      "new_users": 5270,
-      "adview_activated": 1748,
-      "lead_activated": 1449,
-      "save_activated": 423
-    },
-    {
-      "date": "2026-05-05",
-      "channel": "Growth",
-      "new_users": 2612,
-      "adview_activated": 769,
-      "lead_activated": 657,
-      "save_activated": 216
-    },
-    {
-      "date": "2026-05-05",
-      "channel": "Organic Search",
-      "new_users": 1643,
-      "adview_activated": 504,
-      "lead_activated": 442,
-      "save_activated": 114
-    },
-    {
-      "date": "2026-05-05",
-      "channel": "Total",
-      "new_users": 9769,
-      "adview_activated": 3101,
-      "lead_activated": 2625,
-      "save_activated": 779
-    },
     {
       "date": "2026-05-06",
       "channel": "Direct",
@@ -10765,193 +10733,225 @@
       "date": "2026-07-28",
       "channel": "Direct",
       "new_users": 5234,
-      "adview_activated": 1700,
-      "lead_activated": 1499,
+      "adview_activated": 1764,
+      "lead_activated": 1539,
       "save_activated": 511
     },
     {
       "date": "2026-07-28",
       "channel": "Growth",
       "new_users": 3922,
-      "adview_activated": 798,
-      "lead_activated": 777,
+      "adview_activated": 822,
+      "lead_activated": 795,
       "save_activated": 222
     },
     {
       "date": "2026-07-28",
       "channel": "Organic Search",
       "new_users": 1693,
-      "adview_activated": 484,
-      "lead_activated": 445,
+      "adview_activated": 505,
+      "lead_activated": 467,
       "save_activated": 136
     },
     {
       "date": "2026-07-28",
       "channel": "Total",
       "new_users": 11176,
-      "adview_activated": 3094,
-      "lead_activated": 2828,
+      "adview_activated": 3205,
+      "lead_activated": 2909,
       "save_activated": 915
     },
     {
       "date": "2026-07-29",
       "channel": "Direct",
       "new_users": 5535,
-      "adview_activated": 1701,
-      "lead_activated": 1509,
+      "adview_activated": 1768,
+      "lead_activated": 1560,
       "save_activated": 489
     },
     {
       "date": "2026-07-29",
       "channel": "Growth",
       "new_users": 4200,
-      "adview_activated": 749,
-      "lead_activated": 791,
+      "adview_activated": 783,
+      "lead_activated": 820,
       "save_activated": 252
     },
     {
       "date": "2026-07-29",
       "channel": "Organic Search",
       "new_users": 1698,
-      "adview_activated": 433,
-      "lead_activated": 401,
+      "adview_activated": 468,
+      "lead_activated": 416,
       "save_activated": 127
     },
     {
       "date": "2026-07-29",
       "channel": "Total",
       "new_users": 11752,
-      "adview_activated": 2964,
-      "lead_activated": 2798,
+      "adview_activated": 3101,
+      "lead_activated": 2893,
       "save_activated": 899
     },
     {
       "date": "2026-07-30",
       "channel": "Direct",
       "new_users": 5332,
-      "adview_activated": 1486,
-      "lead_activated": 1416,
+      "adview_activated": 1552,
+      "lead_activated": 1466,
       "save_activated": 484
     },
     {
       "date": "2026-07-30",
       "channel": "Growth",
       "new_users": 4048,
-      "adview_activated": 722,
-      "lead_activated": 679,
+      "adview_activated": 768,
+      "lead_activated": 712,
       "save_activated": 249
     },
     {
       "date": "2026-07-30",
       "channel": "Organic Search",
       "new_users": 1779,
-      "adview_activated": 425,
-      "lead_activated": 406,
+      "adview_activated": 453,
+      "lead_activated": 423,
       "save_activated": 129
     },
     {
       "date": "2026-07-30",
       "channel": "Total",
       "new_users": 11478,
-      "adview_activated": 2724,
-      "lead_activated": 2594,
+      "adview_activated": 2868,
+      "lead_activated": 2696,
       "save_activated": 901
     },
     {
       "date": "2026-07-31",
       "channel": "Direct",
       "new_users": 5263,
-      "adview_activated": 1306,
-      "lead_activated": 1307,
+      "adview_activated": 1417,
+      "lead_activated": 1372,
       "save_activated": 506
     },
     {
       "date": "2026-07-31",
       "channel": "Growth",
       "new_users": 4075,
-      "adview_activated": 636,
-      "lead_activated": 630,
+      "adview_activated": 691,
+      "lead_activated": 668,
       "save_activated": 238
     },
     {
       "date": "2026-07-31",
       "channel": "Organic Search",
       "new_users": 1801,
-      "adview_activated": 391,
-      "lead_activated": 413,
+      "adview_activated": 423,
+      "lead_activated": 442,
       "save_activated": 147
     },
     {
       "date": "2026-07-31",
       "channel": "Total",
       "new_users": 11448,
-      "adview_activated": 2411,
-      "lead_activated": 2438,
+      "adview_activated": 2611,
+      "lead_activated": 2573,
       "save_activated": 933
     },
     {
       "date": "2026-08-01",
       "channel": "Direct",
       "new_users": 5257,
-      "adview_activated": 1230,
-      "lead_activated": 1138,
+      "adview_activated": 1378,
+      "lead_activated": 1246,
       "save_activated": 494
     },
     {
       "date": "2026-08-01",
       "channel": "Growth",
       "new_users": 4258,
-      "adview_activated": 566,
-      "lead_activated": 602,
+      "adview_activated": 649,
+      "lead_activated": 662,
       "save_activated": 258
     },
     {
       "date": "2026-08-01",
       "channel": "Organic Search",
       "new_users": 1707,
-      "adview_activated": 296,
-      "lead_activated": 330,
+      "adview_activated": 357,
+      "lead_activated": 380,
       "save_activated": 120
     },
     {
       "date": "2026-08-01",
       "channel": "Total",
       "new_users": 11503,
-      "adview_activated": 2167,
-      "lead_activated": 2156,
+      "adview_activated": 2464,
+      "lead_activated": 2381,
       "save_activated": 913
     },
     {
       "date": "2026-08-02",
       "channel": "Direct",
       "new_users": 5334,
-      "adview_activated": 955,
-      "lead_activated": 1003,
+      "adview_activated": 1297,
+      "lead_activated": 1235,
       "save_activated": 532
     },
     {
       "date": "2026-08-02",
       "channel": "Growth",
       "new_users": 4309,
-      "adview_activated": 406,
-      "lead_activated": 531,
+      "adview_activated": 568,
+      "lead_activated": 662,
       "save_activated": 249
     },
     {
       "date": "2026-08-02",
       "channel": "Organic Search",
       "new_users": 1672,
-      "adview_activated": 188,
-      "lead_activated": 232,
+      "adview_activated": 294,
+      "lead_activated": 311,
       "save_activated": 114
     },
     {
       "date": "2026-08-02",
       "channel": "Total",
       "new_users": 11627,
-      "adview_activated": 1604,
-      "lead_activated": 1840,
+      "adview_activated": 2229,
+      "lead_activated": 2298,
       "save_activated": 937
+    },
+    {
+      "date": "2026-08-03",
+      "channel": "Direct",
+      "new_users": 5558,
+      "adview_activated": 979,
+      "lead_activated": 1010,
+      "save_activated": 526
+    },
+    {
+      "date": "2026-08-03",
+      "channel": "Growth",
+      "new_users": 4422,
+      "adview_activated": 436,
+      "lead_activated": 578,
+      "save_activated": 259
+    },
+    {
+      "date": "2026-08-03",
+      "channel": "Organic Search",
+      "new_users": 1763,
+      "adview_activated": 229,
+      "lead_activated": 241,
+      "save_activated": 124
+    },
+    {
+      "date": "2026-08-03",
+      "channel": "Total",
+      "new_users": 12022,
+      "adview_activated": 1703,
+      "lead_activated": 1896,
+      "save_activated": 948
     }
   ]
 }
