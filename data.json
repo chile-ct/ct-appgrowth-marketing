@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-06",
+  "updated_at": "2026-08-07",
   "months": [
     "Jan 2026",
     "Feb 2026",
@@ -102,7 +102,7 @@
       9530,
       10178,
       10900,
-      11801
+      9834
     ],
     "returning_mau": [
       1133357,
@@ -204,7 +204,7 @@
       4970,
       5193,
       5205,
-      5382
+      4485
     ],
     "organic_daily": [
       1797,
@@ -214,7 +214,7 @@
       1709,
       1719,
       1712,
-      1717
+      1431
     ],
     "growth_daily": [
       1756,
@@ -224,7 +224,7 @@
       2595,
       3037,
       3695,
-      4397
+      3664
     ],
     "other_daily": [
       275,
@@ -234,7 +234,7 @@
       255,
       229,
       288,
-      305
+      254
     ],
     "growth_pct_total": [
       0.2084,
@@ -316,7 +316,7 @@
       2985,
       2986,
       2907,
-      2403
+      2002
     ],
     "lead_daily": [
       2143,
@@ -326,7 +326,7 @@
       2534,
       2720,
       2732,
-      2410
+      2008
     ],
     "save_daily": [
       581,
@@ -336,7 +336,7 @@
       735,
       778,
       838,
-      932
+      777
     ],
     "direct_adview": [
       43962,
@@ -436,7 +436,7 @@
       1626,
       1656,
       1593,
-      1357
+      1131
     ],
     "organic_adview_daily": [
       531,
@@ -446,7 +446,7 @@
       529,
       497,
       451,
-      332
+      277
     ],
     "growth_adview_daily": [
       496,
@@ -456,7 +456,7 @@
       752,
       783,
       796,
-      638
+      531
     ],
     "direct_lead_daily": [
       1158,
@@ -466,7 +466,7 @@
       1345,
       1481,
       1464,
-      1281
+      1067
     ],
     "organic_lead_daily": [
       470,
@@ -476,7 +476,7 @@
       462,
       456,
       434,
-      345
+      287
     ],
     "growth_lead_daily": [
       432,
@@ -486,7 +486,7 @@
       647,
       730,
       765,
-      699
+      582
     ],
     "direct_save_daily": [
       316,
@@ -496,7 +496,7 @@
       387,
       425,
       457,
-      508
+      423
     ],
     "organic_save_daily": [
       120,
@@ -506,7 +506,7 @@
       123,
       116,
       117,
-      118
+      99
     ],
     "growth_save_daily": [
       117,
@@ -516,7 +516,7 @@
       196,
       218,
       235,
-      266
+      222
     ]
   },
   "retention": {
@@ -750,7 +750,7 @@
       2595,
       3037,
       3695,
-      4397
+      3664
     ],
     "adview_activated": [
       15369,
@@ -800,7 +800,7 @@
       752,
       783,
       796,
-      638
+      531
     ],
     "lead_daily": [
       432,
@@ -810,7 +810,7 @@
       647,
       730,
       765,
-      699
+      582
     ],
     "nurr_d1": [
       0.36325314748201437,
@@ -7575,9 +7575,9 @@
       "channel": "GG",
       "vertical": "gds",
       "phase": "install",
-      "cost": 8148796,
-      "install": 673,
-      "cpi": 12108,
+      "cost": 11876223,
+      "install": 807,
+      "cpi": 14717,
       "d0": 721,
       "d1": 215,
       "d7": 0,
@@ -7615,9 +7615,9 @@
       "channel": "FB",
       "vertical": "pty",
       "phase": "install",
-      "cost": 2574226,
-      "install": 326,
-      "cpi": 7896,
+      "cost": 2981970,
+      "install": 399,
+      "cpi": 7474,
       "d0": 160,
       "d1": 31,
       "d7": 0,
@@ -7630,14 +7630,34 @@
       "save_through": null
     },
     {
+      "name": "fb_growth_pty_app_android_install_app_pro_b2s_bau_072126_2026theme_targeting",
+      "month": "Aug 2026",
+      "channel": "FB",
+      "vertical": "pty",
+      "phase": "install",
+      "cost": 277331,
+      "install": 34,
+      "cpi": 8157,
+      "d0": null,
+      "d1": null,
+      "d7": null,
+      "rr_d1": null,
+      "rr_d7": null,
+      "dau": null,
+      "save_ad_d0": null,
+      "save_ad_rate": null,
+      "save_partial": false,
+      "save_through": null
+    },
+    {
       "name": "fb_growth_pty_app_android_install_app_pro_thodia_bau_072126_HCM_atc",
       "month": "Aug 2026",
       "channel": "FB",
       "vertical": "pty",
       "phase": "install",
-      "cost": 2663682,
-      "install": 79,
-      "cpi": 33717,
+      "cost": 3119515,
+      "install": 97,
+      "cpi": 32160,
       "d0": 82,
       "d1": 7,
       "d7": 0,
@@ -7655,9 +7675,9 @@
       "channel": "FB",
       "vertical": "pty",
       "phase": "install",
-      "cost": 2439330,
-      "install": 47,
-      "cpi": 51901,
+      "cost": 2837089,
+      "install": 56,
+      "cpi": 50662,
       "d0": 52,
       "d1": 8,
       "d7": 0,
@@ -7675,9 +7695,9 @@
       "channel": "FB",
       "vertical": "pty",
       "phase": "install",
-      "cost": 147733,
-      "install": 6,
-      "cpi": 24622,
+      "cost": 316251,
+      "install": 9,
+      "cpi": 35139,
       "d0": 5,
       "d1": 0,
       "d7": 0,
@@ -7695,9 +7715,9 @@
       "channel": "FB",
       "vertical": "pty",
       "phase": "install",
-      "cost": 2251863,
-      "install": 37,
-      "cpi": 60861,
+      "cost": 3103010,
+      "install": 54,
+      "cpi": 57463,
       "d0": 44,
       "d1": 8,
       "d7": 0,
@@ -7715,9 +7735,9 @@
       "channel": "GG",
       "vertical": "gds",
       "phase": "install",
-      "cost": 10557355,
-      "install": 1150,
-      "cpi": 9180,
+      "cost": 12638764,
+      "install": 1380,
+      "cpi": 9159,
       "d0": 1304,
       "d1": 330,
       "d7": 0,
@@ -7735,9 +7755,9 @@
       "channel": "GG",
       "vertical": "gds",
       "phase": "install",
-      "cost": 23142633,
-      "install": 2968,
-      "cpi": 7797,
+      "cost": 27637185,
+      "install": 3499,
+      "cpi": 7899,
       "d0": 3495,
       "d1": 626,
       "d7": 0,
@@ -7755,9 +7775,9 @@
       "channel": "GG",
       "vertical": "gds",
       "phase": "install",
-      "cost": 10225069,
-      "install": 925,
-      "cpi": 11054,
+      "cost": 12292767,
+      "install": 1089,
+      "cpi": 11288,
       "d0": 1021,
       "d1": 80,
       "d7": 0,
@@ -7775,9 +7795,9 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 5111015,
-      "install": 513,
-      "cpi": 9963,
+      "cost": 6138350,
+      "install": 619,
+      "cpi": 9917,
       "d0": 566,
       "d1": 88,
       "d7": 0,
@@ -7795,9 +7815,9 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 7643620,
-      "install": 712,
-      "cpi": 10735,
+      "cost": 9174960,
+      "install": 823,
+      "cpi": 11148,
       "d0": 788,
       "d1": 150,
       "d7": 0,
@@ -7815,9 +7835,9 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 7702513,
-      "install": 716,
-      "cpi": 10758,
+      "cost": 9222716,
+      "install": 861,
+      "cpi": 10712,
       "d0": 816,
       "d1": 67,
       "d7": 0,
@@ -7830,14 +7850,34 @@
       "save_through": null
     },
     {
+      "name": "gg_growth_pty_app_android_install_app_maxinstall_thodia_bau_080526_HCM_targeting",
+      "month": "Aug 2026",
+      "channel": "GG",
+      "vertical": "pty",
+      "phase": "install",
+      "cost": 45921,
+      "install": 1,
+      "cpi": 45921,
+      "d0": null,
+      "d1": null,
+      "d7": null,
+      "rr_d1": null,
+      "rr_d7": null,
+      "dau": null,
+      "save_ad_d0": null,
+      "save_ad_rate": null,
+      "save_partial": false,
+      "save_through": null
+    },
+    {
       "name": "job_appinstall_inapp_android_adview_7d",
       "month": "Aug 2026",
       "channel": "GG",
       "vertical": "job",
       "phase": "install",
-      "cost": 23218857,
-      "install": 3887,
-      "cpi": 5973,
+      "cost": 27756500,
+      "install": 4684,
+      "cpi": 5926,
       "d0": 4196,
       "d1": 1163,
       "d7": 0,
@@ -7855,9 +7895,9 @@
       "channel": "GG",
       "vertical": "job",
       "phase": "install",
-      "cost": 11844026,
-      "install": 942,
-      "cpi": 12573,
+      "cost": 14119301,
+      "install": 1182,
+      "cpi": 11945,
       "d0": 1198,
       "d1": 436,
       "d7": 0,
@@ -7875,9 +7915,9 @@
       "channel": "GG",
       "vertical": "job",
       "phase": "install",
-      "cost": 11482465,
-      "install": 1315,
-      "cpi": 8732,
+      "cost": 13792483,
+      "install": 1607,
+      "cpi": 8583,
       "d0": 1545,
       "d1": 248,
       "d7": 0,
@@ -7895,9 +7935,9 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 12362893,
-      "install": 1278,
-      "cpi": 9674,
+      "cost": 15122605,
+      "install": 1583,
+      "cpi": 9553,
       "d0": 1509,
       "d1": 509,
       "d7": 0,
@@ -7915,9 +7955,9 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 13998984,
-      "install": 922,
-      "cpi": 15183,
+      "cost": 16661609,
+      "install": 1139,
+      "cpi": 14628,
       "d0": 1195,
       "d1": 354,
       "d7": 0,
@@ -7935,9 +7975,9 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 28418886,
-      "install": 3153,
-      "cpi": 9013,
+      "cost": 34003405,
+      "install": 3782,
+      "cpi": 8991,
       "d0": 3702,
       "d1": 648,
       "d7": 0,
@@ -7955,9 +7995,9 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 8264812,
-      "install": 775,
-      "cpi": 10664,
+      "cost": 9810460,
+      "install": 911,
+      "cpi": 10769,
       "d0": 860,
       "d1": 139,
       "d7": 0,
@@ -7975,9 +8015,9 @@
       "channel": "GG",
       "vertical": "veh",
       "phase": "install",
-      "cost": 1419427,
-      "install": 133,
-      "cpi": 10672,
+      "cost": 1685151,
+      "install": 163,
+      "cpi": 10338,
       "d0": 148,
       "d1": 28,
       "d7": 0,
@@ -7995,9 +8035,9 @@
       "channel": "GG",
       "vertical": "veh",
       "phase": "install",
-      "cost": 1279873,
-      "install": 61,
-      "cpi": 20982,
+      "cost": 1538355,
+      "install": 71,
+      "cpi": 21667,
       "d0": 72,
       "d1": 23,
       "d7": 0,
@@ -8015,9 +8055,9 @@
       "channel": "GG",
       "vertical": "veh",
       "phase": "install",
-      "cost": 1361331,
-      "install": 116,
-      "cpi": 11736,
+      "cost": 1607422,
+      "install": 139,
+      "cpi": 11564,
       "d0": 131,
       "d1": 22,
       "d7": 0,
@@ -8113,38 +8153,6 @@
     }
   ],
   "daily_activation": [
-    {
-      "date": "2026-05-08",
-      "channel": "Direct",
-      "new_users": 4908,
-      "adview_activated": 1964,
-      "lead_activated": 1357,
-      "save_activated": 399
-    },
-    {
-      "date": "2026-05-08",
-      "channel": "Growth",
-      "new_users": 2654,
-      "adview_activated": 942,
-      "lead_activated": 713,
-      "save_activated": 207
-    },
-    {
-      "date": "2026-05-08",
-      "channel": "Organic Search",
-      "new_users": 1787,
-      "adview_activated": 651,
-      "lead_activated": 500,
-      "save_activated": 125
-    },
-    {
-      "date": "2026-05-08",
-      "channel": "Total",
-      "new_users": 9581,
-      "adview_activated": 3642,
-      "lead_activated": 2638,
-      "save_activated": 753
-    },
     {
       "date": "2026-05-09",
       "channel": "Direct",
