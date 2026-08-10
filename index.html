@@ -83,6 +83,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .kpi-value { font-size: 20px; font-weight: 700; }
 .kpi-sub { font-size: 11px; color: #6b7280; margin-top: 2px; }
 .kpi-delta { font-size: 11px; margin-top: 4px; font-weight: 600; }
+/* Section 6 carries 8 KPIs. Fixed columns rather than auto-fit: auto-fit drops to
+   7 the moment the window is a little narrow and leaves the 8th card stranded
+   alone on its own row. Below 1200px go to 2 rows of 4 instead of squeezing. */
+.kpi-grid.kpi-8 { grid-template-columns: repeat(8, 1fr); }
+@media (max-width: 1200px) { .kpi-grid.kpi-8 { grid-template-columns: repeat(4, 1fr); } }
 .up { color: #10b981; } .down { color: #ef4444; }
 
 /* CARDS & TABLES */
@@ -553,13 +558,15 @@ canvas { max-height: 500px; }
     <span style="color:#9ca3af;font-size:11px"><strong>Lead</strong> = tổng <em>lượt</em> liên hệ (không phải số user) của user mới từ campaign đó, tính <strong>trong ngày cài đặt</strong> và cộng theo đúng khoảng thời gian đang chọn — chưa gồm liên hệ ở những ngày sau. Cột này có đủ cả FB lẫn GG.</span>
   </div>
 
-  <div class="kpi-grid" style="grid-template-columns:repeat(6,1fr)" id="cd-kpis">
+  <div class="kpi-grid kpi-8" id="cd-kpis">
     <div class="kpi-card"><div class="kpi-label">Cost</div><div class="kpi-value" id="kpi-cd-cost">—</div><div class="kpi-sub" id="kpi-cd-cost-sub">—</div></div>
     <div class="kpi-card"><div class="kpi-label">Install</div><div class="kpi-value" id="kpi-cd-install">—</div><div class="kpi-sub">Từ ad platform</div></div>
     <div class="kpi-card"><div class="kpi-label">CPI (blended)</div><div class="kpi-value" id="kpi-cd-cpi">—</div><div class="kpi-sub">Cost / Install</div></div>
     <div class="kpi-card"><div class="kpi-label">D0 (new users)</div><div class="kpi-value" id="kpi-cd-d0">—</div><div class="kpi-sub">BigQuery tracked</div></div>
     <div class="kpi-card"><div class="kpi-label">RR D1</div><div class="kpi-value" id="kpi-cd-rr1">—</div><div class="kpi-sub">D1 / D0</div></div>
     <div class="kpi-card"><div class="kpi-label">% Save ad</div><div class="kpi-value" id="kpi-cd-save">—</div><div class="kpi-sub" id="kpi-cd-save-sub">Save ad in D0 / DAU</div></div>
+    <div class="kpi-card"><div class="kpi-label">Lead</div><div class="kpi-value" id="kpi-cd-lead">—</div><div class="kpi-sub" id="kpi-cd-lead-sub">—</div></div>
+    <div class="kpi-card"><div class="kpi-label">Cost/Lead (blended)</div><div class="kpi-value" id="kpi-cd-cpl">—</div><div class="kpi-sub">Cost / Lead</div></div>
   </div>
 
   <div class="card" style="margin-bottom:16px">
@@ -2325,7 +2332,13 @@ function renderCampDetail() {
   // KPIs reflect the current filter, not the whole dataset.
   const sum = k => rows.reduce((s,r)=>s+(r[k]||0),0);
   const tCost=sum('cost'), tInst=sum('install'), tD0=sum('d0'), tD1=sum('d1'),
-        tDau=sum('dau'), tSave=sum('save_ad_d0');
+        tDau=sum('dau'), tSave=sum('save_ad_d0'), tLead=sum('lead');
+  // Blended Cost/Lead divides by leads, so the cost on top must be cost that could
+  // have produced one. Campaigns with no lead data at all are dropped from both
+  // sides; campaigns with a real 0 stay in, because spending with nothing to show
+  // for it is exactly what this number is meant to expose.
+  const leadRows = rows.filter(r=>r.lead!=null);
+  const tCostLead = leadRows.reduce((s,r)=>s+(r.cost||0),0);
   const fmtVnd = v => v>=1e9?(v/1e9).toFixed(2)+'B ₫':v>=1e6?(v/1e6).toFixed(1)+'M ₫':Math.round(v).toLocaleString('en')+' ₫';
   const fmtNum = v => v==null?'—':v.toLocaleString('en');
   const fmtPct = v => v==null?'—':(v*100).toFixed(1)+'%';
@@ -2343,6 +2356,13 @@ function renderCampDetail() {
   setTxt('kpi-cd-save-sub', savN===rows.length
     ? 'Save ad in D0 / DAU'
     : `Chỉ ${savN}/${rows.length} campaign có data`);
+  setTxt('kpi-cd-lead', fmtNum(tLead));
+  // Says which window the number covers, because "Lead" alone reads as every
+  // contact in the period rather than only those on the install day.
+  setTxt('kpi-cd-lead-sub', leadRows.length===rows.length
+    ? 'Lượt liên hệ trong ngày cài (D0)'
+    : `Lượt liên hệ D0 · ${leadRows.length}/${rows.length} campaign có data`);
+  setTxt('kpi-cd-cpl', tLead?Math.round(tCostLead/tLead).toLocaleString('en')+' ₫':'—');
 
   document.getElementById('cdFilter').innerHTML = `<div style="display:flex;flex-direction:column;gap:6px">
     ${_cdChips('Tháng:','month',['all',...months],{all:'All Months'})}
