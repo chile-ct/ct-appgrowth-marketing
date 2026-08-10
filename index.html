@@ -548,8 +548,9 @@ canvas { max-height: 500px; }
   <div class="section-title">6. Detail Camp Performance — Growth Team (App)</div>
   <div class="section-subtitle">
     Performance từng campaign của <strong>8 ad account team Growth, phase App</strong> (FB: Chotot_growth_sgd, Chotot_pty_app, Chotot_job_app, Chotot_veh_app · GG: Chotot_app_pty, Chotot_app_veh, Chotot_app_job, Chotot_Growth_New)<br>
-    <span style="color:#9ca3af">Cost &amp; Install lấy từ sheet <em>raw_total</em> (phase install + activate) · D0/D1/D7 từ <em>retention_mapping_activation_by_source_campaign</em> · DAU &amp; Save ad in D0 từ <em>new_user_adopt_activate</em> (<code>adopt_users</code> = save_ad d0) · cộng theo campaign name qua mọi channel, join bằng campaign name</span><br>
-    <span style="color:#f59e0b;font-size:11px">⚠ Bảng <em>new_user_adopt_activate</em> chưa có channel Facebook nên phần lớn campaign FB đang trống ở Save ad in D0 &amp; % Save ad — team DA sẽ bổ sung sau. Dấu <strong>*</strong> = cohort chưa chín đủ 7 ngày, số tuyệt đối còn thiếu (tỉ lệ % vẫn đúng).</span>
+    <span style="color:#9ca3af">Cost &amp; Install lấy từ sheet <em>raw_total</em> (phase install + activate) · D0/D1/D7 &amp; Lead từ <em>retention_mapping_activation_by_source_campaign</em> · DAU &amp; Save ad in D0 từ <em>new_user_adopt_activate</em> (<code>adopt_users</code> = save_ad d0) · cộng theo campaign name qua mọi channel, join bằng campaign name</span><br>
+    <span style="color:#f59e0b;font-size:11px">⚠ Bảng <em>new_user_adopt_activate</em> chưa có channel Facebook nên phần lớn campaign FB đang trống ở Save ad in D0 &amp; % Save ad — team DA sẽ bổ sung sau. Dấu <strong>*</strong> = cohort chưa chín đủ 7 ngày, số tuyệt đối còn thiếu (tỉ lệ % vẫn đúng).</span><br>
+    <span style="color:#9ca3af;font-size:11px"><strong>Lead</strong> = tổng <em>lượt</em> liên hệ (không phải số user) của user mới từ campaign đó, tính <strong>trong ngày cài đặt</strong> và cộng theo đúng khoảng thời gian đang chọn — chưa gồm liên hệ ở những ngày sau. Cột này có đủ cả FB lẫn GG.</span>
   </div>
 
   <div class="kpi-grid" style="grid-template-columns:repeat(6,1fr)" id="cd-kpis">
@@ -1924,7 +1925,7 @@ const _cdState = { month: 'all', channel: 'all', vertical: 'all', sort: 'cost', 
 // Minimum denominator for a ratio to be worth reading. Below this the rate is
 // still shown (the spend is real and must stay visible) but rendered muted so
 // nobody reads "100% RR D1" off a campaign that had one single user.
-const _CD_MIN = { install: 10, d0: 30, dau: 30 };
+const _CD_MIN = { install: 10, d0: 30, dau: 30, lead: 10 };
 function _cdEnough(r, field) { return (r[field] || 0) >= _CD_MIN[field]; }
 
 function _cdChips(label, key, opts, labels) {
@@ -2306,12 +2307,13 @@ function renderCampDetail() {
   if (_cdState.channel !== 'all')  rows = rows.filter(r=>r.channel===_cdState.channel);
   if (_cdState.vertical !== 'all') rows = rows.filter(r=>(r.vertical||'other')===_cdState.vertical);
 
-  const SORTS = {cost:'cost', install:'install', cpi:'cpi', d0:'d0', rr_d1:'rr_d1', save_ad_rate:'save_ad_rate'};
+  const SORTS = {cost:'cost', install:'install', cpi:'cpi', d0:'d0', rr_d1:'rr_d1',
+                 save_ad_rate:'save_ad_rate', lead:'lead', cpl:'cpl'};
   const sk = SORTS[_cdState.sort] || 'cost';
   // Ratio columns are meaningless on a campaign with a handful of users — a
   // single install that came back once is 100% RR D1. Rank those below every
   // campaign that has enough volume to be real, instead of letting them win.
-  const RATIO_SORTS = {cpi:'install', rr_d1:'d0', save_ad_rate:'dau'};
+  const RATIO_SORTS = {cpi:'install', rr_d1:'d0', save_ad_rate:'dau', cpl:'lead'};
   const denField = RATIO_SORTS[sk];
   const thin = r => denField ? !_cdEnough(r, denField) : false;
   rows.sort((a,b)=>{
@@ -2346,11 +2348,13 @@ function renderCampDetail() {
     ${_cdChips('Tháng:','month',['all',...months],{all:'All Months'})}
     ${_cdChips('Channel:','channel',['all','FB','GG'],{all:'All'})}
     ${_cdChips('Vertical:','vertical',['all',...verts],{all:'All'})}
-    ${_cdChips('Sort:','sort',['cost','install','cpi','d0','rr_d1','save_ad_rate'],
-        {cost:'Cost',install:'Install',cpi:'CPI',d0:'D0',rr_d1:'RR D1',save_ad_rate:'% Save'})}
+    ${_cdChips('Sort:','sort',['cost','install','cpi','d0','rr_d1','save_ad_rate','lead','cpl'],
+        {cost:'Cost',install:'Install',cpi:'CPI',d0:'D0',rr_d1:'RR D1',save_ad_rate:'% Save',
+         lead:'Lead',cpl:'Cost/Lead'})}
     <div style="font-size:10px;color:#9ca3af;padding-top:2px">
       Tỉ lệ <span style="color:#c7cbd1;font-weight:600">màu nhạt</span> = volume quá thấp để kết luận
-      (CPI cần ≥${_CD_MIN.install} install · RR cần ≥${_CD_MIN.d0} D0 · % Save cần ≥${_CD_MIN.dau} DAU);
+      (CPI cần ≥${_CD_MIN.install} install · RR cần ≥${_CD_MIN.d0} D0 · % Save cần ≥${_CD_MIN.dau} DAU
+      · Cost/Lead cần ≥${_CD_MIN.lead} lead);
       khi sort theo tỉ lệ, các campaign này được xếp xuống cuối.
     </div>
   </div>`;
@@ -2379,6 +2383,13 @@ function renderCampDetail() {
       : `<td ${LOW} title="Volume quá thấp (${den} = ${r[den]||0}) — tỉ lệ này không đáng tin">${fmtPct(v)}</td>`);
   const WHY_ADOPT = 'Campaign này không có trong bảng new_user_adopt_activate '
     + '(bảng đó chưa có channel Facebook) — DA sẽ bổ sung';
+  // Spelled out on both lead columns: the number is lượt liên hệ, not người, and
+  // it is counted on the install day. A user cài ngày 3 rồi liên hệ ngày 6 không
+  // nằm trong đây — nếu không nói ra thì Lead trông như tổng liên hệ mọi ngày.
+  const WHY_LEAD = 'Tổng lượt liên hệ (không phải số user) của user mới đến từ '
+    + 'campaign này, tính trong ngày cài đặt (D0), cộng theo đúng khoảng thời gian '
+    + 'đang xem. Chưa gồm liên hệ ở các ngày sau. Nguồn: cột lead của '
+    + 'retention_mapping_activation_by_source_campaign — có đủ cả FB và GG.';
   const tdL = `style="text-align:left"`;
   const head = `<tr>
     <th style="text-align:left">#</th>
@@ -2395,6 +2406,8 @@ function renderCampDetail() {
     <th style="text-align:left">DAU</th>
     <th style="text-align:left">Save ad in D0</th>
     <th style="text-align:left">% Save ad</th>
+    <th style="text-align:left" title="${WHY_LEAD}">Lead</th>
+    <th style="text-align:left" title="Cost / Lead — cùng cost với CPI nên so trực tiếp được. ${WHY_LEAD}">Cost/Lead</th>
   </tr>`;
   const body = pageRows.map((r,i)=>`<tr>
     <td ${tdL} style="color:#9ca3af;font-size:11px;text-align:left">${offset+i+1}</td>
@@ -2416,8 +2429,15 @@ function renderCampDetail() {
     ${r.save_ad_d0==null ? `<td ${LOW} title="${WHY_ADOPT}">—</td>`
       : `<td ${tdL}>${fmtNum(r.save_ad_d0)}${r.save_partial?`<span style="color:#f59e0b" title="Cohort chỉ tới ${r.save_through} — số này còn thiếu ngày">*</span>`:''}</td>`}
     ${cdRate(r, r.save_ad_rate, 'dau', WHY_ADOPT) || `<td ${tdL}>${fmtPct(r.save_ad_rate)}</td>`}
+    ${r.lead==null ? `<td ${LOW} title="Không có data BigQuery cho campaign này">—</td>`
+      : `<td ${tdL}>${fmtNum(r.lead)}</td>`}
+    ${r.cpl==null
+      ? `<td ${LOW} title="${r.lead==null?'Không có data BigQuery cho campaign này':'Campaign này chưa có lead nào trong kỳ'}">—</td>`
+      : (_cdEnough(r,'lead')
+        ? `<td ${tdL}>${r.cpl.toLocaleString('en')+' ₫'}</td>`
+        : `<td ${LOW} title="Chỉ ${r.lead||0} lead — Cost/Lead không đáng tin">${r.cpl.toLocaleString('en')+' ₫'}</td>`)}
   </tr>`).join('');
-  tableEl.innerHTML = `<thead>${head}</thead><tbody>${body||'<tr><td colspan="14" style="text-align:center;color:#9ca3af;padding:20px">Không có campaign nào khớp filter</td></tr>'}</tbody>`;
+  tableEl.innerHTML = `<thead>${head}</thead><tbody>${body||'<tr><td colspan="16" style="text-align:center;color:#9ca3af;padding:20px">Không có campaign nào khớp filter</td></tr>'}</tbody>`;
 
   const totalPages = Math.max(1, Math.ceil(total/PAGE));
   const btn = (disabled, label, target) =>

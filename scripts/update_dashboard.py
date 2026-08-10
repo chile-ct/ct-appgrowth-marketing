@@ -541,6 +541,17 @@ try:
         "'" + n.replace('\\', '\\\\').replace("'", "\\'") + "'" for n in names)
     # channel != 'all' because that value is a pre-aggregated total of the real
     # channels; d0 is summed across the remaining channels per campaign name.
+    #
+    # `lead` counts contact events, not people, which is what was asked for
+    # ("tổng số lượt liên hệ"). It is attributed to visit_date, so summing it
+    # over the month gives exactly the leads that happened inside the period —
+    # and unlike save_ad it covers Facebook, so every campaign here has one.
+    # Caveat worth knowing: every row is return_status='new', so this is leads
+    # made on the install day. Someone who installs on the 3rd and contacts on
+    # the 6th is not in it. The lead_7d/lead_30d columns look like the fix but
+    # are per-row averages, not counts — they cannot be summed — and the 30d
+    # window is still filling in for recent months, so it would undercount most
+    # in exactly the newest month people read first.
     act_rows = run(f"""
     SELECT
       DATE_TRUNC(visit_date, MONTH) as month,
@@ -549,6 +560,7 @@ try:
       SUM(d0) as d0,
       SUM(d1) as d1,
       SUM(d7) as d7,
+      SUM(lead) as lead,
       SUM(save_ad) as save_ad
     FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
     WHERE return_status = 'new'
@@ -617,6 +629,7 @@ try:
         a = act.get((m_date, name), {})
         d0 = _int(a.get('d0'))
         d1, d7 = _int(a.get('d1')), _int(a.get('d7'))
+        lead = _int(a.get('lead'))
         # DAU and save-ad-in-D0 both come from the adopt table so the % is an
         # internally consistent ratio. Mixing in the retention table's DAU here
         # would divide an app-only numerator by an all-platform denominator.
@@ -639,6 +652,11 @@ try:
             'd7': d7,
             'rr_d1': _rate(d1, d0),
             'rr_d7': _rate(d7, d0),
+            'lead': lead,
+            # Cost per lead uses the same cost as CPI, so the two are directly
+            # comparable. A campaign with cost but zero leads has no CPL to
+            # quote — None renders as "—" rather than as a division by zero.
+            'cpl': round(cost / lead) if lead else None,
             'dau': dau,
             'save_ad_d0': save_ad_d0,
             'save_ad_rate': _rate(save_ad_d0, dau),
@@ -650,6 +668,8 @@ try:
         })
     matched = sum(1 for r in camp_detail if r['d0'] is not None)
     save_matched = sum(1 for r in camp_detail if r['save_ad_d0'] is not None)
+    lead_matched = sum(1 for r in camp_detail if r['lead'] is not None)
+    lead_total = sum(r['lead'] or 0 for r in camp_detail)
     by_ch = {}
     for r in camp_detail:
         k = r['channel']
@@ -680,6 +700,9 @@ try:
 
     print(f"  Camp detail: {len(camp_detail)} rows OK "
           f"({matched} matched BQ activation, months: {det_months})")
+    print(f"  Lead: {lead_matched}/{len(camp_detail)} rows have a lead count, "
+          f"{lead_total:,} lead events total "
+          f"(unlike save_ad this covers FB, so a low match rate here is a bug)")
     print(f"  Save ad in D0: {save_matched}/{len(camp_detail)} rows matched "
           f"new_user_adopt_activate "
           + ' '.join(f'{k}={v[1]}/{v[0]}' for k, v in sorted(by_ch.items()))
