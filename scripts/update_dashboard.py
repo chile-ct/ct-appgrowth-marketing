@@ -668,8 +668,12 @@ try:
         })
     matched = sum(1 for r in camp_detail if r['d0'] is not None)
     save_matched = sum(1 for r in camp_detail if r['save_ad_d0'] is not None)
-    lead_matched = sum(1 for r in camp_detail if r['lead'] is not None)
-    lead_total = sum(r['lead'] or 0 for r in camp_detail)
+    # cd_ prefix on purpose: this module already has a module-level `lead_total`
+    # (the section-3 activation series, a per-month list) and reusing that name
+    # here silently replaced the list with an int, which only blew up 200 lines
+    # later where lead_rate indexes into it.
+    cd_lead_matched = sum(1 for r in camp_detail if r['lead'] is not None)
+    cd_lead_total = sum(r['lead'] or 0 for r in camp_detail)
     by_ch = {}
     for r in camp_detail:
         k = r['channel']
@@ -700,8 +704,8 @@ try:
 
     print(f"  Camp detail: {len(camp_detail)} rows OK "
           f"({matched} matched BQ activation, months: {det_months})")
-    print(f"  Lead: {lead_matched}/{len(camp_detail)} rows have a lead count, "
-          f"{lead_total:,} lead events total "
+    print(f"  Lead: {cd_lead_matched}/{len(camp_detail)} rows have a lead count, "
+          f"{cd_lead_total:,} lead events total "
           f"(unlike save_ad this covers FB, so a low match rate here is a bug)")
     print(f"  Save ad in D0: {save_matched}/{len(camp_detail)} rows matched "
           f"new_user_adopt_activate "
