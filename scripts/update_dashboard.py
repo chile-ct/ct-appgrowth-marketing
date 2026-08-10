@@ -3,7 +3,7 @@ App Growth Dashboard — Auto Update Script
 Queries BigQuery directly. No Claude/Anthropic API. $0 token cost.
 Cost data is managed manually via the Budget tab in the dashboard (localStorage).
 """
-import json, os, datetime
+import json, os, datetime, calendar
 from google.cloud import bigquery
 
 PROJECT = "chotot-dwh"
@@ -430,8 +430,19 @@ def _sheet_csv(gid):
 
 
 def fetch_camp_cost():
-    """Aggregate cost + install by (month, campaign) for the growth accounts."""
+    """Aggregate cost + install by (month, campaign) for the growth accounts.
+
+    Also returns how far into each month the spend data actually goes. A running
+    month is only a few days old, so judging its actual against a whole month's
+    target reads as a catastrophic miss when it may well be on pace. The last
+    dated row per month is the honest denominator for that, and it has to come
+    from here because raw_total is the only day-level source we have.
+
+    Returns (agg, last_day) where last_day maps the month's first-of-month date
+    to the latest day seen for it.
+    """
     agg, seen, bad_dates = {}, 0, 0
+    last_day = {}
     for row in _sheet_csv(SHEET_GID)[1:]:  # [1:] drops the header row
         # Columns N onward hold an unrelated account_name/channel lookup block,
         # so hard-stop at column M.
@@ -444,12 +455,16 @@ def fetch_camp_cost():
         if channel is None or phase not in SHEET_PHASES:
             continue
         try:
-            mth, _dy, yr = (int(x) for x in date_s.split('/'))  # M/D/YYYY
+            mth, dy, yr = (int(x) for x in date_s.split('/'))  # M/D/YYYY
             m_date = datetime.date(yr, mth, 1)
+            d_date = datetime.date(yr, mth, dy)
         except (ValueError, TypeError):
             bad_dates += 1
             continue
         seen += 1
+        prev = last_day.get(m_date)
+        if prev is None or d_date > prev:
+            last_day[m_date] = d_date
         e = agg.setdefault((m_date, camp), {
             'cost': 0.0, 'install': 0.0, 'channel': channel,
             'vertical': vertical or 'other', 'phases': set(),
@@ -460,7 +475,7 @@ def fetch_camp_cost():
     if bad_dates:
         print(f"  Sheet: {bad_dates} rows with unparseable dates skipped")
     print(f"  Sheet: {seen} growth rows -> {len(agg)} campaign-months")
-    return agg
+    return agg, last_day
 
 
 def fetch_targets():
@@ -515,8 +530,9 @@ def fetch_targets():
 
 
 camp_detail = []
+month_cover = {}
 try:
-    sheet_agg = fetch_camp_cost()
+    sheet_agg, sheet_last_day = fetch_camp_cost()
     if not sheet_agg:
         raise RuntimeError('no growth rows found in raw_total')
 
@@ -642,6 +658,26 @@ try:
         if r['save_ad_d0'] is not None:
             by_ch[k][1] += 1
     det_months = sorted({r['month'] for r in camp_detail})
+
+    # How much of each month the spend actually covers. Used by the front end to
+    # judge a running month against the pace it should be at, not against a whole
+    # month it has not had the days to reach yet.
+    for m_date, last in sorted(sheet_last_day.items()):
+        # calendar.monthrange, not _month_end() — the latter caps at today, which
+        # would make the running month look like a full one (10 of 10 days).
+        dim = calendar.monthrange(m_date.year, m_date.month)[1]
+        month_cover[m_date.strftime('%b %Y')] = {
+            'through': last.strftime('%Y-%m-%d'),
+            'days': last.day,
+            'days_in_month': dim,
+            'elapsed': round(last.day / dim, 4),
+        }
+    running = [f"{k} through {v['through']} ({v['days']}/{v['days_in_month']}d"
+               f" = {v['elapsed']:.0%})"
+               for k, v in month_cover.items() if v['days'] < v['days_in_month']]
+    if running:
+        print(f"  Month coverage (incomplete): {'; '.join(running)}")
+
     print(f"  Camp detail: {len(camp_detail)} rows OK "
           f"({matched} matched BQ activation, months: {det_months})")
     print(f"  Save ad in D0: {save_matched}/{len(camp_detail)} rows matched "
@@ -651,6 +687,7 @@ try:
 except Exception as e:
     print(f"  WARNING Camp detail skipped: {e}")
     camp_detail = D.get('camp_detail', [])
+    month_cover = D.get('month_cover', {})
 
 # Monthly targets per vertical, for the progress table in section 6.
 camp_target = D.get('camp_target', [])
@@ -849,6 +886,7 @@ out = {
     "campaigns": campaigns,
     "camp_detail": camp_detail,
     "camp_target": camp_target,
+    "month_cover": month_cover,
     "daily_activation": [
         {
             "date": str(r["visit_date"]),
