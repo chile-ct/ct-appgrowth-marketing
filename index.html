@@ -555,7 +555,8 @@ canvas { max-height: 500px; }
     Performance từng campaign của <strong>8 ad account team Growth, phase App</strong> (FB: Chotot_growth_sgd, Chotot_pty_app, Chotot_job_app, Chotot_veh_app · GG: Chotot_app_pty, Chotot_app_veh, Chotot_app_job, Chotot_Growth_New)<br>
     <span style="color:#9ca3af">Cost &amp; Install lấy từ sheet <em>raw_total</em> (phase install + activate) · D0/D1/D7 &amp; Lead từ <em>retention_mapping_activation_by_source_campaign</em> · DAU &amp; Save ad in D0 từ <em>new_user_adopt_activate</em> (<code>adopt_users</code> = save_ad d0) · cộng theo campaign name qua mọi channel, join bằng campaign name</span><br>
     <span style="color:#f59e0b;font-size:11px">⚠ Bảng <em>new_user_adopt_activate</em> chưa có channel Facebook nên phần lớn campaign FB đang trống ở Save ad in D0 &amp; % Save ad — team DA sẽ bổ sung sau. Dấu <strong>*</strong> = cohort chưa chín đủ 7 ngày, số tuyệt đối còn thiếu (tỉ lệ % vẫn đúng).</span><br>
-    <span style="color:#9ca3af;font-size:11px"><strong>Lead</strong> = tổng <em>lượt</em> liên hệ (không phải số user) của user mới từ campaign đó, tính <strong>trong ngày cài đặt</strong> và cộng theo đúng khoảng thời gian đang chọn — chưa gồm liên hệ ở những ngày sau. Cột này có đủ cả FB lẫn GG.</span>
+    <span style="color:#9ca3af;font-size:11px"><strong>Lead (all)</strong> = tổng <em>lượt</em> liên hệ (không phải số user) của user mới từ campaign đó, tính <strong>trong ngày cài đặt</strong> và cộng theo đúng khoảng thời gian đang chọn — chưa gồm liên hệ ở những ngày sau. Tính <strong>mọi ngành</strong>, không riêng ngành đã mua campaign: user cài từ campaign job rồi đi liên hệ tin gds vẫn được đếm.</span>
+    <span style="color:#9ca3af;font-size:11px"><strong>User LH ngành</strong> = số <em>user</em> có liên hệ đúng trong ngành đã mua campaign. Đơn vị là <strong>người, không phải lượt</strong>, nên đừng so trực tiếp với Lead (all). Lý do phải đổi đơn vị: khi tách theo ngành, cột lead của bảng nguồn thực chất là tổng liên hệ ở mọi ngành của user đó nhân bản sang từng ngành, nên không tách được <em>lượt</em> theo ngành. Cả hai cột đều có đủ FB lẫn GG.</span>
   </div>
 
   <div class="kpi-grid kpi-8" id="cd-kpis">
@@ -1932,7 +1933,7 @@ const _cdState = { month: 'all', channel: 'all', vertical: 'all', sort: 'cost', 
 // Minimum denominator for a ratio to be worth reading. Below this the rate is
 // still shown (the spend is real and must stay visible) but rendered muted so
 // nobody reads "100% RR D1" off a campaign that had one single user.
-const _CD_MIN = { install: 10, d0: 30, dau: 30, lead: 10 };
+const _CD_MIN = { install: 10, d0: 30, dau: 30, lead: 10, lead_own: 10 };
 function _cdEnough(r, field) { return (r[field] || 0) >= _CD_MIN[field]; }
 
 function _cdChips(label, key, opts, labels) {
@@ -2315,12 +2316,14 @@ function renderCampDetail() {
   if (_cdState.vertical !== 'all') rows = rows.filter(r=>(r.vertical||'other')===_cdState.vertical);
 
   const SORTS = {cost:'cost', install:'install', cpi:'cpi', d0:'d0', rr_d1:'rr_d1',
-                 save_ad_rate:'save_ad_rate', lead:'lead', cpl:'cpl'};
+                 save_ad_rate:'save_ad_rate', lead:'lead', cpl:'cpl',
+                 lead_own:'lead_own', cpl_own:'cpl_own'};
   const sk = SORTS[_cdState.sort] || 'cost';
   // Ratio columns are meaningless on a campaign with a handful of users — a
   // single install that came back once is 100% RR D1. Rank those below every
   // campaign that has enough volume to be real, instead of letting them win.
-  const RATIO_SORTS = {cpi:'install', rr_d1:'d0', save_ad_rate:'dau', cpl:'lead'};
+  const RATIO_SORTS = {cpi:'install', rr_d1:'d0', save_ad_rate:'dau', cpl:'lead',
+                       cpl_own:'lead_own'};
   const denField = RATIO_SORTS[sk];
   const thin = r => denField ? !_cdEnough(r, denField) : false;
   rows.sort((a,b)=>{
@@ -2400,13 +2403,13 @@ function renderCampDetail() {
     ${_cdChips('Tháng:','month',['all',...months],{all:'All Months'})}
     ${_cdChips('Channel:','channel',['all','FB','GG'],{all:'All'})}
     ${_cdChips('Vertical:','vertical',['all',...verts],{all:'All'})}
-    ${_cdChips('Sort:','sort',['cost','install','cpi','d0','rr_d1','save_ad_rate','lead','cpl'],
+    ${_cdChips('Sort:','sort',['cost','install','cpi','d0','rr_d1','save_ad_rate','lead','cpl','lead_own','cpl_own'],
         {cost:'Cost',install:'Install',cpi:'CPI',d0:'D0',rr_d1:'RR D1',save_ad_rate:'% Save',
-         lead:'Lead',cpl:'Cost/Lead'})}
+         lead:'Lead (all)',cpl:'Cost/Lead',lead_own:'User LH ngành',cpl_own:'Cost/User LH ngành'})}
     <div style="font-size:10px;color:#9ca3af;padding-top:2px">
       Tỉ lệ <span style="color:#c7cbd1;font-weight:600">màu nhạt</span> = volume quá thấp để kết luận
       (CPI cần ≥${_CD_MIN.install} install · RR cần ≥${_CD_MIN.d0} D0 · % Save cần ≥${_CD_MIN.dau} DAU
-      · Cost/Lead cần ≥${_CD_MIN.lead} lead);
+      · Cost/Lead cần ≥${_CD_MIN.lead} lead · Cost/User LH ngành cần ≥${_CD_MIN.lead_own} user);
       khi sort theo tỉ lệ, các campaign này được xếp xuống cuối.
     </div>
   </div>`;
@@ -2442,6 +2445,25 @@ function renderCampDetail() {
     + 'campaign này, tính trong ngày cài đặt (D0), cộng theo đúng khoảng thời gian '
     + 'đang xem. Chưa gồm liên hệ ở các ngày sau. Nguồn: cột lead của '
     + 'retention_mapping_activation_by_source_campaign — có đủ cả FB và GG.';
+  // The unit change is the whole point of the wording here. Per-vertical the table
+  // only measures people, not lượt: on a vertical row the `lead` column carries the
+  // user's contacts across every vertical, so it cannot be split by ngành. Anyone
+  // who reads this column as lượt will compare it against Lead (all) and conclude
+  // the campaign collapsed, when the two just count different things.
+  const WHY_OWN = 'Số USER (không phải lượt) mới từ campaign này có liên hệ '
+    + 'trong đúng ngành đã mua campaign, tính trong ngày cài đặt (D0). Đơn vị là '
+    + 'người nên KHÔNG so trực tiếp với cột Lead (all) vốn đếm lượt. Vì sao là '
+    + 'người: cột lead khi tách theo ngành thực chất là tổng liên hệ ở MỌI ngành '
+    + 'của user đó, nhân bản sang từng ngành user có mặt (bucket other có 1,355 '
+    + 'lượt nhưng 0 user liên hệ), nên không tách lượt theo ngành được. Nguồn có '
+    + 'đủ FB và GG. "—" = campaign không gắn ngành (other) hoặc không có data.';
+  // Two different reasons for an empty cell, and they need different answers: a
+  // campaign the sheet never tagged with a vertical can be fixed in column L, a
+  // campaign BigQuery has no row for cannot.
+  const OWN_NA = r => (r.vertical && ['pty','job','gds','veh'].includes(r.vertical))
+    ? 'Không có data BigQuery cho campaign này'
+    : 'Campaign chưa gắn ngành trong sheet (cột L đang là "other"/trống) nên không '
+      + 'biết ngành nào là "đúng ngành"';
   // lead_cost only exists when BigQuery has published fewer days than the spend
   // sheet has. CPL divides that shorter-window cost so both sides cover the same
   // days; the Cost column beside it stays the whole month's real spend, so the
@@ -2472,8 +2494,10 @@ function renderCampDetail() {
     <th style="text-align:left">DAU</th>
     <th style="text-align:left">Save ad in D0</th>
     <th style="text-align:left">% Save ad</th>
-    <th style="text-align:left" title="${WHY_LEAD}">Lead</th>
+    <th style="text-align:left" title="${WHY_LEAD}">Lead (all)</th>
     <th style="text-align:left" title="Cost / Lead — cùng cost với CPI nên so trực tiếp được. ${WHY_LEAD}">Cost/Lead</th>
+    <th style="text-align:left" title="${WHY_OWN}">User LH ngành</th>
+    <th style="text-align:left" title="Cost / số user liên hệ đúng ngành. Đây là chi phí để có MỘT NGƯỜI liên hệ trong ngành đã mua — không so trực tiếp được với Cost/Lead bên trái vì mẫu số khác đơn vị (người vs lượt). ${WHY_OWN}">Cost/User LH ngành</th>
   </tr>`;
   const body = pageRows.map((r,i)=>`<tr>
     <td ${tdL} style="color:#9ca3af;font-size:11px;text-align:left">${offset+i+1}</td>
@@ -2502,8 +2526,16 @@ function renderCampDetail() {
       : (_cdEnough(r,'lead')
         ? `<td ${tdL} title="${cplWindow(r)}">${r.cpl.toLocaleString('en')+' ₫'}</td>`
         : `<td ${LOW} title="Chỉ ${r.lead||0} lead — Cost/Lead không đáng tin. ${cplWindow(r)}">${r.cpl.toLocaleString('en')+' ₫'}</td>`)}
+    ${r.lead_own==null
+      ? `<td ${LOW} title="${OWN_NA(r)}">—</td>`
+      : `<td ${tdL} title="${r.users_lead?`${r.lead_own} / ${r.users_lead} user có liên hệ là ở đúng ngành ${(r.vertical||'').toUpperCase()} (${Math.round(100*r.lead_own/r.users_lead)}%). ${WHY_OWN}`:WHY_OWN}">${fmtNum(r.lead_own)}</td>`}
+    ${r.cpl_own==null
+      ? `<td ${LOW} title="${r.lead_own==null?OWN_NA(r):'Không có user nào liên hệ trong đúng ngành ở kỳ này'}">—</td>`
+      : (_cdEnough(r,'lead_own')
+        ? `<td ${tdL} title="${cplWindow(r)}">${r.cpl_own.toLocaleString('en')+' ₫'}</td>`
+        : `<td ${LOW} title="Chỉ ${r.lead_own} user liên hệ đúng ngành — con số này không đáng tin. ${cplWindow(r)}">${r.cpl_own.toLocaleString('en')+' ₫'}</td>`)}
   </tr>`).join('');
-  tableEl.innerHTML = `<thead>${head}</thead><tbody>${body||'<tr><td colspan="16" style="text-align:center;color:#9ca3af;padding:20px">Không có campaign nào khớp filter</td></tr>'}</tbody>`;
+  tableEl.innerHTML = `<thead>${head}</thead><tbody>${body||'<tr><td colspan="18" style="text-align:center;color:#9ca3af;padding:20px">Không có campaign nào khớp filter</td></tr>'}</tbody>`;
 
   const totalPages = Math.max(1, Math.ceil(total/PAGE));
   const btn = (disabled, label, target) =>

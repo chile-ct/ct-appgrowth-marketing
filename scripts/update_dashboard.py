@@ -580,6 +580,7 @@ try:
       SUM(d1) as d1,
       SUM(d7) as d7,
       SUM(lead) as lead,
+      SUM(dau_lead) as dau_lead,
       SUM(save_ad) as save_ad,
       MAX(visit_date) as bq_through
     FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
@@ -592,6 +593,42 @@ try:
     GROUP BY 1, 2
     """)
     act = {(to_date(r['month']), str(r['campaign'])): r for r in act_rows}
+
+    # Same table, but split by vertical, to answer "how much of this campaign's
+    # contacting happened in the vertical we bought it for".
+    #
+    # It has to be dau_lead (users who contacted), NOT lead (contact events), and
+    # that is not a style choice. On a vertical row `lead` is the user's contacts
+    # across every vertical, copied into each vertical that user belongs to: for
+    # 2026-08-01..09 the `other` bucket carries 1,355 contact events against 0
+    # contacting users, and the five buckets sum to 82,651 against 60,593 on the
+    # 'all' row (+36%). dau_lead sums to 34,188 against 33,718 (+1.4%), i.e. it
+    # really does partition, and where only one vertical is involved the vertical
+    # row equals the 'all' row exactly (541 of 541 slices checked). So dau_lead is
+    # the only per-vertical contact figure in here that means what it says.
+    #
+    # Contact *events* per vertical do exist in chotot_data.traffic_lead_detail
+    # joined to traffic_visit_detail, but that pair has no Facebook campaigns at
+    # all — five FB names checked over 40 days return zero rows while GG ones
+    # return ~29k each — and it scans 15.7 GB against this table's 0.04 GB.
+    vert_rows = run(f"""
+    SELECT
+      DATE_TRUNC(visit_date, MONTH) as month,
+      campaign,
+      vertical_user,
+      SUM(dau_lead) as dau_lead,
+      SUM(d0) as d0
+    FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
+    WHERE return_status = 'new'
+      AND vertical_user IN ('pty', 'job', 'gds', 'veh')
+      AND channel != 'all'
+      AND visit_date >= '2026-01-01'
+      AND visit_date <= '{sheet_max}'
+      AND campaign IN ({in_list})
+    GROUP BY 1, 2, 3
+    """)
+    vert = {(to_date(r['month']), str(r['campaign']), str(r['vertical_user'])): r
+            for r in vert_rows}
 
     # How far this table has published, per month. Cost/Lead is the first number on
     # the page that divides a sheet figure by a BigQuery one, and the two sources
@@ -664,6 +701,18 @@ try:
         d0 = _int(a.get('d0'))
         d1, d7 = _int(a.get('d1')), _int(a.get('d7'))
         lead = _int(a.get('lead'))
+        users_lead = _int(a.get('dau_lead'))
+        # The campaign's own vertical, as bought — column L of the sheet. Anything
+        # not one of the four real verticals ('other', blank) has nothing to match
+        # against, so it gets None and renders as "—" rather than a silent zero.
+        own = s['vertical'] if s['vertical'] in ('pty', 'job', 'gds', 'veh') else None
+        ov = vert.get((m_date, name, own), {}) if own else {}
+        # None when the campaign has no BigQuery match at all; a real 0 when it
+        # matched but nobody contacted inside its own vertical, which is a finding
+        # rather than missing data and must not be blanked out.
+        own_users = _int(ov.get('dau_lead')) if own and (m_date, name) in act else None
+        if own_users is None and own and (m_date, name) in act:
+            own_users = 0
         # DAU and save-ad-in-D0 both come from the adopt table so the % is an
         # internally consistent ratio. Mixing in the retention table's DAU here
         # would divide an app-only numerator by an all-platform denominator.
@@ -705,6 +754,13 @@ try:
             # behind the sheet; the front end uses it to blend CPL over the
             # same window and to say so.
             **({'lead_cost': lead_cost} if lead_cost != cost else {}),
+            # Users who contacted anywhere, and users who contacted inside the
+            # campaign's own vertical. Both are people, not contact events, so
+            # they are not comparable with `lead` above — the front end labels
+            # the unit on every one of these columns for exactly that reason.
+            'users_lead': users_lead,
+            'lead_own': own_users,
+            'cpl_own': round(lead_cost / own_users) if own_users else None,
             'dau': dau,
             'save_ad_d0': save_ad_d0,
             'save_ad_rate': _rate(save_ad_d0, dau),
@@ -722,6 +778,9 @@ try:
     # later where lead_rate indexes into it.
     cd_lead_matched = sum(1 for r in camp_detail if r['lead'] is not None)
     cd_lead_total = sum(r['lead'] or 0 for r in camp_detail)
+    cd_own_rows = [r for r in camp_detail if r['lead_own'] is not None]
+    cd_own_users = sum(r['lead_own'] for r in cd_own_rows)
+    cd_all_users = sum(r['users_lead'] or 0 for r in cd_own_rows)
     by_ch = {}
     for r in camp_detail:
         k = r['channel']
@@ -760,6 +819,14 @@ try:
     print(f"  Lead: {cd_lead_matched}/{len(camp_detail)} rows have a lead count, "
           f"{cd_lead_total:,} lead events total "
           f"(unlike save_ad this covers FB, so a low match rate here is a bug)")
+    if cd_all_users:
+        print(f"  Own-vertical contact: {len(cd_own_rows)}/{len(camp_detail)} rows "
+              f"have a vertical to match; {cd_own_users:,} of {cd_all_users:,} "
+              f"contacting users stayed in the vertical the campaign was bought "
+              f"for ({cd_own_users / cd_all_users:.0%}). A low share is a real "
+              f"finding, not a join bug — check a campaign by hand before 'fixing'")
+    else:
+        print("  Own-vertical contact: nothing matched — check sheet column L")
     for m_date, last in sorted(sheet_last_day.items()):
         bq_t = bq_max.get(m_date)
         if bq_t and bq_t < last:
