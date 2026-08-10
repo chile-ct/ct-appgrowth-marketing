@@ -561,9 +561,11 @@ try:
     # in exactly the newest month people read first.
     #
     # Upper-bounded by the last day the spend sheet has. raw_total is filled in by
-    # hand, so it is just as often the one that lags — and then leads would cover a
-    # day whose cost is not in yet, making Cost/Lead read too cheap. Capping keeps
-    # every figure in this section on the window the Cost column already claims via
+    # hand and is the source that actually lags: on 2026-08-10 the 04:38 run had
+    # this table through 08-09 but the sheet only through 08-08, so Aug leads ran a
+    # day ahead of Aug cost and blended Cost/Lead read 37,679 ₫ against the matched
+    # 41,964 ₫ — 11% too cheap, in the direction that flatters. Capping keeps every
+    # figure in this section on the window the Cost column already claims through
     # month_cover.through. The opposite skew, BigQuery trailing the sheet, cannot be
     # fixed here (the cost is already banked) and is handled below by lead_cost.
     sheet_max = max(sheet_last_day.values())
@@ -591,12 +593,12 @@ try:
     """)
     act = {(to_date(r['month']), str(r['campaign'])): r for r in act_rows}
 
-    # How far this table has published, per month. The cron fires at 04:00 UTC and
-    # the table has been seen landing the previous day well after that, while
-    # raw_total is filled in by hand and can already have it. So the two sources
-    # routinely disagree by a day, in either direction. Cost/Lead is the first
-    # number on the page that divides one by the other, and a full day of spend
-    # over a short day of leads reads ~11% too expensive.
+    # How far this table has published, per month. Cost/Lead is the first number on
+    # the page that divides a sheet figure by a BigQuery one, and the two sources
+    # land a day apart in both directions: the cap above covers BigQuery running
+    # ahead, this covers it trailing, where the spend is already banked and cannot
+    # be capped away. Untested against a real occurrence — as of 2026-08-10 only the
+    # other direction has been seen — so if a CPL looks wrong, check here first.
     bq_max = {}
     for r in act_rows:
         m = to_date(r['month'])

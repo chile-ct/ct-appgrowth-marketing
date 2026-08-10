@@ -2339,9 +2339,9 @@ function renderCampDetail() {
   // for it is exactly what this number is meant to expose.
   const leadRows = rows.filter(r=>r.lead!=null);
   // lead_cost is only present when BigQuery has published fewer days than the
-  // spend sheet; it is that campaign's cost over the days leads actually cover.
-  // Dividing the full month's spend by a short month's leads reads about 11% too
-  // expensive, which is more than most of the differences people act on.
+  // spend sheet; it is that campaign's cost over the days leads actually cover, so
+  // a full month of spend is not divided by a short month of leads. A one-day
+  // mismatch moved Aug CPL by 11%, more than most differences people act on.
   const tCostLead = leadRows.reduce((s,r)=>s+(r.lead_cost!=null?r.lead_cost:(r.cost||0)),0);
   const fmtVnd = v => v>=1e9?(v/1e9).toFixed(2)+'B ₫':v>=1e6?(v/1e6).toFixed(1)+'M ₫':Math.round(v).toLocaleString('en')+' ₫';
   const fmtNum = v => v==null?'—':v.toLocaleString('en');
