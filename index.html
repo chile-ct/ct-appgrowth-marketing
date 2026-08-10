@@ -2898,8 +2898,14 @@ async function initDashboard() {
   if (D.partial_months && D.partial_months.length && D.updated_at) {
     const badge = document.getElementById('partial-date-badge');
     if (badge) {
-      const [y, m, d] = D.updated_at.split('-');
       const partialLabel = D.partial_months[D.partial_months.length - 1].replace('*','').trim();
+      // The date the data actually reaches, not the date the cron ran. raw_total
+      // is filled in by hand and trails a couple of days, so on 10/08 the badge
+      // used to promise data through 10/08 when spend stopped at 08/08 — the one
+      // number on the page people use to decide whether it is worth reading.
+      const cov = (D.month_cover||{})[partialLabel];
+      const src = (cov && cov.through) ? cov.through : D.updated_at;
+      const [y, m, d] = src.split('-');
       badge.textContent = `* ${partialLabel}: data đến ${d}/${m}/${y}`;
       badge.style.display = 'inline';
     }
