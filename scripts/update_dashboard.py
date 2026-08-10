@@ -438,11 +438,15 @@ def fetch_camp_cost():
     dated row per month is the honest denominator for that, and it has to come
     from here because raw_total is the only day-level source we have.
 
-    Returns (agg, last_day) where last_day maps the month's first-of-month date
-    to the latest day seen for it.
+    Returns (agg, last_day, daily) where last_day maps the month's first-of-month
+    date to the latest day seen for it, and daily maps (month, campaign) to
+    {day: cost}. The day-level breakdown exists so a cost can be re-summed over a
+    shorter window — needed when BigQuery has not published as many days as the
+    sheet has, which would otherwise divide a longer stretch of spend by a shorter
+    stretch of leads.
     """
     agg, seen, bad_dates = {}, 0, 0
-    last_day = {}
+    last_day, daily = {}, {}
     for row in _sheet_csv(SHEET_GID)[1:]:  # [1:] drops the header row
         # Columns N onward hold an unrelated account_name/channel lookup block,
         # so hard-stop at column M.
@@ -469,13 +473,16 @@ def fetch_camp_cost():
             'cost': 0.0, 'install': 0.0, 'channel': channel,
             'vertical': vertical or 'other', 'phases': set(),
         })
-        e['cost'] += _sheet_num(row[6])
+        cost = _sheet_num(row[6])
+        e['cost'] += cost
         e['install'] += _sheet_num(row[5])
         e['phases'].add(phase)
+        d = daily.setdefault((m_date, camp), {})
+        d[d_date] = d.get(d_date, 0.0) + cost
     if bad_dates:
         print(f"  Sheet: {bad_dates} rows with unparseable dates skipped")
     print(f"  Sheet: {seen} growth rows -> {len(agg)} campaign-months")
-    return agg, last_day
+    return agg, last_day, daily
 
 
 def fetch_targets():
@@ -532,7 +539,7 @@ def fetch_targets():
 camp_detail = []
 month_cover = {}
 try:
-    sheet_agg, sheet_last_day = fetch_camp_cost()
+    sheet_agg, sheet_last_day, sheet_daily_cost = fetch_camp_cost()
     if not sheet_agg:
         raise RuntimeError('no growth rows found in raw_total')
 
@@ -552,6 +559,16 @@ try:
     # are per-row averages, not counts — they cannot be summed — and the 30d
     # window is still filling in for recent months, so it would undercount most
     # in exactly the newest month people read first.
+    #
+    # Upper-bounded by the last day the spend sheet has. raw_total is filled in by
+    # hand, so it is just as often the one that lags — and then leads would cover a
+    # day whose cost is not in yet, making Cost/Lead read too cheap. Capping keeps
+    # every figure in this section on the window the Cost column already claims via
+    # month_cover.through. The opposite skew, BigQuery trailing the sheet, cannot be
+    # fixed here (the cost is already banked) and is handled below by lead_cost.
+    sheet_max = max(sheet_last_day.values())
+    print(f"  Camp detail: BigQuery capped at {sheet_max}, "
+          f"the last day raw_total has spend for")
     act_rows = run(f"""
     SELECT
       DATE_TRUNC(visit_date, MONTH) as month,
@@ -561,16 +578,31 @@ try:
       SUM(d1) as d1,
       SUM(d7) as d7,
       SUM(lead) as lead,
-      SUM(save_ad) as save_ad
+      SUM(save_ad) as save_ad,
+      MAX(visit_date) as bq_through
     FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
     WHERE return_status = 'new'
       AND vertical_user = 'all'
       AND channel != 'all'
       AND visit_date >= '2026-01-01'
+      AND visit_date <= '{sheet_max}'
       AND campaign IN ({in_list})
     GROUP BY 1, 2
     """)
     act = {(to_date(r['month']), str(r['campaign'])): r for r in act_rows}
+
+    # How far this table has published, per month. The cron fires at 04:00 UTC and
+    # the table has been seen landing the previous day well after that, while
+    # raw_total is filled in by hand and can already have it. So the two sources
+    # routinely disagree by a day, in either direction. Cost/Lead is the first
+    # number on the page that divides one by the other, and a full day of spend
+    # over a short day of leads reads ~11% too expensive.
+    bq_max = {}
+    for r in act_rows:
+        m = to_date(r['month'])
+        t = to_date(r['bq_through']) if r.get('bq_through') else None
+        if t and (m not in bq_max or t > bq_max[m]):
+            bq_max[m] = t
 
     # "Save ad in D0" + its DAU denominator come from the MKT-owned adopt table,
     # where adopt_users is documented as "New user d0 adopt (save_ad d0)".
@@ -638,6 +670,17 @@ try:
         save_ad_d0 = _int(ad.get('save_ad_d0'))
         last_cohort = adopt_max.get(m_date)
         cost, install = round(s['cost']), int(s['install'])
+        # Cost restricted to the days BigQuery has actually published, so CPL
+        # divides like for like. `cost` itself stays whole: it is real money and
+        # the progress-vs-target table reconciles it against the sheet, so
+        # trimming it there would make the dashboard contradict its own source.
+        cutoff = bq_max.get(m_date)
+        if cutoff is not None and cutoff < sheet_last_day.get(m_date, cutoff):
+            lead_cost = round(sum(
+                c for d, c in sheet_daily_cost.get((m_date, name), {}).items()
+                if d <= cutoff))
+        else:
+            lead_cost = cost
         camp_detail.append({
             'name': name,
             'month': m_date.strftime('%b %Y'),
@@ -653,10 +696,13 @@ try:
             'rr_d1': _rate(d1, d0),
             'rr_d7': _rate(d7, d0),
             'lead': lead,
-            # Cost per lead uses the same cost as CPI, so the two are directly
-            # comparable. A campaign with cost but zero leads has no CPL to
-            # quote — None renders as "—" rather than as a division by zero.
-            'cpl': round(cost / lead) if lead else None,
+            # A campaign with cost but zero leads has no CPL to quote — None
+            # renders as "—" rather than as a division by zero.
+            'cpl': round(lead_cost / lead) if lead else None,
+            # Only emitted when it differs from cost, i.e. when BigQuery is
+            # behind the sheet; the front end uses it to blend CPL over the
+            # same window and to say so.
+            **({'lead_cost': lead_cost} if lead_cost != cost else {}),
             'dau': dau,
             'save_ad_d0': save_ad_d0,
             'save_ad_rate': _rate(save_ad_d0, dau),
@@ -690,11 +736,16 @@ try:
         # calendar.monthrange, not _month_end() — the latter caps at today, which
         # would make the running month look like a full one (10 of 10 days).
         dim = calendar.monthrange(m_date.year, m_date.month)[1]
+        bq_t = bq_max.get(m_date)
         month_cover[m_date.strftime('%b %Y')] = {
             'through': last.strftime('%Y-%m-%d'),
             'days': last.day,
             'days_in_month': dim,
             'elapsed': round(last.day / dim, 4),
+            # Only set when BigQuery trails the sheet, so the front end can say
+            # which window the lead numbers really cover.
+            **({'bq_through': bq_t.strftime('%Y-%m-%d')}
+               if bq_t and bq_t < last else {}),
         }
     running = [f"{k} through {v['through']} ({v['days']}/{v['days_in_month']}d"
                f" = {v['elapsed']:.0%})"
@@ -707,6 +758,17 @@ try:
     print(f"  Lead: {cd_lead_matched}/{len(camp_detail)} rows have a lead count, "
           f"{cd_lead_total:,} lead events total "
           f"(unlike save_ad this covers FB, so a low match rate here is a bug)")
+    for m_date, last in sorted(sheet_last_day.items()):
+        bq_t = bq_max.get(m_date)
+        if bq_t and bq_t < last:
+            trimmed = sum(r.get('lead_cost', r['cost']) for r in camp_detail
+                          if r['month'] == m_date.strftime('%b %Y'))
+            full = sum(r['cost'] for r in camp_detail
+                       if r['month'] == m_date.strftime('%b %Y'))
+            print(f"  CPL window: {m_date:%b %Y} spend runs to {last} but "
+                  f"BigQuery only to {bq_t}; CPL divides {trimmed:,} ₫ "
+                  f"instead of {full:,} ₫ so it is not inflated by "
+                  f"{full - trimmed:,} ₫ of spend with no leads loaded yet")
     print(f"  Save ad in D0: {save_matched}/{len(camp_detail)} rows matched "
           f"new_user_adopt_activate "
           + ' '.join(f'{k}={v[1]}/{v[0]}' for k, v in sorted(by_ch.items()))

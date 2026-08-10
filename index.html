@@ -566,7 +566,7 @@ canvas { max-height: 500px; }
     <div class="kpi-card"><div class="kpi-label">RR D1</div><div class="kpi-value" id="kpi-cd-rr1">—</div><div class="kpi-sub">D1 / D0</div></div>
     <div class="kpi-card"><div class="kpi-label">% Save ad</div><div class="kpi-value" id="kpi-cd-save">—</div><div class="kpi-sub" id="kpi-cd-save-sub">Save ad in D0 / DAU</div></div>
     <div class="kpi-card"><div class="kpi-label">Lead</div><div class="kpi-value" id="kpi-cd-lead">—</div><div class="kpi-sub" id="kpi-cd-lead-sub">—</div></div>
-    <div class="kpi-card"><div class="kpi-label">Cost/Lead (blended)</div><div class="kpi-value" id="kpi-cd-cpl">—</div><div class="kpi-sub">Cost / Lead</div></div>
+    <div class="kpi-card"><div class="kpi-label">Cost/Lead (blended)</div><div class="kpi-value" id="kpi-cd-cpl">—</div><div class="kpi-sub" id="kpi-cd-cpl-sub">Cost / Lead</div></div>
   </div>
 
   <div class="card" style="margin-bottom:16px">
@@ -2338,7 +2338,11 @@ function renderCampDetail() {
   // sides; campaigns with a real 0 stay in, because spending with nothing to show
   // for it is exactly what this number is meant to expose.
   const leadRows = rows.filter(r=>r.lead!=null);
-  const tCostLead = leadRows.reduce((s,r)=>s+(r.cost||0),0);
+  // lead_cost is only present when BigQuery has published fewer days than the
+  // spend sheet; it is that campaign's cost over the days leads actually cover.
+  // Dividing the full month's spend by a short month's leads reads about 11% too
+  // expensive, which is more than most of the differences people act on.
+  const tCostLead = leadRows.reduce((s,r)=>s+(r.lead_cost!=null?r.lead_cost:(r.cost||0)),0);
   const fmtVnd = v => v>=1e9?(v/1e9).toFixed(2)+'B ₫':v>=1e6?(v/1e6).toFixed(1)+'M ₫':Math.round(v).toLocaleString('en')+' ₫';
   const fmtNum = v => v==null?'—':v.toLocaleString('en');
   const fmtPct = v => v==null?'—':(v*100).toFixed(1)+'%';
@@ -2363,6 +2367,34 @@ function renderCampDetail() {
     ? 'Lượt liên hệ trong ngày cài (D0)'
     : `Lượt liên hệ D0 · ${leadRows.length}/${rows.length} campaign có data`);
   setTxt('kpi-cd-cpl', tLead?Math.round(tCostLead/tLead).toLocaleString('en')+' ₫':'—');
+  const cplSub = document.getElementById('kpi-cd-cpl-sub');
+  if (cplSub) {
+    // Name the shorter window when one is in play. Someone reconciling this
+    // against the Cost card will otherwise find the two do not multiply out.
+    // Read off the rows on screen rather than the month chip: on "All Months"
+    // only the newest month is normally trimmed, and keying off the chip would
+    // stay silent there — hiding the caveat on the view that opens by default.
+    const dm = s => s ? s.split('-').reverse().join('/') : '';
+    const trimmed = [...new Set(leadRows.filter(r=>r.lead_cost!=null).map(r=>r.month))]
+      .map(m => [m, (D.month_cover||{})[m] || {}])
+      .filter(([, c]) => c.bq_through);
+    if (trimmed.length) {
+      cplSub.textContent = trimmed.length===1
+        ? `Cost / Lead · chỉ tính tới ${dm(trimmed[0][1].bq_through)}`
+        : 'Cost / Lead · một số tháng chưa đủ ngày lead';
+      cplSub.style.color = '#f59e0b';
+      cplSub.title = trimmed.map(([m,c]) =>
+          `${m}: cost chạy tới ${dm(c.through)} nhưng bảng lead mới có tới `
+          + `${dm(c.bq_through)}, nên CPL chỉ chia phần cost tới ${dm(c.bq_through)}`
+        ).join('. ')
+        + '. Làm vậy để cost và lead cùng khoảng thời gian — chia cả tháng thì CPL '
+        + 'sẽ cao hơn thực tế. Ô Cost bên trái vẫn là tổng chi thật.';
+    } else {
+      cplSub.textContent = 'Cost / Lead';
+      cplSub.style.color = '';
+      cplSub.title = '';
+    }
+  }
 
   document.getElementById('cdFilter').innerHTML = `<div style="display:flex;flex-direction:column;gap:6px">
     ${_cdChips('Tháng:','month',['all',...months],{all:'All Months'})}
@@ -2410,6 +2442,20 @@ function renderCampDetail() {
     + 'campaign này, tính trong ngày cài đặt (D0), cộng theo đúng khoảng thời gian '
     + 'đang xem. Chưa gồm liên hệ ở các ngày sau. Nguồn: cột lead của '
     + 'retention_mapping_activation_by_source_campaign — có đủ cả FB và GG.';
+  // lead_cost only exists when BigQuery has published fewer days than the spend
+  // sheet has. CPL divides that shorter-window cost so both sides cover the same
+  // days; the Cost column beside it stays the whole month's real spend, so the
+  // two deliberately do not multiply out and the tooltip has to say why.
+  const _dmy = s => s ? s.split('-').reverse().join('/') : '';
+  const cplWindow = r => {
+    if (r.lead_cost == null) return `Cost / Lead trong kỳ đang xem. ${WHY_LEAD}`;
+    const c = (D.month_cover||{})[r.month] || {};
+    return `Cost chạy tới ${_dmy(c.through)} nhưng bảng lead mới có tới `
+      + `${_dmy(c.bq_through)}. CPL chỉ chia phần cost tới ${_dmy(c.bq_through)} `
+      + `(${fmtVnd(r.lead_cost)} thay vì ${fmtVnd(r.cost||0)}) để cost và lead `
+      + `cùng khoảng thời gian — chia cả tháng thì CPL sẽ cao hơn thực tế. `
+      + `Cột Cost vẫn là tổng chi thật. ${WHY_LEAD}`;
+  };
   const tdL = `style="text-align:left"`;
   const head = `<tr>
     <th style="text-align:left">#</th>
@@ -2454,8 +2500,8 @@ function renderCampDetail() {
     ${r.cpl==null
       ? `<td ${LOW} title="${r.lead==null?'Không có data BigQuery cho campaign này':'Campaign này chưa có lead nào trong kỳ'}">—</td>`
       : (_cdEnough(r,'lead')
-        ? `<td ${tdL}>${r.cpl.toLocaleString('en')+' ₫'}</td>`
-        : `<td ${LOW} title="Chỉ ${r.lead||0} lead — Cost/Lead không đáng tin">${r.cpl.toLocaleString('en')+' ₫'}</td>`)}
+        ? `<td ${tdL} title="${cplWindow(r)}">${r.cpl.toLocaleString('en')+' ₫'}</td>`
+        : `<td ${LOW} title="Chỉ ${r.lead||0} lead — Cost/Lead không đáng tin. ${cplWindow(r)}">${r.cpl.toLocaleString('en')+' ₫'}</td>`)}
   </tr>`).join('');
   tableEl.innerHTML = `<thead>${head}</thead><tbody>${body||'<tr><td colspan="16" style="text-align:center;color:#9ca3af;padding:20px">Không có campaign nào khớp filter</td></tr>'}</tbody>`;
 
