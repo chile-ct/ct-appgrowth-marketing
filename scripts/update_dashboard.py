@@ -44,6 +44,161 @@ with open(DATA_JSON) as f:
 print("Querying BigQuery...")
 today = datetime.date.today()
 
+# ── Cohort maturity ─────────────────────────────────────────────────────────
+# A retention rate with an H-day horizon is structurally zero for the newest H
+# days — someone who installed yesterday cannot have a D7 yet. Dividing SUM(dN)
+# by SUM(d0) over a running month therefore puts real returners over a
+# denominator padded with cohorts that never had the chance to return, and the
+# fresher the month the harder it drags. Measured 2026-08-11: August NURR D7 was
+# published as 3.8% when the honest figure over matured cohorts is 13.0%, a 3.4x
+# understatement on the number people read first. Same cause behind a campaign's
+# RR D1 reading 24.3% against a true 30.8% in section 6, which is how this was
+# found — someone compared the dashboard with Looker Studio and the two agreed on
+# a number that was wrong in both places.
+#
+# So every rate below is computed only over cohorts old enough to have the
+# metric, with the cutoff read from the data rather than assumed: the last day
+# the column is actually populated, floored at max_date - horizon so one freak
+# zero cannot drag the window backwards. Absolute counts (d0, lead, install,
+# cost) keep the full window — they are not cohort metrics, and trimming them
+# would make this section contradict the Cost column.
+#
+# Two failure modes have to stay separate, because only one of them is benign:
+#   maturity — the window ends at max_date - horizon. Expected, and the partial
+#     month is still publishable: its numerator and denominator agree.
+#   staleness — the column stopped publishing *earlier* than that. Then the
+#     window is short for a reason that has nothing to do with cohort age and
+#     the affected months must be blanked, not shown as a decline. `m1` in the
+#     activation table has been broken this way since 2026-04-13 (populated
+#     04-01..04-12, dead 04-13..05-17, back 05-18..06-15, nothing since) and was
+#     publishing Apr 7.4% / May 12.4% / Jun 9.0% against Mar 29.8% — read on the
+#     dashboard as a retention collapse that never happened.
+MAT_HORIZON = {'d1': 1, 'd7': 7, 'm1': 31}
+# Fraction of a month's in-window days that may be missing before the month is
+# blanked instead of published. The activation table's d7 has exactly two holes
+# (2026-07-07, 2026-07-08 — d7 = 0 while both neighbours are ~1,480, an upstream
+# gap, not maturity) and blanking July D7 over 2 days out of 31 would lose more
+# than it protects; it understates July by ~6%, so it is flagged instead.
+MAT_GAP_TOLERANCE = 0.10
+# When a column is stale, a month also has to cover most of itself to be worth
+# showing: June m1 has no holes below its cutoff only because the cutoff is
+# 06-15, i.e. half the month is simply absent.
+MAT_MIN_COVER = 0.80
+
+mat_rows = run("""
+SELECT src, dt, d1 > 0 AS has_d1, d7 > 0 AS has_d7, m1 > 0 AS has_m1 FROM (
+  SELECT 'act' AS src, visit_date AS dt, SUM(d1) AS d1, SUM(d7) AS d7, SUM(m1) AS m1
+  FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
+  WHERE return_status='new' AND campaign='all' AND channel='all' AND vertical_user='all'
+    AND visit_date >= '2026-01-01'
+  GROUP BY 1, 2
+  UNION ALL
+  SELECT 'ret90', min_date, SUM(d1), SUM(d7), SUM(m1)
+  FROM ct_digital.dashboard__retention_90d
+  WHERE new_status='return' AND min_date >= '2026-01-01'
+  GROUP BY 1, 2
+)
+""")
+
+def _build_maturity(rows):
+    """Per (source, metric): the last cohort date whose rate is trustworthy, the
+    days missing below it, and whether the column is stale rather than merely
+    immature.
+
+    Read at the 'all' grain on purpose. At that grain a zero is unambiguously a
+    hole — a day with 30k+ new users cannot have 0 returners — whereas per
+    campaign a zero is often the truth, so the same test applied there would
+    quietly delete real 0% rows. The calendar derived here is then handed down to
+    the per-campaign queries as a date cutoff.
+    """
+    out = {}
+    for src in sorted({str(r['src']) for r in rows}):
+        days = sorted((to_date(r['dt']), r) for r in rows if str(r['src']) == src)
+        if not days:
+            continue
+        max_date = days[-1][0]
+        for metric, horizon in MAT_HORIZON.items():
+            flag = 'has_' + metric
+            pop = [d for d, r in days if r[flag]]
+            mature_end = max_date - datetime.timedelta(days=horizon)
+            # No data at all: leave `through` None so callers blank the metric
+            # outright instead of dividing by a window that does not exist.
+            through = min(max(pop), mature_end) if pop else None
+            popset = set(pop)
+            gaps = ([d for d, _ in days if d <= through and d not in popset]
+                    if through else [])
+            out[(src, metric)] = {
+                'through': through,
+                'gaps': gaps,
+                # Strictly earlier than the maturity frontier = the pipeline
+                # stopped, not the cohorts being young.
+                'stale': bool(through and through < mature_end),
+                'max_date': max_date,
+            }
+    return out
+
+MAT = _build_maturity(mat_rows)
+
+# Every rate on the page now depends on these cutoffs, so a silent failure here
+# would not show up as an error — it would show up as a dashboard full of zeros
+# and "—", which looks like a bad month rather than a broken script. Refuse to
+# write data.json instead: the previous file stays live and CI goes red.
+for _src in ('act', 'ret90'):
+    _d1 = MAT.get((_src, 'd1'), {}).get('through')
+    if _d1 is None:
+        raise RuntimeError(
+            f"maturity probe returned no usable d1 window for {_src} — refusing to "
+            f"rewrite data.json, since every retention rate would be blanked")
+    _lag = (today - _d1).days
+    if _lag > 10:
+        raise RuntimeError(
+            f"{_src}.d1 has not published since {_d1} ({_lag} days) — the source "
+            f"table has stalled, so the numbers would be stale without saying so")
+
+def mat_through(src, metric):
+    """Cutoff as a SQL date literal. Falls back to a date that matches nothing
+    when the column is empty, so a broken column yields NULL rates rather than
+    silently reverting to the unfiltered (diluted) numbers."""
+    t = MAT[(src, metric)]['through'] if (src, metric) in MAT else None
+    return (t or datetime.date(1970, 1, 1)).strftime('%Y-%m-%d')
+
+def mat_null(arr, src, metric, months):
+    """Blank the months whose window is too short or too holey to publish.
+
+    Applies only to breakage. A month trimmed purely by maturity keeps its value:
+    that is the entire point of the cutoff above, and the front end labels the
+    date the cohort matured through.
+    """
+    m = MAT.get((src, metric))
+    result = list(arr)
+    if not m:
+        return result
+    through = m['through']
+    for i, mth in enumerate(months):
+        if i >= len(result):
+            break
+        if through is None:
+            result[i] = None
+            continue
+        last = min(mth.replace(day=calendar.monthrange(mth.year, mth.month)[1]),
+                   m['max_date'])
+        win = (min(through, last) - mth).days + 1
+        elapsed = (last - mth).days + 1
+        gaps = sum(1 for g in m['gaps'] if g.year == mth.year and g.month == mth.month)
+        if win <= 0:
+            result[i] = None
+        elif gaps / win > MAT_GAP_TOLERANCE:
+            result[i] = None
+        elif m['stale'] and win < MAT_MIN_COVER * elapsed:
+            result[i] = None
+    return result
+
+for (src, metric), m in sorted(MAT.items()):
+    note = ' STALE' if m['stale'] else ''
+    if m['gaps']:
+        note += ' | %d gap day(s), first %s' % (len(m['gaps']), m['gaps'][0])
+    print("  Maturity %s.%s: through %s%s" % (src, metric, m['through'], note))
+
 # MAU
 mau_rows = run("""
 SELECT month,
@@ -84,15 +239,22 @@ print(f"  MAU: {len(mau_rows)} months | New users: {len(new_rows)} rows")
 # Activation (may fail with 403)
 act_rows = []
 try:
-    act_rows = run("""
+    # Each NURR divides over its own cohort window — see the maturity block up
+    # top. The three windows deliberately differ (D1 through max-1, D7 through
+    # max-7, M1 through max-31), so the three rates in one month are not over the
+    # same denominator and are not meant to be.
+    act_rows = run(f"""
     SELECT DATE_TRUNC(visit_date,MONTH) as month,
       CASE WHEN channel='all' THEN 'Total' ELSE channel END as channel,
       AVG(dau) as avg_new_dau,
       SUM(user_20adview_7d) as adview_total, SUM(user_1lead_7d) as lead_total,
       SUM(save_ad) as save_total,
-      SAFE_DIVIDE(SUM(d1),SUM(d0)) as nurr_d1,
-      SAFE_DIVIDE(SUM(d7),SUM(d0)) as nurr_d7,
-      SAFE_DIVIDE(SUM(m1),SUM(d0)) as nurr_m1
+      SAFE_DIVIDE(SUM(IF(visit_date <= DATE '{mat_through('act','d1')}', d1, 0)),
+                  SUM(IF(visit_date <= DATE '{mat_through('act','d1')}', d0, 0))) as nurr_d1,
+      SAFE_DIVIDE(SUM(IF(visit_date <= DATE '{mat_through('act','d7')}', d7, 0)),
+                  SUM(IF(visit_date <= DATE '{mat_through('act','d7')}', d0, 0))) as nurr_d7,
+      SAFE_DIVIDE(SUM(IF(visit_date <= DATE '{mat_through('act','m1')}', m1, 0)),
+                  SUM(IF(visit_date <= DATE '{mat_through('act','m1')}', d0, 0))) as nurr_m1
     FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
     WHERE return_status='new' AND campaign='all'
     AND vertical_user = 'all'
@@ -132,30 +294,31 @@ ret_total_rows = []
 ret_app_rows = []
 ret_web_rows = []
 try:
-    ret_total_rows = run("""
-    SELECT DATE_TRUNC(min_date,MONTH) as month,
-      SAFE_DIVIDE(SUM(d1),SUM(d0)) as ret_d1,
-      SAFE_DIVIDE(SUM(d7),SUM(d0)) as ret_d7,
-      SAFE_DIVIDE(SUM(m1),SUM(d0)) as ret_m1
+    # Same cohort-window rule as the activation table above, with this table's own
+    # cutoffs — they are not the same dates. This one is clean: measured
+    # 2026-08-11 it has no missing days at all below its frontier, so the whole
+    # correction here is maturity. It moved August D7 from 8.8% to 30.5% and gave
+    # July M1 a real 41.2% where the old index-based blanking showed nothing.
+    _r90 = lambda metric: (
+        f"SAFE_DIVIDE(SUM(IF(min_date <= DATE '{mat_through('ret90', metric)}', {metric}, 0)),"
+        f" SUM(IF(min_date <= DATE '{mat_through('ret90', metric)}', d0, 0)))")
+    _r90_sel = (f"{_r90('d1')} as ret_d1, {_r90('d7')} as ret_d7, "
+                f"{_r90('m1')} as ret_m1")
+    ret_total_rows = run(f"""
+    SELECT DATE_TRUNC(min_date,MONTH) as month, {_r90_sel}
     FROM ct_digital.dashboard__retention_90d
     WHERE new_status='return' AND min_date >= '2026-01-01'
     GROUP BY 1 ORDER BY 1
     """)
-    ret_app_rows = run("""
-    SELECT DATE_TRUNC(min_date,MONTH) as month,
-      SAFE_DIVIDE(SUM(d1),SUM(d0)) as ret_d1,
-      SAFE_DIVIDE(SUM(d7),SUM(d0)) as ret_d7,
-      SAFE_DIVIDE(SUM(m1),SUM(d0)) as ret_m1
+    ret_app_rows = run(f"""
+    SELECT DATE_TRUNC(min_date,MONTH) as month, {_r90_sel}
     FROM ct_digital.dashboard__retention_90d
     WHERE new_status='return' AND min_date >= '2026-01-01'
       AND platform IN ('Android','iOS')
     GROUP BY 1 ORDER BY 1
     """)
-    ret_web_rows = run("""
-    SELECT DATE_TRUNC(min_date,MONTH) as month,
-      SAFE_DIVIDE(SUM(d1),SUM(d0)) as ret_d1,
-      SAFE_DIVIDE(SUM(d7),SUM(d0)) as ret_d7,
-      SAFE_DIVIDE(SUM(m1),SUM(d0)) as ret_m1
+    ret_web_rows = run(f"""
+    SELECT DATE_TRUNC(min_date,MONTH) as month, {_r90_sel}
     FROM ct_digital.dashboard__retention_90d
     WHERE new_status='return' AND min_date >= '2026-01-01'
       AND platform NOT IN ('Android','iOS')
@@ -264,31 +427,40 @@ tot_d1 = pad(tot_d1_bq, n)
 tot_d7 = pad(tot_d7_bq, n)
 tot_m1 = pad(tot_m1_bq, n)
 
-# Null out D7/M1 for partial months — these metrics need full month data to be meaningful
-# D7 = need users from last 7 days of month to have completed their D7 window (null current month)
-# M1 = need users from ~30 days ago (null current month + previous month)
-def null_partial(arr, partial_indices, extra_indices=None):
-    """Set values to None for partial/incomplete month indices."""
-    result = list(arr)
-    for i in (partial_indices + (extra_indices or [])):
-        if i < len(result):
-            result[i] = None
-    return result
+prev_month_i = n - 2     # second-to-last = previous (last full) month
 
-current_month_i = n - 1  # last index = current (partial) month
-prev_month_i = n - 2     # second-to-last = previous month
-
-# D7: show partial month data (current month D7 is valid for users installed ≥7 days ago)
-# M1: null current + previous month (need full month cohort to complete 30-day window).
-app_m1  = null_partial(app_m1,  [current_month_i, prev_month_i])
-web_m1  = null_partial(web_m1,  [current_month_i, prev_month_i])
-tot_m1  = null_partial(tot_m1,  [current_month_i, prev_month_i])
+# M1 used to be blanked by position — "null the last two indices" — on the
+# assumption that a 30-day window always needs the current and previous month to
+# finish. That guessed at the calendar instead of reading the table, and got it
+# wrong in both directions: it blanked ret90's July M1, which has ten fully
+# matured days and a real 41.2%, while happily publishing the activation table's
+# Apr/May/Jun M1, which is broken data (see the maturity block up top) and read on
+# the dashboard as a fall from 29.8% to 7.4%. mat_null decides from the column
+# itself, so the rates come from cohorts that actually matured and the months it
+# cannot stand behind are the ones that go blank.
+#
+# Applied to every published rate, not just the ones known to be broken today. On
+# a healthy column it is a no-op, so the cost of that is nothing and it means the
+# next column to go stale gets blanked by itself instead of quietly shipping a
+# fake decline until someone notices.
+nurr_d1 = nurr_d1 if act_rows else D['retention']['nurr_d1']
 nurr_d7 = nurr_d7 if act_rows else D['retention']['nurr_d7']
-nurr_m1_raw = nurr_m1 if act_rows else D['retention']['nurr_m1']
-nurr_m1 = null_partial(nurr_m1_raw, [current_month_i, prev_month_i])
-dir_m1  = null_partial(dir_m1,  [current_month_i, prev_month_i])
-org_m1  = null_partial(org_m1,  [current_month_i, prev_month_i])
-paid_m1 = null_partial(paid_m1, [current_month_i, prev_month_i])
+nurr_m1 = nurr_m1 if act_rows else D['retention']['nurr_m1']
+
+_act_d1 = lambda a: mat_null(a, 'act', 'd1', all_months)
+_act_d7 = lambda a: mat_null(a, 'act', 'd7', all_months)
+_act_m1 = lambda a: mat_null(a, 'act', 'm1', all_months)
+_r90_d1 = lambda a: mat_null(a, 'ret90', 'd1', all_months)
+_r90_d7 = lambda a: mat_null(a, 'ret90', 'd7', all_months)
+_r90_m1 = lambda a: mat_null(a, 'ret90', 'm1', all_months)
+
+nurr_d1 = _act_d1(nurr_d1);  nurr_d7 = _act_d7(nurr_d7);  nurr_m1 = _act_m1(nurr_m1)
+dir_d1  = _act_d1(dir_d1);   dir_d7  = _act_d7(dir_d7);   dir_m1  = _act_m1(dir_m1)
+org_d1  = _act_d1(org_d1);   org_d7  = _act_d7(org_d7);   org_m1  = _act_m1(org_m1)
+paid_d1 = _act_d1(paid_d1);  paid_d7 = _act_d7(paid_d7);  paid_m1 = _act_m1(paid_m1)
+tot_d1  = _r90_d1(tot_d1);   tot_d7  = _r90_d7(tot_d7);   tot_m1  = _r90_m1(tot_m1)
+app_d1  = _r90_d1(app_d1);   app_d7  = _r90_d7(app_d7);   app_m1  = _r90_m1(app_m1)
+web_d1  = _r90_d1(web_d1);   web_d7  = _r90_d7(web_d7);   web_m1  = _r90_m1(web_m1)
 
 # Campaign-level data — latest full month only
 campaigns = []
@@ -309,8 +481,14 @@ try:
           SUM(user_20adview_7d) as activated_adview,
           SUM(user_1lead_7d) as activated_lead,
           SAFE_DIVIDE(SUM(user_20adview_7d), SUM(d0)) as activation_rate,
-          SAFE_DIVIDE(SUM(d1), SUM(d0)) as nurr_d1,
-          SAFE_DIVIDE(SUM(d7), SUM(d0)) as nurr_d7
+          -- Restricted to full months already, which hides the maturity problem
+          -- for most of the month but not all of it: run this on the 3rd and the
+          -- D7 frontier sits at the 27th of the previous month, so the last four
+          -- days of the "full" month would still dilute every campaign here.
+          SAFE_DIVIDE(SUM(IF(visit_date <= DATE '{mat_through('act','d1')}', d1, 0)),
+                      SUM(IF(visit_date <= DATE '{mat_through('act','d1')}', d0, 0))) as nurr_d1,
+          SAFE_DIVIDE(SUM(IF(visit_date <= DATE '{mat_through('act','d7')}', d7, 0)),
+                      SUM(IF(visit_date <= DATE '{mat_through('act','d7')}', d0, 0))) as nurr_d7
         FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
         WHERE return_status = 'new'
           AND campaign NOT IN ('all', '(none)')
@@ -571,14 +749,31 @@ try:
     sheet_max = max(sheet_last_day.values())
     print(f"  Camp detail: BigQuery capped at {sheet_max}, "
           f"the last day raw_total has spend for")
+    #
+    # RR D1 and RR D7 divide over matured cohorts only — see the maturity block at
+    # the top of this file for why, and note the consequence here: d1 and d0_d1 are
+    # counted over a shorter window than d0, so `d1 / d0` as read off the screen
+    # will not reproduce RR D1. That is why the mature denominator is published
+    # alongside rather than left implicit, and why the front end divides by it.
+    # This is the discrepancy that started the whole change. For
+    # fb_growth_pty_app_android_install_app_pro_b2s_bau_072126_2026theme over
+    # 1/8-10/8 both Looker and this dashboard showed RR D1 24.3% (96/395) — they
+    # agreed because they made the same mistake, counting an 08-10 cohort of 83
+    # users whose D1 had not happened yet. Over matured cohorts it is 96/312 =
+    # 30.8%. RR D7 on the same row went 8/395 = 2.0% to 8/79 = 10.1%.
+    # The sibling campaign ..._2026theme_targeting is the sharper case: it started
+    # 04/08, so every one of its cohorts is inside the D7 window and the old
+    # arithmetic published it as 0.0% D7 retention. It now reads "—".
     act_rows = run(f"""
     SELECT
       DATE_TRUNC(visit_date, MONTH) as month,
       campaign,
       SUM(dau) as dau,
       SUM(d0) as d0,
-      SUM(d1) as d1,
-      SUM(d7) as d7,
+      SUM(IF(visit_date <= DATE '{mat_through('act','d1')}', d1, 0)) as d1,
+      SUM(IF(visit_date <= DATE '{mat_through('act','d1')}', d0, 0)) as d0_d1,
+      SUM(IF(visit_date <= DATE '{mat_through('act','d7')}', d7, 0)) as d7,
+      SUM(IF(visit_date <= DATE '{mat_through('act','d7')}', d0, 0)) as d0_d7,
       SUM(lead) as lead,
       SUM(dau_lead) as dau_lead,
       SUM(save_ad) as save_ad,
@@ -700,6 +895,10 @@ try:
         a = act.get((m_date, name), {})
         d0 = _int(a.get('d0'))
         d1, d7 = _int(a.get('d1')), _int(a.get('d7'))
+        # Denominators for RR D1 / RR D7: the same d0, restricted to cohorts old
+        # enough to have had a D1 (resp. D7). Equal to d0 for every finished
+        # month; smaller only where the month is still running.
+        d0_d1, d0_d7 = _int(a.get('d0_d1')), _int(a.get('d0_d7'))
         lead = _int(a.get('lead'))
         users_lead = _int(a.get('dau_lead'))
         # The campaign's own vertical, as bought — column L of the sheet. Anything
@@ -744,8 +943,10 @@ try:
             'd0': d0,
             'd1': d1,
             'd7': d7,
-            'rr_d1': _rate(d1, d0),
-            'rr_d7': _rate(d7, d0),
+            'd0_d1': d0_d1,
+            'd0_d7': d0_d7,
+            'rr_d1': _rate(d1, d0_d1),
+            'rr_d7': _rate(d7, d0_d7),
             'lead': lead,
             # A campaign with cost but zero leads has no CPL to quote — None
             # renders as "—" rather than as a division by zero.
@@ -1045,6 +1246,20 @@ out = {
     "camp_detail": camp_detail,
     "camp_target": camp_target,
     "month_cover": month_cover,
+    # The cohort window behind every retention rate on the page, so the front end
+    # can name the date instead of leaving a reader to guess why the dashboard and
+    # Looker Studio disagree. `stale` marks a column that stopped publishing early
+    # rather than one whose newest cohorts are simply too young; `gaps` are days
+    # missing inside the window, which understate the rate rather than biasing it
+    # any particular way.
+    "maturity": {
+        f"{src}.{metric}": {
+            "through": m['through'].strftime('%Y-%m-%d') if m['through'] else None,
+            "stale": m['stale'],
+            "gaps": [g.strftime('%Y-%m-%d') for g in m['gaps']],
+        }
+        for (src, metric), m in sorted(MAT.items())
+    },
     "daily_activation": [
         {
             "date": str(r["visit_date"]),

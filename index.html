@@ -564,7 +564,7 @@ canvas { max-height: 500px; }
     <div class="kpi-card"><div class="kpi-label">Install</div><div class="kpi-value" id="kpi-cd-install">—</div><div class="kpi-sub">Từ ad platform</div></div>
     <div class="kpi-card"><div class="kpi-label">CPI (blended)</div><div class="kpi-value" id="kpi-cd-cpi">—</div><div class="kpi-sub">Cost / Install</div></div>
     <div class="kpi-card"><div class="kpi-label">D0 (new users)</div><div class="kpi-value" id="kpi-cd-d0">—</div><div class="kpi-sub">BigQuery tracked</div></div>
-    <div class="kpi-card"><div class="kpi-label">RR D1</div><div class="kpi-value" id="kpi-cd-rr1">—</div><div class="kpi-sub">D1 / D0</div></div>
+    <div class="kpi-card"><div class="kpi-label">RR D1</div><div class="kpi-value" id="kpi-cd-rr1">—</div><div class="kpi-sub" id="kpi-cd-rr1-sub">D1 / D0</div></div>
     <div class="kpi-card"><div class="kpi-label">% Save ad</div><div class="kpi-value" id="kpi-cd-save">—</div><div class="kpi-sub" id="kpi-cd-save-sub">Save ad in D0 / DAU</div></div>
     <div class="kpi-card"><div class="kpi-label">Lead</div><div class="kpi-value" id="kpi-cd-lead">—</div><div class="kpi-sub" id="kpi-cd-lead-sub">—</div></div>
     <div class="kpi-card"><div class="kpi-label">Cost/Lead (blended)</div><div class="kpi-value" id="kpi-cd-cpl">—</div><div class="kpi-sub" id="kpi-cd-cpl-sub">Cost / Lead</div></div>
@@ -1555,13 +1555,26 @@ function renderAllCharts() {
     const thead='<thead><tr><th>Channel</th><th class="left">Metric</th>'+
       ms.map((m,i)=>`<th ${thCls(i)}>${m}${isPartial(i)?'*':''}</th>`).join('')+
       '</tr></thead>';
+    // The metric name carries the window, because that is where someone looks
+    // first when a number surprises them.
+    const nD1=_matNote('act.d1','D1',1), nD7=_matNote('act.d7','D7',7),
+          nM1=_matNote('act.m1','M1',30);
     const rows=channels.flatMap(ch=>[
-      `<tr class="${ch.cls}"><td rowspan="3">${ch.label}</td><td class="left">NURR D1</td>${ms.map((m,i)=>`<td ${tdCls(i)}>${fPct(ch.d1[i])}</td>`).join('')}</tr>`,
-      `<tr class="${ch.cls}"><td class="left">NURR D7</td>${ms.map((m,i)=>`<td ${tdCls(i)}>${fPct(ch.d7[i])}</td>`).join('')}</tr>`,
-      `<tr class="${ch.cls}"><td class="left">NURR M1</td>${ms.map((m,i)=>`<td ${tdCls(i)}>${fPct(ch.m1[i])}</td>`).join('')}</tr>`,
+      `<tr class="${ch.cls}"><td rowspan="3">${ch.label}</td><td class="left" title="${nD1}">NURR D1</td>${ms.map((m,i)=>`<td ${tdCls(i)}>${fPct(ch.d1[i])}</td>`).join('')}</tr>`,
+      `<tr class="${ch.cls}"><td class="left" title="${nD7}">NURR D7</td>${ms.map((m,i)=>`<td ${tdCls(i)}>${fPct(ch.d7[i])}</td>`).join('')}</tr>`,
+      `<tr class="${ch.cls}"><td class="left" title="${nM1}">NURR M1</td>${ms.map((m,i)=>`<td ${tdCls(i)}>${fPct(ch.m1[i])}</td>`).join('')}</tr>`,
     ]);
+    // An all-blank M1 row looks like a rendering bug unless the reason is on the
+    // page, so say it once below the table rather than only in a hover.
+    const m1m=(D.maturity||{})['act.m1']||{};
+    const warn=m1m.stale
+      ? `<div class="note" style="color:#f59e0b">NURR M1 chỉ có tới `
+        + `${_dmyCd(m1m.through)}: cột m1 của bảng nguồn ngừng cập nhật từ sau đó, `
+        + `nên các tháng sau để trống. Trước đây chỗ này hiện Apr 7.4% / May 12.4% `
+        + `/ Jun 9.0% — là do thiếu ngày, không phải retention giảm.</div>`
+      : '';
     document.getElementById('nurrChTable').innerHTML=
-      `<table>${thead}<tbody>${rows.join('')}</tbody></table>`;
+      `<table>${thead}<tbody>${rows.join('')}</tbody></table>${warn}`;
   });
   deferTo('ret-1',()=>makeChart('chartNURRFunnel','bar',['Direct','Organic Search','Growth (P+D+CRM)','Total'],[
     B('NURR D1',[ret.direct_d1[lastI],ret.organic_d1[lastI],ret.growth_d1[lastI],ret.nurr_d1[lastI]],C.blue),
@@ -1933,8 +1946,41 @@ const _cdState = { month: 'all', channel: 'all', vertical: 'all', sort: 'cost', 
 // Minimum denominator for a ratio to be worth reading. Below this the rate is
 // still shown (the spend is real and must stay visible) but rendered muted so
 // nobody reads "100% RR D1" off a campaign that had one single user.
-const _CD_MIN = { install: 10, d0: 30, dau: 30, lead: 10, lead_own: 10 };
+// d0_d1 / d0_d7 rather than d0: RR D1 and RR D7 are divided by the matured
+// cohort, so the volume test has to be applied to the denominator that was
+// actually used. Same threshold — the point is "enough users to conclude
+// anything", and that has not changed.
+const _CD_MIN = { install: 10, d0: 30, d0_d1: 30, d0_d7: 30, dau: 30, lead: 10,
+                  lead_own: 10 };
 function _cdEnough(r, field) { return (r[field] || 0) >= _CD_MIN[field]; }
+// yyyy-mm-dd → dd/mm/yyyy, for dates read by Vietnamese-speaking users.
+const _dmyCd = s => s ? s.split('-').reverse().join('/') : '';
+
+// Explains a retention rate's cohort window, from the `maturity` block the update
+// script writes. Every rate on the page is now computed over cohorts old enough to
+// have the metric, which is why the same campaign and the same date range can read
+// differently here than in Looker Studio — Looker divides by every D0 in the
+// range, including users who installed too recently to have returned yet.
+function _matNote(key, lbl, horizon) {
+  const m = (window.D && D.maturity || {})[key];
+  if (!m) return '';
+  const win = m.through
+    ? `Tính trên cohort cài tới ${_dmyCd(m.through)} — user cài sau đó chưa đủ `
+      + `${horizon} ngày để có ${lbl} nên không vào mẫu số. `
+    : '';
+  // Stale is a different problem from immature and needs a different reaction:
+  // immature fixes itself tomorrow, stale needs someone to go poke the pipeline.
+  const dead = m.stale
+    ? `CẢNH BÁO: cột này đã ngừng cập nhật từ sau ${_dmyCd(m.through)} — các tháng `
+      + `sau đó để trống thay vì hiển thị số thiếu ngày (trước đây bảng này báo `
+      + `${lbl} rơi từ 29.8% xuống 7.4%, đó là lỗi data chứ không phải user rời đi). `
+    : '';
+  const gap = (m.gaps && m.gaps.length)
+    ? `Nguồn thiếu ${m.gaps.length} ngày (${m.gaps.map(_dmyCd).join(', ')}) nên tháng `
+      + `đó thấp hơn thực tế một chút. `
+    : '';
+  return win + dead + gap;
+}
 
 function _cdChips(label, key, opts, labels) {
   const chips = opts.map(o => {
@@ -2287,7 +2333,14 @@ function renderCampTarget() {
 function renderCampDetail() {
   const tableEl = document.getElementById('campDetailTable');
   if (!tableEl) return;
-  const rowsAll = (D && D.camp_detail) || [];
+  // A data.json written before the cohort-maturity fix has no d0_d1/d0_d7. Fall
+  // back to d0 there so the table still renders instead of muting every rate as
+  // low-volume — those files hold the old undiluted denominators anyway, so d0 is
+  // exactly the number their rr_d1 was computed with.
+  const rowsAll = ((D && D.camp_detail) || []).map(r =>
+    (r.d0_d1 != null && r.d0_d7 != null) ? r
+      : {...r, d0_d1: r.d0_d1 != null ? r.d0_d1 : r.d0,
+                d0_d7: r.d0_d7 != null ? r.d0_d7 : r.d0});
 
   if (!rowsAll.length) {
     document.getElementById('cdFilter').innerHTML = '';
@@ -2322,7 +2375,7 @@ function renderCampDetail() {
   // Ratio columns are meaningless on a campaign with a handful of users — a
   // single install that came back once is 100% RR D1. Rank those below every
   // campaign that has enough volume to be real, instead of letting them win.
-  const RATIO_SORTS = {cpi:'install', rr_d1:'d0', save_ad_rate:'dau', cpl:'lead',
+  const RATIO_SORTS = {cpi:'install', rr_d1:'d0_d1', save_ad_rate:'dau', cpl:'lead',
                        cpl_own:'lead_own'};
   const denField = RATIO_SORTS[sk];
   const thin = r => denField ? !_cdEnough(r, denField) : false;
@@ -2336,6 +2389,12 @@ function renderCampDetail() {
   const sum = k => rows.reduce((s,r)=>s+(r[k]||0),0);
   const tCost=sum('cost'), tInst=sum('install'), tD0=sum('d0'), tD1=sum('d1'),
         tDau=sum('dau'), tSave=sum('save_ad_d0'), tLead=sum('lead');
+  // RR D1 divides by the cohorts old enough to have had a D1, not by every D0 in
+  // the period — a user who installed yesterday cannot have returned yet, and
+  // leaving them in the denominator is what made this figure read several points
+  // low all month. d0_d1 is that same D0 over the matured window; it equals d0 on
+  // every finished month, so only the running month moves.
+  const tD0d1 = rows.reduce((s,r)=>s+(r.d0_d1!=null?r.d0_d1:(r.d0||0)),0);
   // Blended Cost/Lead divides by leads, so the cost on top must be cost that could
   // have produced one. Campaigns with no lead data at all are dropped from both
   // sides; campaigns with a real 0 stay in, because spending with nothing to show
@@ -2355,7 +2414,25 @@ function renderCampDetail() {
   setTxt('kpi-cd-install', fmtNum(tInst));
   setTxt('kpi-cd-cpi', tInst?Math.round(tCost/tInst).toLocaleString('en')+' ₫':'—');
   setTxt('kpi-cd-d0', fmtNum(tD0));
-  setTxt('kpi-cd-rr1', tD0?fmtPct(tD1/tD0):'—');
+  setTxt('kpi-cd-rr1', tD0d1?fmtPct(tD1/tD0d1):'—');
+  // Name the window whenever it is shorter than the D0 card next to it, so the
+  // two cards visibly not dividing into each other has a stated reason.
+  const rr1Sub = document.getElementById('kpi-cd-rr1-sub');
+  if (rr1Sub) {
+    const mat1 = (D.maturity||{})['act.d1'] || {};
+    if (tD0d1 && tD0d1 < tD0 && mat1.through) {
+      rr1Sub.textContent = `D1 / D0 · cohort tới ${_dmyCd(mat1.through)}`;
+      rr1Sub.style.color = '#f59e0b';
+      rr1Sub.title = `Chỉ tính cohort đã đủ tuổi: user cài từ ngày `
+        + `${_dmyCd(mat1.through)} trở về trước. ${fmtNum(tD0-tD0d1)} user cài sau `
+        + `ngày đó chưa có cơ hội quay lại nên không nằm ở mẫu số — để họ vào thì `
+        + `RR D1 sẽ thấp hơn thực tế. Vì vậy ô này KHÔNG bằng D1 / ô D0 bên cạnh.`;
+    } else {
+      rr1Sub.textContent = 'D1 / D0';
+      rr1Sub.style.color = '';
+      rr1Sub.title = '';
+    }
+  }
   setTxt('kpi-cd-save', tDau?fmtPct(tSave/tDau):'—');
   // Say out loud how many campaigns actually carry a save-ad number, so a small
   // denominator can't be mistaken for a whole-team figure.
@@ -2377,7 +2454,7 @@ function renderCampDetail() {
     // Read off the rows on screen rather than the month chip: on "All Months"
     // only the newest month is normally trimmed, and keying off the chip would
     // stay silent there — hiding the caveat on the view that opens by default.
-    const dm = s => s ? s.split('-').reverse().join('/') : '';
+    const dm = _dmyCd;
     const trimmed = [...new Set(leadRows.filter(r=>r.lead_cost!=null).map(r=>r.month))]
       .map(m => [m, (D.month_cover||{})[m] || {}])
       .filter(([, c]) => c.bq_through);
@@ -2408,7 +2485,7 @@ function renderCampDetail() {
          lead:'Lead (all)',cpl:'Cost/Lead',lead_own:'User LH ngành',cpl_own:'Cost/User LH ngành'})}
     <div style="font-size:10px;color:#9ca3af;padding-top:2px">
       Tỉ lệ <span style="color:#c7cbd1;font-weight:600">màu nhạt</span> = volume quá thấp để kết luận
-      (CPI cần ≥${_CD_MIN.install} install · RR cần ≥${_CD_MIN.d0} D0 · % Save cần ≥${_CD_MIN.dau} DAU
+      (CPI cần ≥${_CD_MIN.install} install · RR cần ≥${_CD_MIN.d0_d1} D0 đã đủ tuổi cohort · % Save cần ≥${_CD_MIN.dau} DAU
       · Cost/Lead cần ≥${_CD_MIN.lead} lead · Cost/User LH ngành cần ≥${_CD_MIN.lead_own} user);
       khi sort theo tỉ lệ, các campaign này được xếp xuống cuối.
     </div>
@@ -2438,6 +2515,72 @@ function renderCampDetail() {
       : `<td ${LOW} title="Volume quá thấp (${den} = ${r[den]||0}) — tỉ lệ này không đáng tin">${fmtPct(v)}</td>`);
   const WHY_ADOPT = 'Campaign này không có trong bảng new_user_adopt_activate '
     + '(bảng đó chưa có channel Facebook) — DA sẽ bổ sung';
+  // The single most-asked question about this table, so it is answered in the
+  // header rather than left for whoever next opens Looker side by side. RR D1 and
+  // RR D7 are the only columns whose denominator is not the D0 column beside
+  // them, and that difference is deliberate: a cohort with an H-day horizon is
+  // structurally 0% for its first H days, so counting those cohorts drags the
+  // rate down purely because the month is still running. Measured on the Aug 2026
+  // rows: b2s_bau_072126 read RR D1 24.3% / RR D7 2.0% before this and 30.8% /
+  // 10.1% after, on identical data.
+  const WHY_D0 = 'Số user mới (new users) từ campaign này trong kỳ đang xem, '
+    + 'nguồn cột d0 của retention_mapping_activation_by_source_campaign. Đây là '
+    + 'TỔNG cả kỳ — cột RR D1/RR D7 bên phải chia trên mẫu số nhỏ hơn (chỉ cohort '
+    + 'đã đủ tuổi) nên đừng lấy D1 chia ô này.';
+  // The count column is *not* affected by the cohort rule, and saying so matters:
+  // otherwise the obvious reading of a shrinking denominator is that some D1s were
+  // thrown away too. They were not — a cohort that is too new to have a D1
+  // contributes 0 to the numerator by construction, so restricting the window
+  // leaves this figure identical. Only the denominator moves.
+  const WHY_D1 = 'Số user mới quay lại vào D1. Số này tính trên cả kỳ và KHÔNG bị '
+    + 'cắt bởi quy tắc cohort đủ tuổi — user cài hôm qua chưa thể có D1 nên vốn đã '
+    + 'đóng góp 0. Vì vậy D1 không đổi, chỉ mẫu số của RR D1 nhỏ lại.';
+  const WHY_RR = (lbl, key, horizon) => {
+    const m = (D.maturity||{})[key] || {};
+    const base = `Tỉ lệ user mới quay lại vào ${lbl}. Chỉ tính trên cohort đã đủ `
+      + `tuổi: user phải cài trước đó ít nhất ${horizon} ngày mới có thể có ${lbl}, `
+      + `nên user cài trong ${horizon} ngày gần nhất KHÔNG nằm ở mẫu số. `;
+    const win = m.through
+      ? `Hiện tính trên cohort cài tới ${_dmyCd(m.through)}. `
+      : '';
+    const why = `Nếu để cả những user vừa cài vào mẫu số thì tỉ lệ sẽ thấp hơn `
+      + `thực tế — đo trên data tháng 8/2026, campaign b2s_bau_072126 ra RR D1 `
+      + `24.3% / RR D7 2.0% theo cách cũ, còn số thật trên cohort đủ tuổi là `
+      + `30.8% / 10.1%. Đây cũng là lý do số ở đây lệch với Looker Studio, vốn `
+      + `chia trên toàn bộ D0. `;
+    const gap = (m.gaps && m.gaps.length)
+      ? `Lưu ý: nguồn thiếu data ${m.gaps.length} ngày (${m.gaps.map(_dmyCd).join(', ')}) `
+        + `nên tỉ lệ những tháng đó hơi thấp hơn thực tế.`
+      : '';
+    return base + win + why + gap;
+  };
+  // An empty RR cell now has two quite different causes and they need different
+  // reactions. No BigQuery row = the join by campaign name failed, someone should
+  // look. No matured cohort = the campaign only started inside the last D7 window,
+  // which is normal and fixes itself in a few days. Before this change the second
+  // case rendered as "0.0%": theme_targeting launched 04/08 and was published as a
+  // campaign with zero D7 retention, which is the kind of number that gets a
+  // campaign paused.
+  const rrNA = (r, den, horizon) => r.d0 == null
+    ? undefined
+    : (r[den] === 0
+      ? `Campaign mới chạy trong ${horizon} ngày gần nhất nên chưa có cohort nào `
+        + `đủ tuổi để tính D${horizon} — không phải retention = 0%. Đợi thêm `
+        + `${horizon} ngày sẽ có số.`
+      : undefined);
+  // Per row, spell out the arithmetic actually used. Without this the only way to
+  // tell why a cell is not d1/d0 is to know the rule; with it the numbers on
+  // screen reconcile.
+  const rrCell = (r, den, horizon) => {
+    const d = r[den];
+    if (d == null || !r.d0) return '';
+    const num = horizon === 1 ? r.d1 : r.d7;
+    const shown = num != null ? `${fmtNum(num)} / ${fmtNum(d)}` : `mẫu số ${fmtNum(d)}`;
+    return d < r.d0
+      ? `${shown} — bỏ ${fmtNum(r.d0-d)} user cài trong ${horizon} ngày cuối kỳ vì `
+        + `chưa đủ tuổi để có D${horizon}. Cột D0 (${fmtNum(r.d0)}) là tổng cả kỳ.`
+      : `${shown} — cả kỳ đã đủ tuổi nên mẫu số bằng đúng cột D0.`;
+  };
   // Spelled out on both lead columns: the number is lượt liên hệ, not người, and
   // it is counted on the install day. A user cài ngày 3 rồi liên hệ ngày 6 không
   // nằm trong đây — nếu không nói ra thì Lead trông như tổng liên hệ mọi ngày.
@@ -2468,7 +2611,7 @@ function renderCampDetail() {
   // sheet has. CPL divides that shorter-window cost so both sides cover the same
   // days; the Cost column beside it stays the whole month's real spend, so the
   // two deliberately do not multiply out and the tooltip has to say why.
-  const _dmy = s => s ? s.split('-').reverse().join('/') : '';
+  const _dmy = _dmyCd;
   const cplWindow = r => {
     if (r.lead_cost == null) return `Cost / Lead trong kỳ đang xem. ${WHY_LEAD}`;
     const c = (D.month_cover||{})[r.month] || {};
@@ -2487,10 +2630,10 @@ function renderCampDetail() {
     <th style="text-align:left">Cost</th>
     <th style="text-align:left">Install</th>
     <th style="text-align:left">CPI</th>
-    <th style="text-align:left">D0</th>
-    <th style="text-align:left">D1</th>
-    <th style="text-align:left">RR D1</th>
-    <th style="text-align:left">RR D7</th>
+    <th style="text-align:left" title="${WHY_D0}">D0</th>
+    <th style="text-align:left" title="${WHY_D1}">D1</th>
+    <th style="text-align:left" title="${WHY_RR('D1', 'act.d1', 1)}">RR D1</th>
+    <th style="text-align:left" title="${WHY_RR('D7', 'act.d7', 7)}">RR D7</th>
     <th style="text-align:left">DAU</th>
     <th style="text-align:left">Save ad in D0</th>
     <th style="text-align:left">% Save ad</th>
@@ -2512,9 +2655,9 @@ function renderCampDetail() {
         : `<td ${LOW} title="Chỉ ${r.install||0} install — CPI không đáng tin">${r.cpi.toLocaleString('en')+' ₫'}</td>`)}
     <td ${tdL}>${fmtNum(r.d0)}</td>
     <td ${tdL}>${fmtNum(r.d1)}</td>
-    ${cdRate(r, r.rr_d1, 'd0') ||
-      `<td ${tdL} style="text-align:left;color:${rrColor(r.rr_d1)};font-weight:${(r.rr_d1||0)>0.35?'700':'400'}">${fmtPct(r.rr_d1)}</td>`}
-    ${cdRate(r, r.rr_d7, 'd0') || `<td ${tdL}>${fmtPct(r.rr_d7)}</td>`}
+    ${cdRate(r, r.rr_d1, 'd0_d1', rrNA(r,'d0_d1',1)) ||
+      `<td ${tdL} style="text-align:left;color:${rrColor(r.rr_d1)};font-weight:${(r.rr_d1||0)>0.35?'700':'400'}" title="${rrCell(r,'d0_d1',1)}">${fmtPct(r.rr_d1)}</td>`}
+    ${cdRate(r, r.rr_d7, 'd0_d7', rrNA(r,'d0_d7',7)) || `<td ${tdL} title="${rrCell(r,'d0_d7',7)}">${fmtPct(r.rr_d7)}</td>`}
     ${r.dau==null ? `<td ${LOW} title="${WHY_ADOPT}">—</td>` : `<td ${tdL}>${fmtNum(r.dau)}</td>`}
     ${r.save_ad_d0==null ? `<td ${LOW} title="${WHY_ADOPT}">—</td>`
       : `<td ${tdL}>${fmtNum(r.save_ad_d0)}${r.save_partial?`<span style="color:#f59e0b" title="Cohort chỉ tới ${r.save_through} — số này còn thiếu ngày">*</span>`:''}</td>`}
