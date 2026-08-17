@@ -1941,7 +1941,8 @@ function renderOneCampTable(tableId) {
 // Cost/install come from the raw_total sheet, activation metrics from BigQuery.
 // A campaign with spend but no BigQuery match keeps its cost columns and shows
 // "—" for activation, so unmatched spend stays visible instead of disappearing.
-const _cdState = { month: 'all', channel: 'all', vertical: 'all', sort: 'cost', page: 0 };
+const _cdState = { month: 'all', channel: 'all', vertical: 'all', sort: 'cost', page: 0,
+                   search: '' };
 
 // Minimum denominator for a ratio to be worth reading. Below this the rate is
 // still shown (the spend is real and must stay visible) but rendered muted so
@@ -1981,6 +1982,43 @@ function _matNote(key, lbl, horizon) {
   return win + dead + gap;
 }
 
+// Campaign names are long underscore strings (digital_pty_appinstall_fb_atc_b2s_0726),
+// so one substring is rarely selective enough. Space-separated terms are ANDed and
+// order-independent: "pty fb" and "fb pty" both narrow to Facebook property camps.
+function _cdTerms(q) {
+  return String(q || '').toLowerCase().split(/\s+/).filter(Boolean);
+}
+function _cdMatch(r, terms) {
+  if (!terms.length) return true;
+  const hay = (r.name || '').toLowerCase();
+  return terms.every(t => hay.includes(t));
+}
+// Highlights the matched stretches inside a campaign name. Marks every matched
+// range up front rather than replacing term by term: two overlapping terms
+// ("pty" and "ty") would otherwise nest tags inside each other's output and
+// emit broken markup. Also escapes the name — it is going into innerHTML.
+function _cdHi(s, terms) {
+  s = String(s == null ? '' : s);
+  const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  if (!terms.length) return esc(s);
+  const low = s.toLowerCase();
+  const hit = new Array(s.length).fill(false);
+  terms.forEach(t => {
+    let i = low.indexOf(t);
+    while (i !== -1) {
+      for (let k = i; k < i + t.length; k++) hit[k] = true;
+      i = low.indexOf(t, i + 1);
+    }
+  });
+  let out = '', open = false;
+  for (let i = 0; i < s.length; i++) {
+    if (hit[i] && !open) { out += '<span style="background:#fde68a;border-radius:2px">'; open = true; }
+    else if (!hit[i] && open) { out += '</span>'; open = false; }
+    out += esc(s[i]);
+  }
+  return out + (open ? '</span>' : '');
+}
+
 function _cdChips(label, key, opts, labels) {
   const chips = opts.map(o => {
     const active = _cdState[key] === o;
@@ -1999,6 +2037,30 @@ window.cdFilter = function(key, val) {
 window.cdPage = function(pg) { _cdState.page = pg; renderCampDetail(); };
 window.cdSort = function(key) {
   _cdState.sort = key; _cdState.page = 0; renderCampDetail();
+};
+// Only renderCampDetail: the target table below keys off the month chip, which a
+// name search never changes, so re-rendering it would be wasted work.
+// page = 0 is not optional — narrowing from 40 matches to 3 while parked on page
+// 2 would otherwise leave the user staring at an empty table.
+window.cdSearch = function(val) {
+  _cdState.search = val; _cdState.page = 0; renderCampDetail();
+};
+window.cdSearchClear = function() {
+  _cdState.search = ''; _cdState.page = 0;
+  const el = document.getElementById('cdSearchInput');
+  if (el) { el.value = ''; el.focus(); }
+  renderCampDetail();
+};
+// Offered when a search matches campaigns that the month/channel/vertical chips
+// are hiding. The table opens on the latest month, so searching for a June
+// campaign in August looks exactly like "this campaign does not exist".
+window.cdSearchWiden = function() {
+  _cdState.month = 'all'; _cdState.channel = 'all'; _cdState.vertical = 'all';
+  _cdState.page = 0;
+  renderCampDetail();
+  try { renderCampTarget(); } catch (e) { console.error('renderCampTarget failed:', e); }
+  const el = document.getElementById('cdSearchInput');
+  if (el) el.focus();
 };
 
 const _MO = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
@@ -2366,6 +2428,15 @@ function renderCampDetail() {
   if (_cdState.month !== 'all')    rows = rows.filter(r=>r.month===_cdState.month);
   if (_cdState.channel !== 'all')  rows = rows.filter(r=>r.channel===_cdState.channel);
   if (_cdState.vertical !== 'all') rows = rows.filter(r=>(r.vertical||'other')===_cdState.vertical);
+  // Name search, applied last so it narrows whatever the chips left. It feeds the
+  // KPI cards above the table as well, same as the chips do — the cards describe
+  // the rows on screen, and having them keep reporting the whole month while the
+  // table shows three campaigns would be worse than having them follow along.
+  const cdQ = _cdTerms(_cdState.search);
+  // Kept before the search filter is applied, to tell "no such campaign" apart
+  // from "the chips are hiding it" further down.
+  const cdQAll = cdQ.length ? rowsAll.filter(r=>_cdMatch(r, cdQ)) : [];
+  if (cdQ.length) rows = rows.filter(r=>_cdMatch(r, cdQ));
 
   const SORTS = {cost:'cost', install:'install', cpi:'cpi', d0:'d0', rr_d1:'rr_d1',
                  save_ad_rate:'save_ad_rate', lead:'lead', cpl:'cpl'};
@@ -2489,7 +2560,42 @@ function renderCampDetail() {
     }
   }
 
-  document.getElementById('cdFilter').innerHTML = `<div style="display:flex;flex-direction:column;gap:6px">
+  // Two containers, deliberately. Every keystroke in the search box re-renders
+  // this section, and rewriting #cdFilter wholesale would destroy the <input>
+  // element mid-typing — taking focus, caret position and IME state with it, so
+  // only the first character would ever land. The chips and the footnote are
+  // rebuilt each render (their active states change); the search row is built
+  // once and afterwards only has its counter text and clear button touched.
+  const cdFilterEl = document.getElementById('cdFilter');
+  let cdChipsEl = document.getElementById('cdChips');
+  if (!cdChipsEl) {
+    cdFilterEl.innerHTML =
+      `<div id="cdChips" style="display:flex;flex-direction:column;gap:6px"></div>`
+    + `<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid #f1f3f5">`
+    +   `<span style="font-size:10px;color:#9ca3af;min-width:60px">Tìm camp:</span>`
+    +   `<span style="position:relative;display:inline-flex;align-items:center">`
+    +     `<input id="cdSearchInput" type="text" autocomplete="off" spellcheck="false"`
+    +       ` placeholder="gõ tên campaign — vd: pty fb b2s"`
+    +       ` oninput="cdSearch(this.value)"`
+    +       ` onkeydown="if(event.key==='Escape'){cdSearchClear();}"`
+    +       ` onfocus="this.style.borderColor='#4361ee'" onblur="this.style.borderColor='#d1d5db'"`
+    +       ` title="Nhiều từ cách nhau bởi dấu cách = phải khớp TẤT CẢ, không cần đúng thứ tự. Esc để xoá."`
+    +       ` style="width:300px;max-width:60vw;padding:4px 24px 4px 9px;border:1.5px solid #d1d5db;`
+    +         `border-radius:10px;font-size:11px;font-family:inherit;color:#374151;outline:none">`
+    +     `<button id="cdSearchX" onclick="cdSearchClear()" title="Xoá tìm kiếm (Esc)"`
+    +       ` style="display:none;position:absolute;right:5px;border:0;background:none;color:#9ca3af;`
+    +         `font-size:14px;line-height:1;cursor:pointer;padding:0 2px">×</button>`
+    +   `</span>`
+    +   `<span id="cdSearchNote" style="font-size:10px;color:#9ca3af"></span>`
+    + `</div>`;
+    cdChipsEl = document.getElementById('cdChips');
+    // The early-return path above wipes #cdFilter, so this block can run again
+    // with a search already in state. Seed the fresh input from state instead of
+    // letting the box read empty while the table stays filtered.
+    const seed = document.getElementById('cdSearchInput');
+    if (seed) seed.value = _cdState.search || '';
+  }
+  cdChipsEl.innerHTML = `<div style="display:flex;flex-direction:column;gap:6px">
     ${_cdChips('Tháng:','month',['all',...months],{all:'All Months'})}
     ${_cdChips('Channel:','channel',['all','FB','GG'],{all:'All'})}
     ${_cdChips('Vertical:','vertical',['all',...verts],{all:'All'})}
@@ -2503,6 +2609,36 @@ function renderCampDetail() {
       khi sort theo tỉ lệ, các campaign này được xếp xuống cuối.
     </div>
   </div>`;
+
+  const cdX = document.getElementById('cdSearchX');
+  if (cdX) cdX.style.display = cdQ.length ? 'block' : 'none';
+  const cdNote = document.getElementById('cdSearchNote');
+  if (cdNote) {
+    if (!cdQ.length) {
+      cdNote.innerHTML = '';
+    } else if (rows.length) {
+      // Name the scope: "12 khớp" out of the August rows reads very differently
+      // from 12 out of everything, and the chips are right above.
+      const scope = _cdState.month === 'all' ? 'tất cả tháng' : _cdState.month;
+      cdNote.innerHTML = `<span style="color:#4361ee;font-weight:600">${rows.length}</span>`
+        + ` campaign khớp trong ${scope}`
+        + (cdQAll.length > rows.length
+            ? ` · <span style="color:#f59e0b">${cdQAll.length - rows.length} khớp nữa đang bị filter che</span>`
+              + ` <button onclick="cdSearchWiden()" style="padding:1px 7px;border-radius:8px;`
+              + `border:1.5px solid #f59e0b;background:#fffbeb;color:#b45309;font-size:10px;`
+              + `font-weight:600;cursor:pointer">Bỏ filter để xem hết</button>`
+            : '');
+    } else if (cdQAll.length) {
+      cdNote.innerHTML = `<span style="color:#f59e0b">Không khớp trong filter hiện tại,`
+        + ` nhưng có ${cdQAll.length} campaign khớp ở tháng/channel/ngành khác</span>`
+        + ` <button onclick="cdSearchWiden()" style="padding:1px 7px;border-radius:8px;`
+        + `border:1.5px solid #f59e0b;background:#fffbeb;color:#b45309;font-size:10px;`
+        + `font-weight:600;cursor:pointer">Bỏ filter để xem hết</button>`;
+    } else {
+      cdNote.innerHTML = `<span style="color:#ef4444">Không có campaign nào tên chứa`
+        + ` "${_cdHi(_cdState.search, [])}"</span>`;
+    }
+  }
 
   const PAGE = 15;
   const total = rows.length;
@@ -2658,7 +2794,7 @@ function renderCampDetail() {
   </tr>`;
   const body = pageRows.map((r,i)=>`<tr>
     <td ${tdL} style="color:#9ca3af;font-size:11px;text-align:left">${offset+i+1}</td>
-    <td style="text-align:left;max-width:300px;font-size:11px;word-break:break-all;line-height:1.35" title="${r.name} · ngành: ${(r.vertical||'other').toUpperCase()}">${r.name}</td>
+    <td style="text-align:left;max-width:300px;font-size:11px;word-break:break-all;line-height:1.35" title="${r.name} · ngành: ${(r.vertical||'other').toUpperCase()}">${_cdHi(r.name, cdQ)}</td>
     <td ${tdL}>${chBadge(r.channel)}</td>
     <td ${tdL} style="text-align:left;font-weight:600">${fmtVnd(r.cost||0)}</td>
     <td ${tdL}>${fmtNum(r.install)}</td>
