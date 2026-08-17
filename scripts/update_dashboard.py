@@ -59,9 +59,17 @@ today = datetime.date.today()
 # So every rate below is computed only over cohorts old enough to have the
 # metric, with the cutoff read from the data rather than assumed: the last day
 # the column is actually populated, floored at max_date - horizon so one freak
-# zero cannot drag the window backwards. Absolute counts (d0, lead, install,
-# cost) keep the full window — they are not cohort metrics, and trimming them
-# would make this section contradict the Cost column.
+# zero cannot drag the window backwards. Absolute counts (d0, install, cost)
+# keep the full window — they are not cohort metrics, and trimming them would
+# make this section contradict the Cost column.
+#
+# `lead7` is the exception among the counts, because it *is* a cohort metric: it
+# counts new users who contacted within 7 days of installing, so a cohort from
+# yesterday has only had one of its seven days. Unlike d7 it is not structurally
+# zero while it waits — it fills in gradually — which makes it more dangerous,
+# not less: the number looks plausible at every moment and simply runs low. It
+# therefore gets the same cutoff as the rates, and the cost it is divided by is
+# trimmed to match, so Cost/Lead compares the same days on both sides.
 #
 # Two failure modes have to stay separate, because only one of them is benign:
 #   maturity — the window ends at max_date - horizon. Expected, and the partial
@@ -73,7 +81,7 @@ today = datetime.date.today()
 #     04-01..04-12, dead 04-13..05-17, back 05-18..06-15, nothing since) and was
 #     publishing Apr 7.4% / May 12.4% / Jun 9.0% against Mar 29.8% — read on the
 #     dashboard as a retention collapse that never happened.
-MAT_HORIZON = {'d1': 1, 'd7': 7, 'm1': 31}
+MAT_HORIZON = {'d1': 1, 'd7': 7, 'm1': 31, 'lead7': 7}
 # Fraction of a month's in-window days that may be missing before the month is
 # blanked instead of published. The activation table's d7 has exactly two holes
 # (2026-07-07, 2026-07-08 — d7 = 0 while both neighbours are ~1,480, an upstream
@@ -85,15 +93,19 @@ MAT_GAP_TOLERANCE = 0.10
 # 06-15, i.e. half the month is simply absent.
 MAT_MIN_COVER = 0.80
 
+# lead7 is NULL for ret90, which has no such column — _build_maturity skips a
+# metric a source does not carry rather than reporting it as an empty window.
 mat_rows = run("""
-SELECT src, dt, d1 > 0 AS has_d1, d7 > 0 AS has_d7, m1 > 0 AS has_m1 FROM (
-  SELECT 'act' AS src, visit_date AS dt, SUM(d1) AS d1, SUM(d7) AS d7, SUM(m1) AS m1
+SELECT src, dt, d1 > 0 AS has_d1, d7 > 0 AS has_d7, m1 > 0 AS has_m1,
+       lead7 > 0 AS has_lead7 FROM (
+  SELECT 'act' AS src, visit_date AS dt, SUM(d1) AS d1, SUM(d7) AS d7, SUM(m1) AS m1,
+         SUM(user_1lead_7d) AS lead7
   FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
   WHERE return_status='new' AND campaign='all' AND channel='all' AND vertical_user='all'
     AND visit_date >= '2026-01-01'
   GROUP BY 1, 2
   UNION ALL
-  SELECT 'ret90', min_date, SUM(d1), SUM(d7), SUM(m1)
+  SELECT 'ret90', min_date, SUM(d1), SUM(d7), SUM(m1), NULL
   FROM ct_digital.dashboard__retention_90d
   WHERE new_status='return' AND min_date >= '2026-01-01'
   GROUP BY 1, 2
@@ -119,6 +131,13 @@ def _build_maturity(rows):
         max_date = days[-1][0]
         for metric, horizon in MAT_HORIZON.items():
             flag = 'has_' + metric
+            # A column the source does not carry comes back NULL on every row.
+            # That is not an empty window, it is a question that does not apply,
+            # so leave the key out entirely: the report stops printing a phantom
+            # "ret90.lead7 — no data" line, and anyone who asks for the cutoff
+            # anyway falls through mat_through's 1970 guard and gets nothing.
+            if all(r[flag] is None for _, r in days):
+                continue
             pop = [d for d, r in days if r[flag]]
             mature_end = max_date - datetime.timedelta(days=horizon)
             # No data at all: leave `through` None so callers blank the metric
@@ -774,7 +793,8 @@ try:
       SUM(IF(visit_date <= DATE '{mat_through('act','d1')}', d0, 0)) as d0_d1,
       SUM(IF(visit_date <= DATE '{mat_through('act','d7')}', d7, 0)) as d7,
       SUM(IF(visit_date <= DATE '{mat_through('act','d7')}', d0, 0)) as d0_d7,
-      SUM(lead) as lead,
+      SUM(IF(visit_date <= DATE '{mat_through('act','lead7')}',
+             user_1lead_7d, 0)) as lead7,
       SUM(dau_lead) as dau_lead,
       SUM(save_ad) as save_ad,
       MAX(visit_date) as bq_through
@@ -838,6 +858,10 @@ try:
         if t and (m not in bq_max or t > bq_max[m]):
             bq_max[m] = t
 
+    # Last cohort date whose 7-day contact window has closed. Same value the SQL
+    # above filtered on, kept as a date so the spend can be trimmed to match.
+    lead7_through = MAT.get(('act', 'lead7'), {}).get('through')
+
     # "Save ad in D0" + its DAU denominator come from the MKT-owned adopt table,
     # where adopt_users is documented as "New user d0 adopt (save_ad d0)".
     #
@@ -899,7 +923,7 @@ try:
         # enough to have had a D1 (resp. D7). Equal to d0 for every finished
         # month; smaller only where the month is still running.
         d0_d1, d0_d7 = _int(a.get('d0_d1')), _int(a.get('d0_d7'))
-        lead = _int(a.get('lead'))
+        lead = _int(a.get('lead7'))
         users_lead = _int(a.get('dau_lead'))
         # The campaign's own vertical, as bought — column L of the sheet. Anything
         # not one of the four real verticals ('other', blank) has nothing to match
@@ -924,13 +948,31 @@ try:
         # divides like for like. `cost` itself stays whole: it is real money and
         # the progress-vs-target table reconciles it against the sheet, so
         # trimming it there would make the dashboard contradict its own source.
+        #
+        # Two things can end the lead window early and the tighter one wins: how
+        # far the table has published (bq_max) and how far its cohorts have
+        # matured (lead7_through = max_date - 7). On a running month the second
+        # is always the binding one, and it is the one that used to be missing:
+        # a cohort from three days ago has had three of its seven days, so it
+        # arrives partly counted and drags the month down without ever looking
+        # broken. Spend is trimmed to the same day so Cost/Lead stays like for
+        # like; a finished month is untouched, both cutoffs sit past its end.
         cutoff = bq_max.get(m_date)
+        if lead7_through is not None:
+            cutoff = min(cutoff, lead7_through) if cutoff else lead7_through
         if cutoff is not None and cutoff < sheet_last_day.get(m_date, cutoff):
             lead_cost = round(sum(
                 c for d, c in sheet_daily_cost.get((m_date, name), {}).items()
                 if d <= cutoff))
         else:
             lead_cost = cost
+        # The month's lead figure covers cohorts up to this day. Self-clearing:
+        # it is recomputed from the source every run, so a month flagged today
+        # loses its star of its own accord once max_date has moved seven days
+        # past the month end — no manual reset, no stale asterisk.
+        lead_through = min(cutoff, _month_end(m_date)) if cutoff else None
+        lead_partial = bool(
+            lead_through and lead_through < sheet_last_day.get(m_date, lead_through))
         camp_detail.append({
             'name': name,
             'month': m_date.strftime('%b %Y'),
@@ -947,18 +989,28 @@ try:
             'd0_d7': d0_d7,
             'rr_d1': _rate(d1, d0_d1),
             'rr_d7': _rate(d7, d0_d7),
+            # New users who contacted a seller within 7 days of installing —
+            # people, not contact events, and counted over a 7-day window rather
+            # than D0 only. Sections 3 and 4 have always used this column; only
+            # this section still summed `lead`, so the two never reconciled.
             'lead': lead,
             # A campaign with cost but zero leads has no CPL to quote — None
             # renders as "—" rather than as a division by zero.
             'cpl': round(lead_cost / lead) if lead else None,
+            # Set while the newest cohorts are still inside their 7 days, so the
+            # count is real but not yet final. Clears itself once they mature.
+            **({'lead_partial': True} if lead_partial else {}),
+            **({'lead_through': lead_through.strftime('%d/%m')}
+               if lead_partial else {}),
             # Only emitted when it differs from cost, i.e. when BigQuery is
             # behind the sheet; the front end uses it to blend CPL over the
             # same window and to say so.
             **({'lead_cost': lead_cost} if lead_cost != cost else {}),
-            # Users who contacted anywhere, and users who contacted inside the
-            # campaign's own vertical. Both are people, not contact events, so
-            # they are not comparable with `lead` above — the front end labels
-            # the unit on every one of these columns for exactly that reason.
+            # Users who contacted anywhere on D0, and users who contacted inside
+            # the campaign's own vertical on D0. Same unit as `lead` above but a
+            # narrower window — D0 only, no 7-day tail — so users_lead is always
+            # the smaller number and the two must not be read as a rate against
+            # each other. The front end labels the window on every column.
             'users_lead': users_lead,
             'lead_own': own_users,
             'cpl_own': round(lead_cost / own_users) if own_users else None,
@@ -1017,9 +1069,12 @@ try:
 
     print(f"  Camp detail: {len(camp_detail)} rows OK "
           f"({matched} matched BQ activation, months: {det_months})")
+    cd_lead_partial = sum(1 for r in camp_detail if r.get('lead_partial'))
     print(f"  Lead: {cd_lead_matched}/{len(camp_detail)} rows have a lead count, "
-          f"{cd_lead_total:,} lead events total "
-          f"(unlike save_ad this covers FB, so a low match rate here is a bug)")
+          f"{cd_lead_total:,} users contacting within 7 days "
+          f"(unlike save_ad this covers FB, so a low match rate here is a bug); "
+          f"cohorts matured through {lead7_through}, "
+          f"{cd_lead_partial} rows still filling in")
     if cd_all_users:
         print(f"  Own-vertical contact: {len(cd_own_rows)}/{len(camp_detail)} rows "
               f"have a vertical to match; {cd_own_users:,} of {cd_all_users:,} "
