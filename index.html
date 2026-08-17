@@ -2643,7 +2643,6 @@ function renderCampDetail() {
     <th style="text-align:left">#</th>
     <th style="text-align:left">Campaign</th>
     <th style="text-align:left">Ch</th>
-    <th style="text-align:left">Vertical</th>
     <th style="text-align:left">Cost</th>
     <th style="text-align:left">Install</th>
     <th style="text-align:left">CPI</th>
@@ -2659,9 +2658,8 @@ function renderCampDetail() {
   </tr>`;
   const body = pageRows.map((r,i)=>`<tr>
     <td ${tdL} style="color:#9ca3af;font-size:11px;text-align:left">${offset+i+1}</td>
-    <td style="text-align:left;max-width:300px;font-size:11px;word-break:break-all;line-height:1.35" title="${r.name}">${r.name}</td>
+    <td style="text-align:left;max-width:300px;font-size:11px;word-break:break-all;line-height:1.35" title="${r.name} · ngành: ${(r.vertical||'other').toUpperCase()}">${r.name}</td>
     <td ${tdL}>${chBadge(r.channel)}</td>
-    <td ${tdL}>${_campVertBadge(r.vertical||'other')}</td>
     <td ${tdL} style="text-align:left;font-weight:600">${fmtVnd(r.cost||0)}</td>
     <td ${tdL}>${fmtNum(r.install)}</td>
     ${r.cpi==null ? `<td ${LOW}>—</td>`
@@ -2685,7 +2683,7 @@ function renderCampDetail() {
         ? `<td ${tdL} title="${cplWindow(r)}">${r.cpl.toLocaleString('en')+' ₫'}${LEAD_STAR(r)}</td>`
         : `<td ${LOW} title="Chỉ ${r.lead||0} user liên hệ — Cost/Lead 7d không đáng tin. ${cplWindow(r)}">${r.cpl.toLocaleString('en')+' ₫'}</td>`)}
   </tr>`).join('');
-  tableEl.innerHTML = `<thead>${head}</thead><tbody>${body||'<tr><td colspan="16" style="text-align:center;color:#9ca3af;padding:20px">Không có campaign nào khớp filter</td></tr>'}</tbody>`;
+  tableEl.innerHTML = `<thead>${head}</thead><tbody>${body||'<tr><td colspan="15" style="text-align:center;color:#9ca3af;padding:20px">Không có campaign nào khớp filter</td></tr>'}</tbody>`;
 
   const totalPages = Math.max(1, Math.ceil(total/PAGE));
   const btn = (disabled, label, target) =>
