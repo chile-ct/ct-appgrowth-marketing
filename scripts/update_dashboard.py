@@ -926,40 +926,62 @@ try:
     #     Airbridge ever relabels a channel.
     #  3. GREATEST of the two install metrics, not either one alone.
     #     app_installs_metric counts events and app_install_users_metric counts
-    #     people, so events >= users must hold, and in settled months it does:
-    #     over Feb, Mar, Apr and Jul — 779 campaign-months — users never once
-    #     exceeds events. It breaks only in the month still filling in, where
-    #     each metric has its own holes: in August ..._b2s_bau_080626_targeting
-    #     has steady events (164, 128, 164, 180, 200) against erratic users
-    #     (0, 25, 17, 78, 200), while gg_growth_veh_... has events 107 then five
-    #     days of 0 against steady users (106, 164, 104, 147, 101). Taking the
-    #     greater picks whichever side has actually loaded and self-heals as the
-    #     backfill lands: it adds 526 installs to August and 0 to every closed
-    #     month except a rounding 12-16 in Jan, May and Jun.
+    #     people, so events >= users must hold, and in settled months it does —
+    #     at this day grain, `users > events` happens on 0 of the 5,199
+    #     campaign-days in Jan through Jul and on 4 of the 472 in August. It
+    #     breaks only in the month still filling in, where each metric has its
+    #     own holes: ..._b2s_bau_080626_targeting has steady events (164, 128,
+    #     164, 180, 200) against erratic users (0, 25, 17, 78, 200), while
+    #     gg_growth_veh_... has events 107 then five days of 0 against steady
+    #     users (106, 164, 104, 147, 101). Taking the greater picks whichever
+    #     side has actually loaded, and self-heals as the backfill arrives: it
+    #     adds 516 installs to August and exactly 0 to every closed month.
     #
-    # Capped per month at the day the spend sheet reaches, so Install and Cost
-    # describe the same window and CPI stays a real number rather than a whole
-    # month of installs divided by half a month of spend.
-    ab_window = ' OR '.join(
-        f"(event_date BETWEEN DATE '{m}' AND DATE '{d}')"
-        for m, d in sorted(sheet_last_day.items()))
+    # Summed **only over the days the sheet has a cost row for that campaign** —
+    # Duyen's rule, 2026-08-18: "cost lấy của campaign nào thì install lấy của
+    # campaign đó mapping theo là được". A whole-month cap is not enough, because
+    # the sheet's window differs per campaign, not just per month: in March the
+    # pty rows disagreed with Airbridge on install by 2.4-3.0x AND on cost by
+    # 1.7-2.5x in the same direction, while every job_* row matched both to
+    # within 1%. Same-direction cost drift is not an attribution difference, it
+    # is a shorter window — so the fix is to give install exactly the window the
+    # cost has, campaign by campaign. Anything else divides one span of spend by
+    # a different span of installs and calls it CPI.
     ab_rows = run(f"""
     SELECT
-      DATE_TRUNC(event_date, MONTH) as month,
       campaign,
+      event_date,
       GREATEST(SUM(app_installs_metric),
                SUM(app_install_users_metric)) as install
     FROM chotot_airbridge.airbridge_attributed_impression_raw
-    WHERE ({ab_window})
+    WHERE event_date BETWEEN DATE '{min(sheet_last_day).replace(day=1)}'
+                         AND DATE '{max(sheet_last_day.values())}'
       AND campaign IN ({in_list})
     GROUP BY 1, 2
     """)
-    ab_install = {}
+    # (campaign, day) -> install, then folded up per (month, campaign) against
+    # the sheet's own day list. A day Airbridge has but the sheet does not is
+    # dropped; a day the sheet has but Airbridge does not contributes 0.
+    ab_daily = {}
     for r in ab_rows:
         v = r['install']
         if v is None:
             continue
-        ab_install[(to_date(r['month']), str(r['campaign']))] = int(round(v))
+        ab_daily[(str(r['campaign']), to_date(r['event_date']))] = int(round(v))
+    ab_install, ab_days_used, ab_days_dropped = {}, 0, 0
+    for (m_date, camp), days in sheet_daily_cost.items():
+        total, hit = 0, False
+        for d in days:
+            v = ab_daily.get((camp, d))
+            if v is not None:
+                total += v
+                hit = True
+        if hit:
+            ab_install[(m_date, camp)] = total
+        ab_days_used += len(days)
+    ab_days_dropped = sum(
+        1 for (camp, d) in ab_daily
+        if d not in sheet_daily_cost.get((d.replace(day=1), camp), {}))
 
     def _int(v):
         return int(v) if v is not None else None
@@ -1133,7 +1155,10 @@ try:
           f"({matched} matched BQ activation, months: {det_months})")
     ab_rows_ok = sum(e[2] - e[3] for e in ab_recon.values())
     print(f"  Install source: Airbridge, {ab_rows_ok}/{len(camp_detail)} rows "
-          f"matched (the rest render \"—\" rather than fall back to the sheet)")
+          f"matched (the rest render \"—\" rather than fall back to the sheet); "
+          f"summed over the {ab_days_used:,} campaign-days the sheet has cost "
+          f"for, {ab_days_dropped:,} Airbridge campaign-days outside that window "
+          f"dropped")
     # NOT `n` — that is the module-level month count this file indexes every
     # published array by, and rebinding it here left it at 27 and blew up
     # ret_d1_gc a thousand lines later with an IndexError.
