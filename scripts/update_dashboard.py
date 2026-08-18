@@ -550,9 +550,27 @@ except Exception as e:
     campaigns = D.get('campaigns', [])
 
 # ── Detail Camp Performance — Growth team, App phase ────────────────────────
-# cost + install come from the Google Sheet "[CT] App Growth - performance
-# tracking 2026", tab raw_total. Activation metrics come from BigQuery.
-# The two are joined on campaign name.
+# cost comes from the Google Sheet "[CT] App Growth - performance tracking
+# 2026", tab raw_total. Install comes from Airbridge and activation metrics
+# from BigQuery. All three are joined on campaign name.
+#
+# Install used to come from the sheet too — i.e. from each platform's own ads
+# manager — and that is what made it disagree with Airbridge. The two count
+# different things: a self-attributing network credits itself for a view-through
+# it thinks it caused, Airbridge applies one attribution model across every
+# channel. The gap is not uniform, which is what made it hard to see: over the
+# 27 August campaigns the two totals sit within 0.2% of each other (69,334 vs
+# 69,473), most Google campaigns read a few percent LOW in the sheet, and two
+# Facebook campaigns read 2x HIGH — ..._2026theme_targeting at 2,244 vs 1,124
+# and ..._2026theme at 1,905 vs 820. Netting to zero in aggregate while being
+# wrong per campaign is the worst case for a table people read row by row, so
+# install is now sourced from Airbridge for every row. Duyen's call, 2026-08-18:
+# "tất cả các số install ở đây lấy từ source bảng airbridge chứ k phải từ ads
+# manager".
+#
+# Cost deliberately stays on the sheet: it is real money, it reconciles against
+# the target tab, and Airbridge's cost_channel_metric agrees with it to 99-100%
+# anyway, so moving it would buy nothing and break that reconciliation.
 #
 # The sheet is read through the docs.google.com CSV export endpoint rather than
 # the Sheets API on purpose: GOOGLE_CREDENTIALS is a user (authorized_user) ADC
@@ -891,6 +909,58 @@ try:
         if c and (m not in adopt_max or c > adopt_max[m]):
             adopt_max[m] = c
 
+    # Install, per (month, campaign), from Airbridge. See the note at the top of
+    # this section for why it no longer comes from the sheet.
+    #
+    # Three things about this table are worth not re-deriving:
+    #
+    #  1. Each row is either a cost row (device_type='Unknown', carries cost and
+    #     impressions, installs = 0) or an attribution row (device_type mobile /
+    #     other / tablet, carries the installs, cost = 0). They are disjoint, so
+    #     summing across all of them double-counts nothing — but it also means a
+    #     single row can never yield a CPI on its own.
+    #  2. No channel filter. For the campaign names this dashboard tracks, the
+    #     paid channels (google.adwords, facebook.business) hold 647,641 installs
+    #     over Jan–Aug and every other channel put together holds 66 — 0.01%.
+    #     Filtering would buy nothing and would silently drop a campaign if
+    #     Airbridge ever relabels a channel.
+    #  3. GREATEST of the two install metrics, not either one alone.
+    #     app_installs_metric counts events and app_install_users_metric counts
+    #     people, so events >= users must hold, and in settled months it does:
+    #     over Feb, Mar, Apr and Jul — 779 campaign-months — users never once
+    #     exceeds events. It breaks only in the month still filling in, where
+    #     each metric has its own holes: in August ..._b2s_bau_080626_targeting
+    #     has steady events (164, 128, 164, 180, 200) against erratic users
+    #     (0, 25, 17, 78, 200), while gg_growth_veh_... has events 107 then five
+    #     days of 0 against steady users (106, 164, 104, 147, 101). Taking the
+    #     greater picks whichever side has actually loaded and self-heals as the
+    #     backfill lands: it adds 526 installs to August and 0 to every closed
+    #     month except a rounding 12-16 in Jan, May and Jun.
+    #
+    # Capped per month at the day the spend sheet reaches, so Install and Cost
+    # describe the same window and CPI stays a real number rather than a whole
+    # month of installs divided by half a month of spend.
+    ab_window = ' OR '.join(
+        f"(event_date BETWEEN DATE '{m}' AND DATE '{d}')"
+        for m, d in sorted(sheet_last_day.items()))
+    ab_rows = run(f"""
+    SELECT
+      DATE_TRUNC(event_date, MONTH) as month,
+      campaign,
+      GREATEST(SUM(app_installs_metric),
+               SUM(app_install_users_metric)) as install
+    FROM chotot_airbridge.airbridge_attributed_impression_raw
+    WHERE ({ab_window})
+      AND campaign IN ({in_list})
+    GROUP BY 1, 2
+    """)
+    ab_install = {}
+    for r in ab_rows:
+        v = r['install']
+        if v is None:
+            continue
+        ab_install[(to_date(r['month']), str(r['campaign']))] = int(round(v))
+
     def _int(v):
         return int(v) if v is not None else None
 
@@ -909,6 +979,12 @@ try:
                             m_date.month % 12 + 1, 1)
         return min(nxt - datetime.timedelta(days=1), today)
 
+    # Sheet-vs-Airbridge install, per month, printed below. Kept because the two
+    # sources drift apart per campaign while agreeing in total, so a month-level
+    # figure is the only cheap way to notice the day one of them breaks.
+    ab_recon = {}
+    ab_missing = []
+
     for (m_date, name), s in sorted(sheet_agg.items()):
         a = act.get((m_date, name), {})
         d0 = _int(a.get('d0'))
@@ -925,7 +1001,22 @@ try:
         dau = _int(ad.get('dau'))
         save_ad_d0 = _int(ad.get('save_ad_d0'))
         last_cohort = adopt_max.get(m_date)
-        cost, install = round(s['cost']), int(s['install'])
+        # Install is Airbridge's, not the sheet's. A campaign the sheet has
+        # spend for but Airbridge has no row for renders "—" rather than
+        # falling back to the ads-manager figure: a silent fallback would put a
+        # number from the rejected source into a column labelled as coming from
+        # Airbridge, which is the one outcome this change exists to prevent.
+        # The sheet still anchors the row, so its cost is published either way.
+        cost = round(s['cost'])
+        install = ab_install.get((m_date, name))
+        sheet_install = int(s['install'])
+        e = ab_recon.setdefault(m_date, [0, 0, 0, 0])
+        e[0] += sheet_install
+        e[1] += install or 0
+        e[2] += 1
+        if install is None:
+            e[3] += 1
+            ab_missing.append((m_date, name, sheet_install, cost))
         # Cost restricted to the days BigQuery has actually published, so CPL
         # divides like for like. `cost` itself stays whole: it is real money and
         # the progress-vs-target table reconciles it against the sheet, so
@@ -1040,6 +1131,24 @@ try:
 
     print(f"  Camp detail: {len(camp_detail)} rows OK "
           f"({matched} matched BQ activation, months: {det_months})")
+    ab_rows_ok = sum(e[2] - e[3] for e in ab_recon.values())
+    print(f"  Install source: Airbridge, {ab_rows_ok}/{len(camp_detail)} rows "
+          f"matched (the rest render \"—\" rather than fall back to the sheet)")
+    for m_date, (s_i, a_i, n, miss) in sorted(ab_recon.items()):
+        delta = f"{(a_i - s_i) / s_i:+.1%}" if s_i else "n/a"
+        flag = ''
+        # A month where the two sources disagree by more than a tenth is worth a
+        # human look — not necessarily wrong, but it is no longer the quiet
+        # methodology gap the switch was made for.
+        if s_i and abs(a_i - s_i) / s_i > 0.10:
+            flag = '  <-- check'
+        print(f"    {m_date:%b %Y}: sheet {s_i:,} -> Airbridge {a_i:,} "
+              f"({delta}, {n - miss}/{n} rows){flag}")
+    for m_date, name, s_i, c in ab_missing[:10]:
+        print(f"    no Airbridge row: {m_date:%b %Y} {name} "
+              f"(sheet said {s_i:,} installs on {c:,.0f} ₫)")
+    if len(ab_missing) > 10:
+        print(f"    ... and {len(ab_missing) - 10} more with no Airbridge row")
     cd_lead_partial = sum(1 for r in camp_detail if r.get('lead_partial'))
     print(f"  Lead: {cd_lead_matched}/{len(camp_detail)} rows have a lead count, "
           f"{cd_lead_total:,} users contacting within 7 days "
@@ -1079,7 +1188,10 @@ try:
         k = (r['month'], r['vertical'])
         e = ours.setdefault(k, [0.0, 0.0])
         e[0] += r['cost']
-        e[1] += r['install']
+        # install is None on a row Airbridge has no match for — see the camp
+        # detail section. Treated as 0 here, which is what the progress table
+        # does too, so the tripwire compares the same total the page shows.
+        e[1] += r['install'] or 0
     for k, (s_cost, s_inst) in sorted(sheet_actuals.items()):
         o_cost, o_inst = ours.get(k, (0.0, 0.0))
         if s_cost and o_cost and abs(s_cost - o_cost) / s_cost > 0.10:
