@@ -969,16 +969,21 @@ try:
             continue
         ab_daily[(str(r['campaign']), to_date(r['event_date']))] = int(round(v))
     ab_install, ab_days_used, ab_days_dropped = {}, 0, 0
-    for (m_date, camp), days in sheet_daily_cost.items():
-        total, hit = 0, False
-        for d in days:
+    # NOTE: every name bound here is a MODULE-level global (this block only looks
+    # nested because of the enclosing try:). Prefix loop variables with ab_ —
+    # plain `days` and `total` would clobber the month-length list and the
+    # channel totals that the sections below still read. Both have already
+    # broken a CI run once.
+    for (m_date, camp), ab_cd in sheet_daily_cost.items():
+        ab_total, hit = 0, False
+        for d in ab_cd:
             v = ab_daily.get((camp, d))
             if v is not None:
-                total += v
+                ab_total += v
                 hit = True
         if hit:
-            ab_install[(m_date, camp)] = total
-        ab_days_used += len(days)
+            ab_install[(m_date, camp)] = ab_total
+        ab_days_used += len(ab_cd)
     ab_days_dropped = sum(
         1 for (camp, d) in ab_daily
         if d not in sheet_daily_cost.get((d.replace(day=1), camp), {}))
