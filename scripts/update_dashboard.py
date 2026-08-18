@@ -1134,8 +1134,11 @@ try:
     ab_rows_ok = sum(e[2] - e[3] for e in ab_recon.values())
     print(f"  Install source: Airbridge, {ab_rows_ok}/{len(camp_detail)} rows "
           f"matched (the rest render \"—\" rather than fall back to the sheet)")
-    for m_date, (s_i, a_i, n, miss) in sorted(ab_recon.items()):
-        delta = f"{(a_i - s_i) / s_i:+.1%}" if s_i else "n/a"
+    # NOT `n` — that is the module-level month count this file indexes every
+    # published array by, and rebinding it here left it at 27 and blew up
+    # ret_d1_gc a thousand lines later with an IndexError.
+    for m_date, (s_i, a_i, n_rows, miss) in sorted(ab_recon.items()):
+        ab_delta = f"{(a_i - s_i) / s_i:+.1%}" if s_i else "n/a"
         flag = ''
         # A month where the two sources disagree by more than a tenth is worth a
         # human look — not necessarily wrong, but it is no longer the quiet
@@ -1143,9 +1146,9 @@ try:
         if s_i and abs(a_i - s_i) / s_i > 0.10:
             flag = '  <-- check'
         print(f"    {m_date:%b %Y}: sheet {s_i:,} -> Airbridge {a_i:,} "
-              f"({delta}, {n - miss}/{n} rows){flag}")
-    for m_date, name, s_i, c in ab_missing[:10]:
-        print(f"    no Airbridge row: {m_date:%b %Y} {name} "
+              f"({ab_delta}, {n_rows - miss}/{n_rows} rows){flag}")
+    for ab_m, ab_name, s_i, c in ab_missing[:10]:
+        print(f"    no Airbridge row: {ab_m:%b %Y} {ab_name} "
               f"(sheet said {s_i:,} installs on {c:,.0f} ₫)")
     if len(ab_missing) > 10:
         print(f"    ... and {len(ab_missing) - 10} more with no Airbridge row")
