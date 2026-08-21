@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-20",
+  "updated_at": "2026-08-21",
   "months": [
     "Jan 2026",
     "Feb 2026",
@@ -102,7 +102,7 @@
       9530,
       10178,
       10900,
-      13286
+      12622
     ],
     "returning_mau": [
       1133357,
@@ -204,7 +204,7 @@
       4970,
       5193,
       5205,
-      6455
+      6132
     ],
     "organic_daily": [
       1797,
@@ -214,7 +214,7 @@
       1709,
       1719,
       1712,
-      1867
+      1774
     ],
     "growth_daily": [
       1756,
@@ -224,7 +224,7 @@
       2595,
       3037,
       3695,
-      4539
+      4312
     ],
     "other_daily": [
       275,
@@ -234,7 +234,7 @@
       255,
       229,
       288,
-      425
+      404
     ],
     "growth_pct_total": [
       0.2084,
@@ -316,7 +316,7 @@
       2985,
       2986,
       2911,
-      3660
+      3477
     ],
     "lead_daily": [
       2143,
@@ -326,7 +326,7 @@
       2534,
       2720,
       2735,
-      3384
+      3215
     ],
     "save_daily": [
       581,
@@ -336,7 +336,7 @@
       735,
       778,
       838,
-      1296
+      1231
     ],
     "direct_adview": [
       43962,
@@ -436,7 +436,7 @@
       1626,
       1656,
       1595,
-      2111
+      2005
     ],
     "organic_adview_daily": [
       531,
@@ -446,7 +446,7 @@
       529,
       497,
       452,
-      488
+      463
     ],
     "growth_adview_daily": [
       496,
@@ -456,7 +456,7 @@
       752,
       783,
       797,
-      931
+      885
     ],
     "direct_lead_daily": [
       1158,
@@ -466,7 +466,7 @@
       1345,
       1481,
       1465,
-      1875
+      1781
     ],
     "organic_lead_daily": [
       470,
@@ -476,7 +476,7 @@
       462,
       456,
       434,
-      468
+      445
     ],
     "growth_lead_daily": [
       432,
@@ -486,7 +486,7 @@
       647,
       730,
       765,
-      905
+      860
     ],
     "direct_save_daily": [
       316,
@@ -496,7 +496,7 @@
       387,
       425,
       457,
-      779
+      740
     ],
     "organic_save_daily": [
       120,
@@ -506,7 +506,7 @@
       123,
       116,
       117,
-      145
+      138
     ],
     "growth_save_daily": [
       117,
@@ -516,7 +516,7 @@
       196,
       218,
       235,
-      313
+      297
     ]
   },
   "retention": {
@@ -750,7 +750,7 @@
       2595,
       3037,
       3695,
-      4539
+      4312
     ],
     "adview_activated": [
       15369,
@@ -800,7 +800,7 @@
       752,
       783,
       797,
-      931
+      885
     ],
     "lead_daily": [
       432,
@@ -810,7 +810,7 @@
       647,
       730,
       765,
-      905
+      860
     ],
     "nurr_d1": [
       0.36325314748201437,
@@ -1300,17 +1300,6 @@
       "month": "Jan 2026"
     },
     {
-      "name": "zalo",
-      "vertical": "other",
-      "new_users": 165,
-      "activated_adview": 56,
-      "activated_lead": 85,
-      "activation_rate": 0.3394,
-      "nurr_d1": 0.4121,
-      "nurr_d7": 0.1212,
-      "month": "Jan 2026"
-    },
-    {
       "name": "digital_app_activate_android_veh_mc",
       "vertical": "veh",
       "new_users": 165,
@@ -1319,6 +1308,17 @@
       "activation_rate": 0.4606,
       "nurr_d1": 0.4727,
       "nurr_d7": 0.1697,
+      "month": "Jan 2026"
+    },
+    {
+      "name": "zalo",
+      "vertical": "other",
+      "new_users": 165,
+      "activated_adview": 56,
+      "activated_lead": 85,
+      "activation_rate": 0.3394,
+      "nurr_d1": 0.4121,
+      "nurr_d7": 0.1212,
       "month": "Jan 2026"
     },
     {
@@ -2994,17 +2994,6 @@
       "month": "Jun 2026"
     },
     {
-      "name": "digital_gg_job_vnd_dau_banhang_demandgen",
-      "vertical": "job",
-      "new_users": 186,
-      "activated_adview": 64,
-      "activated_lead": 64,
-      "activation_rate": 0.3441,
-      "nurr_d1": 0.3656,
-      "nurr_d7": 0.1129,
-      "month": "Jun 2026"
-    },
-    {
       "name": "digital_elt_bl_mf_clicklink_web",
       "vertical": "gds",
       "new_users": 186,
@@ -3013,6 +3002,17 @@
       "activation_rate": 0.2957,
       "nurr_d1": 0.4355,
       "nurr_d7": 0.1989,
+      "month": "Jun 2026"
+    },
+    {
+      "name": "digital_gg_job_vnd_dau_banhang_demandgen",
+      "vertical": "job",
+      "new_users": 186,
+      "activated_adview": 64,
+      "activated_lead": 64,
+      "activation_rate": 0.3441,
+      "nurr_d1": 0.3656,
+      "nurr_d7": 0.1129,
       "month": "Jun 2026"
     },
     {
@@ -3269,17 +3269,6 @@
       "month": "Jul 2026"
     },
     {
-      "name": "digital_gg_job_vnd_dwa_banhang_pmax",
-      "vertical": "job",
-      "new_users": 562,
-      "activated_adview": 214,
-      "activated_lead": 224,
-      "activation_rate": 0.3808,
-      "nurr_d1": 0.2972,
-      "nurr_d7": 0.121,
-      "month": "Jul 2026"
-    },
-    {
       "name": "veh_appinstall_inapp_action_user_android_adview_7d",
       "vertical": "veh",
       "new_users": 562,
@@ -3288,6 +3277,17 @@
       "activation_rate": 0.3007,
       "nurr_d1": 0.3345,
       "nurr_d7": 0.1335,
+      "month": "Jul 2026"
+    },
+    {
+      "name": "digital_gg_job_vnd_dwa_banhang_pmax",
+      "vertical": "job",
+      "new_users": 562,
+      "activated_adview": 214,
+      "activated_lead": 224,
+      "activation_rate": 0.3808,
+      "nurr_d1": 0.2972,
+      "nurr_d7": 0.121,
       "month": "Jul 2026"
     },
     {
@@ -8415,10 +8415,10 @@
       "channel": "GG",
       "vertical": "gds",
       "phase": "install",
-      "cost": 14465306,
-      "install": 2169,
-      "cpi": 6669,
-      "d0": 2457,
+      "cost": 14685685,
+      "install": 2232,
+      "cpi": 6580,
+      "d0": 2536,
       "d1": 992,
       "d7": 163,
       "d0_d1": 2457,
@@ -8468,10 +8468,10 @@
       "channel": "FB",
       "vertical": "pty",
       "phase": "install",
-      "cost": 9625891,
-      "install": 1038,
-      "cpi": 9273,
-      "d0": 981,
+      "cost": 10379229,
+      "install": 1088,
+      "cpi": 9540,
+      "d0": 1029,
       "d1": 301,
       "d7": 57,
       "d0_d1": 981,
@@ -8495,10 +8495,10 @@
       "channel": "FB",
       "vertical": "pty",
       "phase": "install",
-      "cost": 7314326,
-      "install": 1407,
-      "cpi": 5199,
-      "d0": 1358,
+      "cost": 8088448,
+      "install": 1466,
+      "cpi": 5517,
+      "d0": 1416,
       "d1": 389,
       "d7": 47,
       "d0_d1": 1358,
@@ -8522,10 +8522,10 @@
       "channel": "FB",
       "vertical": "pty",
       "phase": "install",
-      "cost": 9033940,
-      "install": 353,
-      "cpi": 25592,
-      "d0": 336,
+      "cost": 9526656,
+      "install": 372,
+      "cpi": 25609,
+      "d0": 354,
       "d1": 86,
       "d7": 23,
       "d0_d1": 336,
@@ -8549,10 +8549,10 @@
       "channel": "FB",
       "vertical": "pty",
       "phase": "install",
-      "cost": 9196750,
-      "install": 361,
-      "cpi": 25476,
-      "d0": 351,
+      "cost": 9737555,
+      "install": 388,
+      "cpi": 25097,
+      "d0": 377,
       "d1": 98,
       "d7": 17,
       "d0_d1": 351,
@@ -8603,10 +8603,10 @@
       "channel": "FB",
       "vertical": "pty",
       "phase": "install",
-      "cost": 8846677,
-      "install": 337,
-      "cpi": 26251,
-      "d0": 319,
+      "cost": 9423346,
+      "install": 357,
+      "cpi": 26396,
+      "d0": 337,
       "d1": 100,
       "d7": 18,
       "d0_d1": 319,
@@ -8630,10 +8630,10 @@
       "channel": "GG",
       "vertical": "gds",
       "phase": "install",
-      "cost": 37005311,
-      "install": 4775,
-      "cpi": 7750,
-      "d0": 5088,
+      "cost": 38964868,
+      "install": 5037,
+      "cpi": 7736,
+      "d0": 5378,
       "d1": 1626,
       "d7": 469,
       "d0_d1": 5088,
@@ -8660,7 +8660,7 @@
       "cost": 66390842,
       "install": 9767,
       "cpi": 6797,
-      "d0": 10642,
+      "d0": 10677,
       "d1": 2389,
       "d7": 597,
       "d0_d1": 10642,
@@ -8687,7 +8687,7 @@
       "cost": 26173615,
       "install": 2535,
       "cpi": 10325,
-      "d0": 2781,
+      "d0": 2785,
       "d1": 348,
       "d7": 111,
       "d0_d1": 2781,
@@ -8711,10 +8711,10 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 18331698,
-      "install": 1961,
-      "cpi": 9348,
-      "d0": 2082,
+      "cost": 19309235,
+      "install": 2062,
+      "cpi": 9364,
+      "d0": 2193,
       "d1": 358,
       "d7": 80,
       "d0_d1": 2082,
@@ -8738,10 +8738,10 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 9333475,
-      "install": 1079,
-      "cpi": 8650,
-      "d0": 902,
+      "cost": 10893297,
+      "install": 1253,
+      "cpi": 8694,
+      "d0": 1094,
       "d1": 250,
       "d7": 0,
       "d0_d1": 902,
@@ -8765,10 +8765,10 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 29530458,
-      "install": 3553,
-      "cpi": 8311,
-      "d0": 3746,
+      "cost": 31423882,
+      "install": 3777,
+      "cpi": 8320,
+      "d0": 4015,
       "d1": 1003,
       "d7": 215,
       "d0_d1": 3746,
@@ -8795,7 +8795,7 @@
       "cost": 19757462,
       "install": 1888,
       "cpi": 10465,
-      "d0": 2112,
+      "d0": 2114,
       "d1": 280,
       "d7": 93,
       "d0_d1": 2112,
@@ -8822,7 +8822,7 @@
       "cost": 8508815,
       "install": 729,
       "cpi": 11672,
-      "d0": 802,
+      "d0": 806,
       "d1": 187,
       "d7": 70,
       "d0_d1": 802,
@@ -8849,7 +8849,7 @@
       "cost": 4642598,
       "install": 375,
       "cpi": 12380,
-      "d0": 620,
+      "d0": 622,
       "d1": 179,
       "d7": 29,
       "d0_d1": 620,
@@ -8872,10 +8872,10 @@
       "channel": "GG",
       "vertical": "job",
       "phase": "install",
-      "cost": 83490298,
-      "install": 16103,
-      "cpi": 5185,
-      "d0": 17242,
+      "cost": 89145725,
+      "install": 17210,
+      "cpi": 5180,
+      "d0": 18529,
       "d1": 5934,
       "d7": 1425,
       "d0_d1": 17242,
@@ -8899,10 +8899,10 @@
       "channel": "GG",
       "vertical": "job",
       "phase": "install",
-      "cost": 44353490,
-      "install": 4741,
-      "cpi": 9355,
-      "d0": 5190,
+      "cost": 47178787,
+      "install": 4979,
+      "cpi": 9476,
+      "d0": 5471,
       "d1": 2184,
       "d7": 616,
       "d0_d1": 5190,
@@ -8926,10 +8926,10 @@
       "channel": "GG",
       "vertical": "job",
       "phase": "install",
-      "cost": 32999992,
-      "install": 4295,
-      "cpi": 7683,
-      "d0": 4924,
+      "cost": 33764779,
+      "install": 4405,
+      "cpi": 7665,
+      "d0": 5070,
       "d1": 999,
       "d7": 274,
       "d0_d1": 4924,
@@ -8953,10 +8953,10 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 46559839,
-      "install": 4432,
-      "cpi": 10505,
-      "d0": 4790,
+      "cost": 49014481,
+      "install": 4591,
+      "cpi": 10676,
+      "d0": 4959,
       "d1": 1817,
       "d7": 487,
       "d0_d1": 4790,
@@ -8980,10 +8980,10 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 47235988,
-      "install": 5735,
-      "cpi": 8236,
-      "d0": 6283,
+      "cost": 49113413,
+      "install": 6065,
+      "cpi": 8098,
+      "d0": 6649,
       "d1": 2763,
       "d7": 630,
       "d0_d1": 6283,
@@ -9007,10 +9007,10 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 86241705,
-      "install": 11086,
-      "cpi": 7779,
-      "d0": 12440,
+      "cost": 89353728,
+      "install": 11469,
+      "cpi": 7791,
+      "d0": 12882,
       "d1": 3002,
       "d7": 738,
       "d0_d1": 12440,
@@ -9034,10 +9034,10 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 29946377,
-      "install": 3289,
-      "cpi": 9105,
-      "d0": 3578,
+      "cost": 31793435,
+      "install": 3508,
+      "cpi": 9063,
+      "d0": 3813,
       "d1": 729,
       "d7": 135,
       "d0_d1": 3578,
@@ -9064,7 +9064,7 @@
       "cost": 3453394,
       "install": 317,
       "cpi": 10894,
-      "d0": 383,
+      "d0": 384,
       "d1": 97,
       "d7": 39,
       "d0_d1": 383,
@@ -9091,7 +9091,7 @@
       "cost": 3963034,
       "install": 283,
       "cpi": 14004,
-      "d0": 309,
+      "d0": 310,
       "d1": 105,
       "d7": 26,
       "d0_d1": 309,
@@ -9118,7 +9118,7 @@
       "cost": 3197486,
       "install": 485,
       "cpi": 6593,
-      "d0": 537,
+      "d0": 539,
       "d1": 154,
       "d7": 43,
       "d0_d1": 537,
@@ -9303,10 +9303,10 @@
       "elapsed": 1.0
     },
     "Aug 2026": {
-      "through": "2026-08-18",
-      "days": 18,
+      "through": "2026-08-19",
+      "days": 19,
       "days_in_month": 31,
-      "elapsed": 0.5806
+      "elapsed": 0.6129
     }
   },
   "maturity": {
@@ -9386,38 +9386,6 @@
     }
   },
   "daily_activation": [
-    {
-      "date": "2026-05-22",
-      "channel": "Direct",
-      "new_users": 4764,
-      "adview_activated": 1451,
-      "lead_activated": 1259,
-      "save_activated": 352
-    },
-    {
-      "date": "2026-05-22",
-      "channel": "Growth",
-      "new_users": 2525,
-      "adview_activated": 648,
-      "lead_activated": 615,
-      "save_activated": 167
-    },
-    {
-      "date": "2026-05-22",
-      "channel": "Organic Search",
-      "new_users": 1672,
-      "adview_activated": 538,
-      "lead_activated": 478,
-      "save_activated": 131
-    },
-    {
-      "date": "2026-05-22",
-      "channel": "Total",
-      "new_users": 9215,
-      "adview_activated": 2697,
-      "lead_activated": 2421,
-      "save_activated": 674
-    },
     {
       "date": "2026-05-23",
       "channel": "Direct",
