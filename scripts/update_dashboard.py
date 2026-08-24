@@ -1260,7 +1260,11 @@ try:
     print(f"  Save ad in D0: {save_matched}/{len(camp_detail)} rows matched "
           f"new_user_adopt_activate "
           + ' '.join(f'{k}={v[1]}/{v[0]}' for k, v in sorted(by_ch.items()))
-          + " (FB coverage is expected to be low until DA backfills it)")
+          # Was "FB coverage is expected to be low until DA backfills it" — the
+          # 2026-08-21 rebuild of the table added Facebook and the first run
+          # after it came back FB=141/144, so a low FB number here is now a
+          # regression to look into rather than the known state of the world.
+          + " (both channels should be near-complete since 2026-08-21)")
 except Exception as e:
     note_skipped("Camp detail", e)
     camp_detail = D.get('camp_detail', [])
