@@ -47,3 +47,24 @@ jobs:
             git commit -m "data: auto-update $(date -u '+%Y-%m-%d')"
             git push
           fi
+
+      # Each of the eight sections in update_dashboard.py catches its own errors
+      # and republishes the previous day's values rather than taking the whole
+      # dashboard down with it. That is deliberate, but it means a broken section
+      # produces a green run and nobody hears about it: on 2026-08-22 and 08-23
+      # the camp-detail query died on an upstream column rename and section 6
+      # served 08-19 data for two days while the run reported success both times.
+      #
+      # This step exists to make that loud. It runs after the commit on purpose —
+      # the sections that did work have already shipped by the time the run turns
+      # red, so failing here costs nothing and buys the notification. `always()`
+      # so it still reports when an earlier step failed for its own reasons.
+      - name: Fail if any section served stale data
+        if: always()
+        run: |
+          if [ -f /tmp/dashboard_skipped_sections.txt ]; then
+            echo "These sections kept the previous data.json values:"
+            cat /tmp/dashboard_skipped_sections.txt
+            exit 1
+          fi
+          echo "All sections refreshed"

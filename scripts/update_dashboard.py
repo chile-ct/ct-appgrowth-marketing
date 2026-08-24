@@ -37,6 +37,30 @@ def safe_div(a, b):
 def daily(arr, days):
     return [round(arr[i]/days[i]) if arr[i] else None for i in range(len(arr))]
 
+# Every section below is wrapped in try/except so one broken query cannot stop
+# the other seven from publishing: the handler keeps whatever that section had in
+# the previous data.json and the run carries on. The price of that is silence. On
+# 2026-08-22 and 08-23 the camp-detail query died on an upstream column rename,
+# both runs went green, and section 6 plus the "data đến" badge served 08-19
+# figures for two days while every other section moved — nobody was told,
+# because nothing had failed.
+#
+# So each handler now also records itself here, and the workflow turns a
+# non-empty list into a failed run in a step that comes *after* the commit. That
+# ordering is the whole point: the sections that did work still ship, and the
+# failure notification still goes out. Do not make this script exit non-zero
+# instead — that runs before the commit and would freeze all eight sections to
+# punish one.
+SKIPPED_FILE = '/tmp/dashboard_skipped_sections.txt'
+SKIPPED = []
+
+def note_skipped(section, err):
+    SKIPPED.append(f"{section}: {err}")
+    print(f"  WARNING {section} skipped: {err}")
+    # GitHub renders this as an annotation on the run page, so the reason is
+    # visible without opening the log.
+    print(f"::error title=Dashboard section skipped::{section}: {err}")
+
 print("Loading current data.json...")
 with open(DATA_JSON) as f:
     D = json.load(f)
@@ -283,7 +307,7 @@ try:
     """)
     print(f"  Activation: {len(act_rows)} rows OK")
 except Exception as e:
-    print(f"  WARNING Activation skipped: {e}")
+    note_skipped("Activation", e)
 
 # Daily activation — last 90 days by day and channel (for date-range chart)
 daily_act_rows = []
@@ -306,7 +330,7 @@ try:
     """)
     print(f"  Daily activation: {len(daily_act_rows)} rows OK")
 except Exception as e:
-    print(f"  WARNING Daily activation skipped: {e}")
+    note_skipped("Daily activation", e)
 
 # Retention (may fail with 403)
 ret_total_rows = []
@@ -345,7 +369,7 @@ try:
     """)
     print(f"  Retention: total={len(ret_total_rows)}, app={len(ret_app_rows)}, web={len(ret_web_rows)} rows OK")
 except Exception as e:
-    print(f"  WARNING Retention skipped: {e}")
+    note_skipped("Retention", e)
     ret_web_rows = []
 
 # Build month list
@@ -546,7 +570,7 @@ try:
     months_fetched = sorted(set(c['month'] for c in campaigns))
     print(f"  Campaigns: {len(campaigns)} rows OK (months: {months_fetched})")
 except Exception as e:
-    print(f"  WARNING Campaigns skipped: {e}")
+    note_skipped("Campaigns", e)
     campaigns = D.get('campaigns', [])
 
 # ── Detail Camp Performance — Growth team, App phase ────────────────────────
@@ -874,27 +898,52 @@ try:
     # above filtered on, kept as a date so the spend can be trimmed to match.
     lead7_through = MAT.get(('act', 'lead7'), {}).get('through')
 
-    # "Save ad in D0" + its DAU denominator come from the MKT-owned adopt table,
-    # where adopt_users is documented as "New user d0 adopt (save_ad d0)".
+    # "Save ad in D0" + its DAU denominator come from the MKT-owned adopt table
+    # ct_product_analytics.new_user_adopt_activate (owner ngan_vuthien).
     #
-    # Two quirks of this table drive the SQL below:
-    #  1. report_date = first_date + 7, so the cohort month is report_date - 7.
-    #     Grouping on report_date directly would push late-month cohorts into the
-    #     following month and misalign them against cost.
-    #  2. Rows only appear once the 7-day window has fully matured, so the most
-    #     recent ~7 days of cohorts are simply absent. The ratio stays valid
-    #     (numerator and denominator cover the same days) but the absolute counts
-    #     understate the newest month — flagged as save_partial below.
+    # That table was rebuilt on 2026-08-21 and the rebuild broke this block for
+    # two nightly runs (22/8 and 23/8) — the whole camp-detail section fell into
+    # its except handler and republished the previous day's rows, which is why
+    # section 6 and the "data đến" badge sat at 08-19 while every other section
+    # kept moving. Three things changed, all of them load-bearing here:
+    #
+    #  1. adopt_users -> save_ad_d0_users. This is the one that raised
+    #     "Unrecognized name: adopt_users". The rebuild also split save_ad and
+    #     make_lead into d0 / d0_d3 / d0_d7 columns; only the d0 one belongs in a
+    #     column labelled "Save ad in D0".
+    #  2. report_date used to be first_date + 7, so the cohort month was
+    #     report_date - 7 and rows only appeared once the 7-day window had
+    #     matured. It is now first_date itself and rows appear the next day —
+    #     verified 2026-08-24, max(report_date) = 08-23. Keeping the DATE_SUB
+    #     would have silently shifted every cohort a week early instead of
+    #     erroring, so this is the more dangerous half of the change.
+    #  3. vertical / category / login_status / platform are new dimensions, and
+    #     the table's own description warns it does not dedupe: vertical and
+    #     category are the union of save_ad + make_lead + view_ad over d0-d7, so
+    #     one user lands in every vertical they touched. Without the 'all'
+    #     filters DAU double-counts (2026-08-10 iOS/login: 10,970 at vertical
+    #     'all' vs 4,772 gds + 4,106 pty + ... summing well past it). There is no
+    #     'all' row for login_status or platform, so those two are summed.
+    #
+    # Regression-checked against the last good run (Jul 2026, per campaign):
+    # pty_appinstall_mass_android 25,080 -> 25,136 DAU / 1,358 -> 1,353 save;
+    # job_appinstall_inapp_android_adview_7d 23,064 -> 23,903 / 1,986 -> 2,034;
+    # gds_appinstall_inapp_android_adview_7d 5,371 -> 4,195 / 436 -> 342. The
+    # absolute counts moved a few percent to 20% because the rebuild reattributed
+    # them upstream, but save_ad_rate — the number actually on the page — held to
+    # within 0.4pp on every row, which is what a dimension mistake would not do.
     adopt_rows = run(f"""
     SELECT
-      DATE_TRUNC(DATE_SUB(report_date, INTERVAL 7 DAY), MONTH) as month,
+      DATE_TRUNC(report_date, MONTH) as month,
       campaign,
       SUM(dau) as dau,
-      SUM(adopt_users) as save_ad_d0,
-      MAX(DATE_SUB(report_date, INTERVAL 7 DAY)) as max_cohort
+      SUM(save_ad_d0_users) as save_ad_d0,
+      MAX(report_date) as max_cohort
     FROM ct_product_analytics.new_user_adopt_activate
     WHERE channel != 'all'
-      AND DATE_SUB(report_date, INTERVAL 7 DAY) >= '2026-01-01'
+      AND vertical = 'all'
+      AND category = 'all'
+      AND report_date >= '2026-01-01'
       AND campaign IN ({in_list})
     GROUP BY 1, 2
     """)
@@ -1110,9 +1159,18 @@ try:
             'save_ad_d0': save_ad_d0,
             'save_ad_rate': _rate(save_ad_d0, dau),
             # True when the month's cohorts have not all matured yet, so the
-            # absolute save-ad/DAU counts are still incomplete.
+            # absolute save-ad/DAU counts are still incomplete. Two ways that
+            # happens now: the table has not published to the end of the window
+            # yet (first clause), or it has but the newest cohorts are still
+            # inside the 7 days the table's own description says its rolling
+            # metrics keep self-updating for (second clause). Before the
+            # 2026-08-21 rebuild only the first could happen, because rows did
+            # not appear at all until they had matured; now they appear the next
+            # day, so a month can look complete and still move. Both clauses
+            # clear themselves with time.
             'save_partial': bool(
-                last_cohort and last_cohort < _month_end(m_date)),
+                last_cohort and (last_cohort < _month_end(m_date)
+                                 or last_cohort > today - datetime.timedelta(days=7))),
             'save_through': last_cohort.strftime('%d/%m') if last_cohort else None,
         })
     matched = sum(1 for r in camp_detail if r['d0'] is not None)
@@ -1204,7 +1262,7 @@ try:
           + ' '.join(f'{k}={v[1]}/{v[0]}' for k, v in sorted(by_ch.items()))
           + " (FB coverage is expected to be low until DA backfills it)")
 except Exception as e:
-    print(f"  WARNING Camp detail skipped: {e}")
+    note_skipped("Camp detail", e)
     camp_detail = D.get('camp_detail', [])
     month_cover = D.get('month_cover', {})
 
@@ -1233,7 +1291,7 @@ try:
                   f"({(o_cost - s_cost) / s_cost:+.1%}) — the dashboard uses "
                   f"raw_total")
 except Exception as e:
-    print(f"  WARNING Targets skipped: {e}")
+    note_skipped("Targets", e)
 
 # Vertical monthly breakdown — full 2026 trend
 def classify_vertical(lc):
@@ -1288,7 +1346,7 @@ try:
     }
     print(f"  Vertical monthly: OK ({len(vm_rows)} rows)")
 except Exception as e:
-    print(f"  WARNING Vertical monthly skipped: {e}")
+    note_skipped("Vertical monthly", e)
 
 # Attribution assist — % of Direct/Organic users that are Growth-campaign last-touch attributed
 attribution_assist = D.get('attribution_assist', {'direct_pct': [None]*n, 'organic_pct': [None]*n})
@@ -1326,7 +1384,7 @@ try:
     }
     print(f"  Attribution assist: {len(aa_rows)} rows OK")
 except Exception as e:
-    print(f"  WARNING Attribution assist skipped: {e}")
+    note_skipped("Attribution assist", e)
 
 # Cost — managed manually via Budget tab in dashboard (localStorage)
 # Keep existing cost data from data.json; do not overwrite with BQ or Sheet data.
@@ -1441,3 +1499,15 @@ with open(DATA_JSON, 'w') as f:
 
 print(f"✅ data.json updated — {months_labels}")
 print(f"   Latest: {months_labels[-1]} | App MAU: {mau_app[-1]:,} | New: {total_n[-1]:,}")
+
+# Written for the workflow's last step, which fails the run when this file
+# exists. See the note next to note_skipped() for why the failure is raised
+# there and not here. Deleted when nothing was skipped, so a leftover file from
+# an earlier run on the same runner cannot fail a good one.
+if SKIPPED:
+    with open(SKIPPED_FILE, 'w') as f:
+        f.write('\n'.join(SKIPPED) + '\n')
+    print(f"⚠️  {len(SKIPPED)} section(s) republished stale data: "
+          f"{', '.join(s.split(':')[0] for s in SKIPPED)}")
+elif os.path.exists(SKIPPED_FILE):
+    os.remove(SKIPPED_FILE)
