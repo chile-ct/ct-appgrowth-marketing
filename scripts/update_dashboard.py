@@ -1037,6 +1037,58 @@ try:
         1 for (camp, d) in ab_daily
         if d not in sheet_daily_cost.get((d.replace(day=1), camp), {}))
 
+    # Campaign status (running / paused), asked for 2026-08-27 to replace the Ch
+    # column: "để biết campaign đó đang active hay off".
+    #
+    # There is no status field to read. Not in the sheet (columns stop at M and
+    # none of them is a status), not in Airbridge, not in the adopt or activation
+    # tables. The real one lives in Ads Manager, and CI has no ads-platform
+    # credentials — only BigQuery and plain HTTP. So status here is *inferred
+    # from spend*, on Duyen's rule: "xem ngày gần nhất, vd hôm nay lúc kéo data
+    # ngày hôm qua 26. nếu thấy k có spend thì update status là pause".
+    #
+    # Two things make that inference safe rather than a guess:
+    #  1. Airbridge cost is a day fresher than the sheet — it had 2026-08-26 on
+    #     the morning of 08-27, while raw_total was still on 08-24. Judging
+    #     "still running" off the sheet would mark three days of live campaigns
+    #     as paused.
+    #  2. The feed's last day is not half-loaded, which would make every
+    #     campaign look paused. Measured 08-20..08-26: of the campaigns spending
+    #     on a given day, 0-2 (0.9-1.9%) have no row the next day, and the last
+    #     day carries the *highest* campaign count of the week (107). Day-to-day
+    #     dropout that small is real pausing, not ingestion lag.
+    #
+    # The reference day is the whole feed's max, not the max over our campaigns:
+    # if every growth campaign paused at once, the latter would silently redefine
+    # "today" as the last day we spent and report everything as running.
+    #
+    # Status is per campaign and current, not per (month, campaign) — Duyen chose
+    # "luôn hiện status hiện tại" so a Mar row still answers "is this one alive
+    # now". Hence a separate map keyed by name rather than a field on each row.
+    status_rows = run(f"""
+    SELECT
+      campaign,
+      MAX(event_date) as last_cost_day,
+      (SELECT MAX(event_date)
+       FROM chotot_airbridge.airbridge_attributed_impression_raw
+       WHERE cost_channel_metric > 0
+         AND event_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)) as feed_last_day
+    FROM chotot_airbridge.airbridge_attributed_impression_raw
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 180 DAY)
+      AND cost_channel_metric > 0
+      AND campaign IN ({in_list})
+    GROUP BY 1
+    """)
+    status_asof = max((to_date(r['feed_last_day']) for r in status_rows
+                       if r['feed_last_day']), default=None)
+    camp_status = {}
+    for r in status_rows:
+        last = to_date(r['last_cost_day'])
+        camp_status[str(r['campaign'])] = {
+            'active': bool(status_asof and last >= status_asof),
+            'last_cost_day': last.strftime('%Y-%m-%d'),
+        }
+
     def _int(v):
         return int(v) if v is not None else None
 
@@ -1265,10 +1317,18 @@ try:
           # after it came back FB=141/144, so a low FB number here is now a
           # regression to look into rather than the known state of the world.
           + " (both channels should be near-complete since 2026-08-21)")
+    cs_on = sum(1 for v in camp_status.values() if v['active'])
+    cs_named = {r['name'] for r in camp_detail}
+    print(f"  Campaign status: as of {status_asof} (Airbridge's last day with "
+          f"spend), {cs_on} of {len(camp_status)} campaigns still spending, "
+          f"{len(cs_named - set(camp_status))} on the table with no Airbridge "
+          f"cost row at all (render \"—\")")
 except Exception as e:
     note_skipped("Camp detail", e)
     camp_detail = D.get('camp_detail', [])
     month_cover = D.get('month_cover', {})
+    camp_status = D.get('camp_status', {})
+    status_asof = D.get('camp_status_asof')
 
 # Monthly targets per vertical, for the progress table in section 6.
 camp_target = D.get('camp_target', [])
@@ -1470,6 +1530,12 @@ out = {
     "campaigns": campaigns,
     "camp_detail": camp_detail,
     "camp_target": camp_target,
+    # Keyed by campaign name, not by (month, campaign): this is the campaign's
+    # state right now, deliberately the same on a Mar row as on an Aug one. See
+    # the block that builds it for why it is inferred from spend rather than read
+    # from a status field.
+    "camp_status": camp_status,
+    "camp_status_asof": status_asof,
     "month_cover": month_cover,
     # The cohort window behind every retention rate on the page, so the front end
     # can name the date instead of leaving a reader to guess why the dashboard and

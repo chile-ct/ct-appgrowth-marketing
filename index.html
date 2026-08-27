@@ -557,6 +557,7 @@ canvas { max-height: 500px; }
     <span style="color:#9ca3af;font-size:11px"><em>Đổi từ 08/2026:</em> cột <strong>Install</strong> (và CPI) trước đây lấy từ sheet <em>raw_total</em>, tức là số của <strong>ads manager</strong> từng nền tảng; nay lấy từ <strong>Airbridge</strong> để cả trang dùng chung một cách attribution. Hai nguồn <em>không</em> lệch đều nhau: tổng 27 campaign tháng 8 gần như bằng nhau (69.334 so với 69.473, −0,2%), phần lớn campaign Google trong sheet thấp hơn Airbridge vài %, nhưng hai campaign Facebook <code>..._2026theme_targeting</code> và <code>..._2026theme</code> lại cao gấp đôi (2.244 so với 1.124 · 1.905 so với 820). Cost giữ nguyên từ sheet vì đó là tiền thật và còn phải khớp với tab <em>target</em>. Campaign nào Airbridge không có dòng thì Install để <strong>—</strong>, không lấy lại số ads manager.</span><br>
     <span style="color:#9ca3af;font-size:11px">Install của mỗi campaign chỉ cộng <strong>đúng những ngày mà campaign đó có dòng cost trong sheet</strong> — không cộng cả tháng. Cost lấy ngày nào thì Install lấy đúng ngày đó, nên CPI luôn là cùng một khoảng thời gian. Cần vậy vì cửa sổ ngày của sheet khác nhau theo từng campaign chứ không chỉ theo tháng: tháng 3 các dòng pty lệch install 2,4–3,0x thì <em>cost cũng lệch</em> 1,7–2,5x cùng chiều, còn các dòng job khớp cả hai trong 1% — dấu hiệu sheet thiếu ngày, không phải khác cách attribution. Sau khi map theo ngày, tháng 3 từ +59,4% xuống <strong>+20,2%</strong>, tháng 8 còn +1,1%. Tháng 1 vẫn +42,2% vì lý do khác: các dòng <code>digital_activate_install7d_*</code> là buy <em>phase activate</em>, cột install trong sheet là số <em>optimisation event</em> của nền tảng chứ không phải install — Airbridge cao hơn 2,3–3,1x ở đây là đúng.</span><br>
     <span style="color:#9ca3af;font-size:11px"><em>Đổi từ 21/08/2026:</em> bảng <em>new_user_adopt_activate</em> được DA build lại — <strong>đã có channel Facebook</strong>, nên campaign FB từ nay có Save ad in D0 &amp; % Save ad (trước đây trống). Cùng lúc đó cột <code>adopt_users</code> đổi tên thành <code>save_ad_d0_users</code> và <code>report_date</code> đổi nghĩa từ <em>ngày cài + 7</em> thành <em>đúng ngày cài</em>; hai ngày 22–23/08 mục này chết vì đổi tên cột nên toàn bộ mục 6 giữ lại số cũ của 19/08 (xem ghi chú "data đến" ở đầu trang). Số tuyệt đối DAU / Save ad có xê dịch vài % đến 20% so với trước vì bảng mới attribute lại, nhưng <strong>% Save ad gần như không đổi</strong> (lệch &lt;0,4 điểm % ở mọi dòng kiểm tra). Dấu <strong>*</strong> = cohort chưa chín đủ 7 ngày nên số tuyệt đối còn thiếu (tỉ lệ % vẫn đúng); dấu này <strong>tự mất</strong> khi cohort đủ 7 ngày, không cần chỉnh tay.</span><br>
+    <span style="color:#9ca3af;font-size:11px"><em>Đổi từ 27/08/2026:</em> cột <strong>Ch</strong> (FB/GG) đã thay bằng cột <strong>Status</strong> — vẫn lọc được theo channel bằng nút <em>Channel</em> ở trên. Không nguồn nào bọn mình đọc được từ CI có field status thật của ads manager (sheet không có cột này, Airbridge và các bảng BigQuery cũng không), nên status <strong>suy ra từ chi phí</strong>: campaign có spend trong <em>ngày mới nhất Airbridge có data</em> thì là <strong>Đang chạy</strong>, không có thì <strong>Tắt DD/MM</strong> = ngày cuối cùng còn tiêu tiền. Dùng cost của Airbridge chứ không dùng sheet vì Airbridge sớm hơn sheet ~2–3 ngày (sáng 27/08: Airbridge đã có 26/08, sheet mới tới 24/08). Hai lưu ý: campaign <em>bật</em> trong platform nhưng không tiêu tiền (hết budget, không deliver) sẽ hiện là tắt; và campaign vừa tắt sáng nay thì tới lần update sau mới đổi. Status là trạng thái <strong>hiện tại</strong>, giống nhau ở mọi tháng — xem dòng tháng 3 vẫn biết campaign đó giờ còn sống hay không.</span><br>
     <span style="color:#9ca3af;font-size:11px"><strong>Lead 7d (user)</strong> = số <em>user</em> mới từ campaign đó có liên hệ với người bán <strong>trong 7 ngày kể từ ngày cài</strong>, cộng theo khoảng thời gian đang chọn. Tính <strong>mọi ngành</strong>, không riêng ngành đã mua campaign: user cài từ campaign job rồi đi liên hệ tin gds vẫn được đếm. <em>Đổi từ 08/2026:</em> cột này trước đây đếm <em>lượt</em> liên hệ trong ngày cài (D0); nay đếm <em>người</em> trong 7 ngày — cùng cột <code>user_1lead_7d</code> mà mục 3 và 4 đang dùng, nên cả trang giờ khớp nhau. Số tổng <strong>thấp hơn ~14%</strong> so với cách cũ vì đổi đơn vị lượt→người ăn nhiều hơn nới cửa sổ D0→7 ngày, và Cost/Lead tăng tương ứng ~16%.</span>
     <span style="color:#9ca3af;font-size:11px">Hai cột <strong>User LH ngành</strong> và <strong>Cost/User LH ngành</strong> đã <strong>gỡ bỏ 08/2026</strong>. Chúng chỉ đo được <em>trong ngày cài (D0)</em>, để cạnh cột Lead 7d thì mời gọi đúng phép chia sai — lấy D0 chia 7 ngày ra tỷ trọng đúng ngành thấp giả. Bảng nguồn <em>không có</em> cột 7 ngày tách theo ngành: chỉ <code>dau_lead</code> mới thật sự tách được, còn <code>user_1lead_7d</code> khi tách theo ngành là đếm user của ngành đó có liên hệ ở <strong>bất kỳ ngành nào</strong> (bằng chứng: bucket <em>other</em> có <code>dau_lead</code> = 0 suốt 221 ngày / 392.576 user, nhưng vẫn có 28.711 <code>user_1lead_7d</code>). Nguồn thay thế <em>traffic_lead_detail</em> thì không có campaign Facebook nào. Muốn có lại cột này cần DA cấp bảng mới, không phải đổi câu query.</span>
   </div>
@@ -2651,9 +2652,21 @@ function renderCampDetail() {
   const pageRows = rows.slice(page*PAGE, (page+1)*PAGE);
   const offset = page*PAGE;
 
-  const chBadge = c => {
-    const [bg,col] = c==='FB' ? ['#e0e7ff','#3730a3'] : ['#fef3c7','#92400e'];
-    return `<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:${bg};color:${col};font-weight:600">${c}</span>`;
+  // Replaced the Ch badge on 27/08/2026. Channel is not lost: the Channel
+  // filter above still works off r.channel, which is still in the data.
+  //
+  // There is no status field in any source we can reach from CI, so this is
+  // inferred from spend — a campaign counts as running if it spent on the last
+  // day Airbridge has spend for anyone. Say the as-of date in the tooltip
+  // rather than implying this is live from Ads Manager, because a campaign
+  // turned off this morning still reads "Đang chạy" until tomorrow's run.
+  const asOf = D.camp_status_asof || null;
+  const dm = s => s ? s.slice(8,10)+'/'+s.slice(5,7) : '';
+  const stBadge = name => {
+    const s = (D.camp_status||{})[name];
+    if (!s) return `<td ${LOW} title="Airbridge không có dòng chi phí nào cho campaign này nên không suy ra được trạng thái">—</td>`;
+    if (s.active) return `<td style="text-align:left"><span style="font-size:10px;padding:2px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-weight:600;white-space:nowrap" title="Có chi phí ngày ${dm(asOf)} — ngày mới nhất Airbridge có data. Trạng thái suy ra từ spend, không phải đọc trực tiếp từ ads manager: campaign vừa tắt sáng nay vẫn hiện Đang chạy tới lần update sau.">● Đang chạy</span></td>`;
+    return `<td style="text-align:left"><span style="font-size:10px;padding:2px 7px;border-radius:999px;background:#f3f4f6;color:#6b7280;font-weight:600;white-space:nowrap" title="Ngày cuối cùng có chi phí là ${dm(s.last_cost_day)}; tới ${dm(asOf)} (ngày mới nhất Airbridge có data) thì không còn spend. Suy ra từ spend chứ không đọc trực tiếp từ ads manager.">○ Tắt ${dm(s.last_cost_day)}</span></td>`;
   };
   const rrColor = v => v==null?'#9ca3af':v>0.35?'#10b981':v>0.25?'#374151':'#ef4444';
   // A muted cell = the rate is arithmetically correct but the denominator is
@@ -2782,7 +2795,7 @@ function renderCampDetail() {
   const head = `<tr>
     <th style="text-align:left">#</th>
     <th style="text-align:left">Campaign</th>
-    <th style="text-align:left">Ch</th>
+    <th style="text-align:left" title="Suy ra từ chi phí: có spend trong ngày mới nhất Airbridge có data (${dm(asOf)}) = đang chạy. Không phải status đọc trực tiếp từ ads manager.">Status</th>
     <th style="text-align:left">Cost</th>
     <th style="text-align:left">Install</th>
     <th style="text-align:left">CPI</th>
@@ -2799,7 +2812,7 @@ function renderCampDetail() {
   const body = pageRows.map((r,i)=>`<tr>
     <td ${tdL} style="color:#9ca3af;font-size:11px;text-align:left">${offset+i+1}</td>
     <td style="text-align:left;max-width:300px;font-size:11px;word-break:break-all;line-height:1.35" title="${r.name} · ngành: ${(r.vertical||'other').toUpperCase()}">${_cdHi(r.name, cdQ)}</td>
-    <td ${tdL}>${chBadge(r.channel)}</td>
+    ${stBadge(r.name)}
     <td ${tdL} style="text-align:left;font-weight:600">${fmtVnd(r.cost||0)}</td>
     <td ${tdL}>${fmtNum(r.install)}</td>
     ${r.cpi==null ? `<td ${LOW}>—</td>`
