@@ -851,22 +851,23 @@ try:
     """)
     act = {(to_date(r['month']), str(r['campaign'])): r for r in act_rows}
 
-    # Lead EVENTS (lượt liên hệ), not people, over the 7-day window — the count
-    # user_1lead_7d cannot give. Kept as its own query because it lives in a
-    # different table: retention_activation_core_event_by_source_channel is at
-    # per-user (clientId) grain, where lead_7d is an INTEGER event count that sums
-    # cleanly. (In the mapping table above, lead_7d is a FLOAT per-row average that
-    # must NOT be summed, and its `lead` is D0-only — this is why the event count
-    # has to come from here.) Same maturity cutoff as lead7 so cost/lead-event
-    # trims like for like, same sheet_max upper bound, same return_status='new'
-    # cohort, summed across channels per campaign name. This table has no
-    # channel='all'/campaign='all' aggregate rows, so summing does not double count.
+    # Lead EVENTS (lượt liên hệ), not people. Uses total_lead from
+    # retention_activation_core_event_by_source_channel: an INTEGER count of a new
+    # user's contact events attributed to their install day (D0), summable across
+    # the per-user (clientId) grain. Deliberately NOT lead_7d: a 7-day forward
+    # window needs cohort maturity (so the running month reads empty until cohorts
+    # age 7 days) and does not match the ordinary "leads in the period ÷ spend in
+    # the period" cost-per-lead this dashboard reports. total_lead is a same-period
+    # count, so it fills the current month immediately and lines up with monthly
+    # spend without any trimming. It is also the COMPLETE lead count — larger than
+    # lead_veh+gds+pty+job because some contacts are not categorised to a vertical.
+    # Capped at sheet_max like the other metrics; no channel='all'/campaign='all'
+    # rows exist here, so summing across channels per campaign does not double count.
     ev_rows = run(f"""
     SELECT
       DATE_TRUNC(visit_date, MONTH) as month,
       campaign,
-      SUM(IF(visit_date <= DATE '{mat_through('act','lead7')}',
-             lead_7d, 0)) as lead_event
+      SUM(total_lead) as lead_event
     FROM ct_digital.retention_activation_core_event_by_source_channel
     WHERE return_status = 'new'
       AND visit_date >= '2026-01-01'
@@ -1199,10 +1200,9 @@ try:
         lead_through = min(cutoff, _month_end(m_date)) if cutoff else None
         lead_partial = bool(
             lead_through and lead_through < sheet_last_day.get(m_date, lead_through))
-        # Lead EVENTS in the same 7-day window (lượt, not người), from the
-        # per-user core-event table. Trimmed by the same cutoff in SQL, so it
-        # shares this row's lead_cost / lead_through / lead_partial — cpl_event
-        # divides over exactly the same days as cpl does.
+        # Lead EVENTS (lượt, not người) in the period — total_lead, a D0 count
+        # that accrues on install days, i.e. the same days the campaign spent, so
+        # cpl_event divides by the whole month's cost with no maturity trim.
         le = lead_ev.get((m_date, name), {})
         lead_event = _int(le.get('lead_event'))
         camp_detail.append({
@@ -1229,10 +1229,10 @@ try:
             # A campaign with cost but zero leads has no CPL to quote — None
             # renders as "—" rather than as a division by zero.
             'cpl': round(lead_cost / lead) if lead else None,
-            # Lead EVENTS (lượt) in 7 days and cost per event. Same lead_cost as
-            # cpl so both cost-per numbers cover the same window; 0/None → "—".
+            # Lead EVENTS (lượt) in the period and standard cost per lead —
+            # whole-month cost ÷ total_lead (no window trim); 0/None → "—".
             'lead_event': lead_event,
-            'cpl_event': round(lead_cost / lead_event) if lead_event else None,
+            'cpl_event': round(cost / lead_event) if lead_event else None,
             # Set while the newest cohorts are still inside their 7 days, so the
             # count is real but not yet final. Clears itself once they mature.
             **({'lead_partial': True} if lead_partial else {}),
