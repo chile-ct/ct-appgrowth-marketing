@@ -2544,8 +2544,15 @@ function renderCampDetail() {
     if (dmNote) {
       const bits = ['Campaign của 8 account Demand lấy từ sheet <em>raw_retention</em> (refresh hằng ngày) · install lấy từ Airbridge theo campaign name, cùng cửa sổ ngày với card Install phía trên',
         '<strong>CPI total = Cost (chỉ account App) / Total install (App + Demand)</strong> — mẫu số có thêm install của Demand nhưng tử số không có spend của Demand, nên con số này luôn thấp hơn CPI thật. Đọc như "CPI nếu quy toàn bộ install về spend App", đừng so thẳng với CPI target.'];
-      if (!dmCh.includes('FB')) bits.push('Chưa có Facebook — 4 account FB Demand hiện không chạy nên sheet không có data. Khi chạy lại sẽ tự động vào đây.');
-      if (D.demand_install_from) bits.push(`Mapping campaign → account bắt đầu từ ${_dmyCd(D.demand_install_from)}, nên tháng trước đó chỉ thấy campaign còn sống tới ngày đó`);
+      if (!dmCh.includes('FB')) bits.push('Không có campaign Facebook nào trong lát cắt đang chọn');
+      // Only worth saying when the mapping actually starts after the first month
+      // on screen; otherwise it covers everything and the line is just noise.
+      if (D.demand_install_from) {
+        const dmFrom = new Date(D.demand_install_from);
+        const dmEarliest = rowsAll.map(r=>new Date(r.month+' 1')).sort((a,b)=>a-b)[0];
+        if (dmEarliest && dmEarliest < new Date(dmFrom.getFullYear(), dmFrom.getMonth(), 1))
+          bits.push(`Mapping campaign → account chỉ có từ ${_dmyCd(D.demand_install_from)}, nên tháng trước đó chưa đủ campaign`);
+      }
       if (_cdState.search) bits.push('Ô tìm kiếm không áp dụng cho panel này — nó luôn theo Tháng + Channel + Vertical');
       dmNote.innerHTML = bits.join('<br>');
     }
