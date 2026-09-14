@@ -779,17 +779,30 @@ def fetch_demand_campaigns():
     """
     campaigns, first_run, seen, clash = {}, None, 0, 0
     raw = _sheet_csv(SHEET_DEMAND_GID)
+    # Columns are looked up by header name, not position. The first cut of this
+    # hard-coded indices taken from a different tab of the same workbook and
+    # silently matched nothing, because col 3 there is numeric dau.
+    header = [h.strip().lower() for h in (raw[0] if raw else [])]
+    try:
+        i_date = header.index('date')
+        i_acc = header.index('account_name')
+        i_camp = header.index('campaign')
+    except ValueError:
+        raise RuntimeError(
+            f'raw_retention: need date/account_name/campaign columns, '
+            f'gid={SHEET_DEMAND_GID} returned header {header[:10]}')
+    width = max(i_date, i_acc, i_camp) + 1
     accounts_seen = set()
     for row in raw[1:]:  # [1:] drops the header row
-        row = (row + [''] * 8)[:8]
-        account, camp = row[3].strip(), row[7].strip()
+        row = (row + [''] * width)[:width]
+        account, camp = row[i_acc].strip(), row[i_camp].strip()
         if account:
             accounts_seen.add(account)
         who = DEMAND_ACCOUNTS.get(account.lower())
         if who is None or not camp:
             continue
         seen += 1
-        d = _ret_date(row[0])
+        d = _ret_date(row[i_date])
         if d is not None and (first_run is None or d < first_run):
             first_run = d
         prev = campaigns.setdefault(camp, who)
@@ -800,8 +813,8 @@ def fetch_demand_campaigns():
         # resolved to some other tab, or account names that drifted. Print what the
         # export actually returned so the next reader does not have to guess.
         print(f"  raw_retention: NO demand rows matched. gid={SHEET_DEMAND_GID} "
-              f"returned {len(raw)} rows; header={raw[0][:9] if raw else '(empty)'}")
-        print(f"  raw_retention: account names in col 3 = "
+              f"returned {len(raw)} rows; header={header[:10]}")
+        print(f"  raw_retention: account_name values = "
               f"{sorted(accounts_seen)[:15] or '(none)'}")
         print(f"  raw_retention: expected one of {sorted(DEMAND_ACCOUNTS)}")
     if clash:
