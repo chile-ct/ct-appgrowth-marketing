@@ -778,9 +778,13 @@ def fetch_demand_campaigns():
     the panel needs it to say which months the mapping can and cannot vouch for.
     """
     campaigns, first_run, seen, clash = {}, None, 0, 0
-    for row in _sheet_csv(SHEET_DEMAND_GID)[1:]:  # [1:] drops the header row
+    raw = _sheet_csv(SHEET_DEMAND_GID)
+    accounts_seen = set()
+    for row in raw[1:]:  # [1:] drops the header row
         row = (row + [''] * 8)[:8]
         account, camp = row[3].strip(), row[7].strip()
+        if account:
+            accounts_seen.add(account)
         who = DEMAND_ACCOUNTS.get(account.lower())
         if who is None or not camp:
             continue
@@ -791,6 +795,15 @@ def fetch_demand_campaigns():
         prev = campaigns.setdefault(camp, who)
         if prev != who:
             clash += 1
+    if not seen:
+        # Zero matches has several very different causes — an empty tab, a gid that
+        # resolved to some other tab, or account names that drifted. Print what the
+        # export actually returned so the next reader does not have to guess.
+        print(f"  raw_retention: NO demand rows matched. gid={SHEET_DEMAND_GID} "
+              f"returned {len(raw)} rows; header={raw[0][:9] if raw else '(empty)'}")
+        print(f"  raw_retention: account names in col 3 = "
+              f"{sorted(accounts_seen)[:15] or '(none)'}")
+        print(f"  raw_retention: expected one of {sorted(DEMAND_ACCOUNTS)}")
     if clash:
         print(f"  raw_retention: {clash} rows name a campaign already claimed by "
               f"another demand account — first account seen wins")
