@@ -82,6 +82,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .kpi-label { font-size: 11px; color: #6b7280; margin-bottom: 6px; line-height: 1.3; }
 .kpi-value { font-size: 20px; font-weight: 700; }
 .kpi-sub { font-size: 11px; color: #6b7280; margin-top: 2px; }
+#cdDemand > summary { list-style: none; cursor: pointer; user-select: none; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #4361ee; padding: 4px 0; }
+#cdDemand > summary::-webkit-details-marker { display: none; }
+#cdDemand > summary::before { content: '+'; display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border: 1px solid #4361ee; border-radius: 4px; font-size: 13px; line-height: 1; }
+#cdDemand[open] > summary::before { content: '\2212'; }
 .kpi-delta { font-size: 11px; margin-top: 4px; font-weight: 600; }
 /* Section 6 carries 8 KPIs. Fixed columns rather than auto-fit: auto-fit drops to
    7 the moment the window is a little narrow and leaves the 8th card stranded
@@ -572,12 +576,13 @@ canvas { max-height: 500px; }
   </div>
 
   <details id="cdDemand" style="margin:-4px 0 16px">
-    <summary style="cursor:pointer;font-size:12px;color:#4361ee;font-weight:600;padding:4px 0;user-select:none">Install từ 8 account nhánh Demand</summary>
+    <summary>Install từ 8 account nhánh Demand</summary>
     <div style="margin-top:10px">
-      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:8px">
-        <div class="kpi-card"><div class="kpi-label">Install — account App</div><div class="kpi-value" id="kpi-dm-app">—</div><div class="kpi-sub">8 account phase App (bảng dưới)</div></div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:8px">
+        <div class="kpi-card"><div class="kpi-label">Cost</div><div class="kpi-value" id="kpi-dm-cost">—</div><div class="kpi-sub">Như card Cost trên — chỉ 8 account App</div></div>
         <div class="kpi-card"><div class="kpi-label">Install — account Demand</div><div class="kpi-value" id="kpi-dm-demand">—</div><div class="kpi-sub" id="kpi-dm-demand-sub">—</div></div>
-        <div class="kpi-card"><div class="kpi-label">Total install</div><div class="kpi-value" id="kpi-dm-total">—</div><div class="kpi-sub">App + Demand</div></div>
+        <div class="kpi-card"><div class="kpi-label">Total install</div><div class="kpi-value" id="kpi-dm-total">—</div><div class="kpi-sub" id="kpi-dm-total-sub">App + Demand</div></div>
+        <div class="kpi-card"><div class="kpi-label">CPI total</div><div class="kpi-value" id="kpi-dm-cpi">—</div><div class="kpi-sub">Cost / Total install</div></div>
       </div>
       <div id="cdDemandNote" style="font-size:10px;color:#9ca3af;line-height:1.5"></div>
     </div>
@@ -2519,17 +2524,26 @@ function renderCampDetail() {
       && (_cdState.channel  === 'all' || r.channel === _cdState.channel)
       && (_cdState.vertical === 'all' || (r.vertical||'other') === _cdState.vertical);
     const dmRows = dmAll.filter(dmChips);
-    const dmApp = rowsAll.filter(dmChips).reduce((s,r)=>s+(r.install||0),0);
+    const dmAppRows = rowsAll.filter(dmChips);
+    const dmApp = dmAppRows.reduce((s,r)=>s+(r.install||0),0);
+    // Chip-filtered cost, not the scorecard's tCost: tCost also obeys the name
+    // search, and a cost that moves while install does not would make CPI total
+    // a ratio of two different campaign sets.
+    const dmCost = dmAppRows.reduce((s,r)=>s+(r.cost||0),0);
     const dmInst = dmRows.reduce((s,r)=>s+(r.install||0),0);
-    setTxt('kpi-dm-app', fmtNum(dmApp));
+    const dmTotal = dmApp + dmInst;
+    setTxt('kpi-dm-cost', fmtVnd(dmCost));
     setTxt('kpi-dm-demand', fmtNum(dmInst));
-    setTxt('kpi-dm-total', fmtNum(dmApp + dmInst));
+    setTxt('kpi-dm-total', fmtNum(dmTotal));
+    setTxt('kpi-dm-total-sub', `${fmtNum(dmApp)} App + ${fmtNum(dmInst)} Demand`);
+    setTxt('kpi-dm-cpi', dmTotal ? Math.round(dmCost/dmTotal).toLocaleString('en')+' ₫' : '—');
     const dmCh = [...new Set(dmRows.map(r=>r.channel))].sort();
     setTxt('kpi-dm-demand-sub',
       dmCh.length ? dmCh.join(' + ') + ' · từ Airbridge' : 'Không có campaign nào');
     const dmNote = document.getElementById('cdDemandNote');
     if (dmNote) {
-      const bits = ['Campaign của 8 account Demand lấy từ sheet <em>raw_retention</em> (refresh hằng ngày) · install lấy từ Airbridge theo campaign name, cùng cửa sổ ngày với card Install phía trên'];
+      const bits = ['Campaign của 8 account Demand lấy từ sheet <em>raw_retention</em> (refresh hằng ngày) · install lấy từ Airbridge theo campaign name, cùng cửa sổ ngày với card Install phía trên',
+        '<strong>CPI total = Cost (chỉ account App) / Total install (App + Demand)</strong> — mẫu số có thêm install của Demand nhưng tử số không có spend của Demand, nên con số này luôn thấp hơn CPI thật. Đọc như "CPI nếu quy toàn bộ install về spend App", đừng so thẳng với CPI target.'];
       if (!dmCh.includes('FB')) bits.push('Chưa có Facebook — 4 account FB Demand hiện không chạy nên sheet không có data. Khi chạy lại sẽ tự động vào đây.');
       if (D.demand_install_from) bits.push(`Mapping campaign → account bắt đầu từ ${_dmyCd(D.demand_install_from)}, nên tháng trước đó chỉ thấy campaign còn sống tới ngày đó`);
       if (_cdState.search) bits.push('Ô tìm kiếm không áp dụng cho panel này — nó luôn theo Tháng + Channel + Vertical');
