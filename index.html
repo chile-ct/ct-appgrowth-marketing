@@ -578,10 +578,11 @@ canvas { max-height: 500px; }
   <details id="cdDemand" style="margin:-4px 0 16px">
     <summary>Install từ 8 account nhánh Demand</summary>
     <div style="margin-top:10px">
-      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:8px">
+      <div class="kpi-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:8px">
         <div class="kpi-card"><div class="kpi-label">Cost</div><div class="kpi-value" id="kpi-dm-cost">—</div><div class="kpi-sub">Như card Cost trên — chỉ 8 account App</div></div>
         <div class="kpi-card"><div class="kpi-label">Install — account Demand</div><div class="kpi-value" id="kpi-dm-demand">—</div><div class="kpi-sub" id="kpi-dm-demand-sub">—</div></div>
         <div class="kpi-card"><div class="kpi-label">Total install</div><div class="kpi-value" id="kpi-dm-total">—</div><div class="kpi-sub" id="kpi-dm-total-sub">App + Demand</div></div>
+        <div class="kpi-card"><div class="kpi-label">% Demand</div><div class="kpi-value" id="kpi-dm-share">—</div><div class="kpi-sub">Demand / Total install</div></div>
         <div class="kpi-card"><div class="kpi-label">CPI total</div><div class="kpi-value" id="kpi-dm-cpi">—</div><div class="kpi-sub">Cost / Total install</div></div>
       </div>
       <div id="cdDemandNote" style="font-size:10px;color:#9ca3af;line-height:1.5"></div>
@@ -2536,6 +2537,7 @@ function renderCampDetail() {
     setTxt('kpi-dm-demand', fmtNum(dmInst));
     setTxt('kpi-dm-total', fmtNum(dmTotal));
     setTxt('kpi-dm-total-sub', `${fmtNum(dmApp)} App + ${fmtNum(dmInst)} Demand`);
+    setTxt('kpi-dm-share', dmTotal ? fmtPct(dmInst/dmTotal) : '—');
     setTxt('kpi-dm-cpi', dmTotal ? Math.round(dmCost/dmTotal).toLocaleString('en')+' ₫' : '—');
     const dmCh = [...new Set(dmRows.map(r=>r.channel))].sort();
     setTxt('kpi-dm-demand-sub',
