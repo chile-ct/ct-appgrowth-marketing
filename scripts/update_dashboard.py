@@ -604,6 +604,7 @@ except Exception as e:
 SHEET_ID = '1eLdUTKfR9yHcUnnEfyIouZlCiVDPvR6yn3igxdoy8eE'
 SHEET_GID = '2065956136'         # raw_total
 SHEET_TARGET_GID = '2028964073'  # target
+SHEET_DEMAND_GID = '118997184'   # raw_retention
 
 # The target tab's Month column is a bare month number, and the workbook itself
 # is per-year ("[CT] App Growth - performance tracking 2026"), so the year has
@@ -622,6 +623,26 @@ GROWTH_ACCOUNTS = {
     'chotot_growth_new': 'GG',
 }
 SHEET_PHASES = {'install', 'activate'}
+
+# Growth team / Demand phase ad accounts -> (ad channel, vertical). Section 6's
+# table is App phase only; these feed the separate install-only panel under its
+# scorecard, added 2026-09-14 on Duyen's ask ("số install đến từ toàn bộ campaign
+# thuộc 8 account nhánh demand này. chỉ lấy số install").
+#
+# The four FB accounts are listed even though raw_retention has no rows for them:
+# Duyen, 2026-09-14, "do hiện tại k chạy FB nên sheet đó k có data". Keeping them
+# here means the panel starts counting Facebook by itself the day that spend
+# resumes, with no code change.
+DEMAND_ACCOUNTS = {
+    'chotot_job_sgd':         ('FB', 'job'),
+    'chotot_veh_sgd':         ('FB', 'veh'),
+    'chotot_gds_elt_sgd':     ('FB', 'gds'),
+    'chotot_pty_sgd':         ('FB', 'pty'),
+    'chotot_job_vnd':         ('GG', 'job'),
+    'chotot_veh_dau_new':     ('GG', 'veh'),
+    'chotot_gds_elt_dau_new': ('GG', 'gds'),
+    'chotot_pty_dau_new':     ('GG', 'pty'),
+}
 
 
 def _sheet_token():
@@ -722,6 +743,64 @@ def fetch_camp_cost():
         print(f"  Sheet: {bad_dates} rows with unparseable dates skipped")
     print(f"  Sheet: {seen} growth rows -> {len(agg)} campaign-months")
     return agg, last_day, daily
+
+
+def _ret_date(s):
+    """run_date in raw_retention — ISO in the rows seen, M/D/YYYY defensively."""
+    s = (s or '').strip()
+    if not s:
+        return None
+    for parse in (
+        lambda v: datetime.date(*(int(x) for x in v.split('-'))),
+        lambda v: (lambda m, d, y: datetime.date(y, m, d))(
+            *(int(x) for x in v.split('/'))),
+    ):
+        try:
+            return parse(s)
+        except (ValueError, TypeError):
+            continue
+    return None
+
+
+def fetch_demand_campaigns():
+    """Which campaign names belong to the Demand-phase growth accounts.
+
+    This tab is the only source for that mapping anywhere CI can reach. Airbridge
+    — where the installs come from — is keyed by campaign name and carries no ad
+    account column at all, and raw_total holds App phase accounts only, so
+    without raw_retention there is no way to tell a Demand campaign from any
+    other. It refreshes daily (Duyen, 2026-09-14), so new campaigns appear on
+    their own.
+
+    One row per ad / asset group, so the same campaign repeats; we only want the
+    distinct names. Returns (campaigns, first_run) where campaigns maps campaign
+    name to (channel, vertical) and first_run is the earliest run_date present —
+    the panel needs it to say which months the mapping can and cannot vouch for.
+    """
+    campaigns, first_run, seen, clash = {}, None, 0, 0
+    for row in _sheet_csv(SHEET_DEMAND_GID)[1:]:  # [1:] drops the header row
+        row = (row + [''] * 8)[:8]
+        account, camp = row[3].strip(), row[7].strip()
+        who = DEMAND_ACCOUNTS.get(account.lower())
+        if who is None or not camp:
+            continue
+        seen += 1
+        d = _ret_date(row[0])
+        if d is not None and (first_run is None or d < first_run):
+            first_run = d
+        prev = campaigns.setdefault(camp, who)
+        if prev != who:
+            clash += 1
+    if clash:
+        print(f"  raw_retention: {clash} rows name a campaign already claimed by "
+              f"another demand account — first account seen wins")
+    by_acc = {}
+    for ch, vert in campaigns.values():
+        by_acc[(ch, vert)] = by_acc.get((ch, vert), 0) + 1
+    print(f"  raw_retention: {seen} demand rows -> {len(campaigns)} campaigns "
+          f"({', '.join(f'{c}/{v} {n}' for (c, v), n in sorted(by_acc.items()))})"
+          f", mapping starts {first_run}")
+    return campaigns, first_run
 
 
 def fetch_targets():
@@ -1365,6 +1444,88 @@ except Exception as e:
     camp_status = D.get('camp_status', {})
     status_asof = D.get('camp_status_asof')
 
+# Install from the Demand-phase accounts, for the collapsed panel under section
+# 6's scorecard. Install only — no cost, no CPI. There is no Demand spend in
+# raw_total to divide by, and asking for one anyway would print a CPI off a cost
+# this dashboard cannot see.
+#
+# Deliberately its own try block rather than part of camp detail above: this
+# leans on a tab nothing else reads, and a bad refresh there must not take the
+# whole section down with it.
+demand_install = D.get('demand_install', [])
+demand_install_from = D.get('demand_install_from')
+try:
+    dm_campaigns, dm_first_run = fetch_demand_campaigns()
+    if not dm_campaigns:
+        raise RuntimeError('no demand rows found in raw_retention')
+    if not sheet_last_day:
+        raise RuntimeError('no month windows from raw_total to align against')
+
+    dm_in_list = ','.join(
+        "'" + n.replace('\\', '\\\\').replace("'", "\\'") + "'"
+        for n in sorted(dm_campaigns))
+    # Same GREATEST(events, users) as the App install above — see the long note
+    # there for why taking the greater of the two is the self-healing choice.
+    dm_rows = run(f"""
+    SELECT
+      campaign,
+      event_date,
+      GREATEST(SUM(app_installs_metric),
+               SUM(app_install_users_metric)) as install
+    FROM chotot_airbridge.airbridge_attributed_impression_raw
+    WHERE event_date BETWEEN DATE '{min(sheet_last_day).replace(day=1)}'
+                         AND DATE '{max(sheet_last_day.values())}'
+      AND campaign IN ({dm_in_list})
+    GROUP BY 1, 2
+    """)
+    # Capped at the same last day per month that the App numbers stop at. The
+    # panel's headline is App + Demand, and Airbridge runs a day or two ahead of
+    # the hand-filled raw_total, so an uncapped Demand total would quietly add a
+    # longer window to a shorter one and call the sum a month.
+    dm_agg, dm_dropped = {}, 0
+    for r in dm_rows:
+        v = r['install']
+        if v is None:
+            continue
+        dm_day = to_date(r['event_date'])
+        dm_month = dm_day.replace(day=1)
+        dm_cap = sheet_last_day.get(dm_month)
+        if dm_cap is None or dm_day > dm_cap:
+            dm_dropped += 1
+            continue
+        dm_ch, dm_vert = dm_campaigns[str(r['campaign'])]
+        dm_key = (dm_month, dm_ch, dm_vert)
+        dm_agg[dm_key] = dm_agg.get(dm_key, 0) + int(round(v))
+
+    demand_install = [
+        {
+            'month': m.strftime('%b %Y'),
+            'channel': ch,
+            'vertical': vert,
+            'install': n,
+        }
+        for (m, ch, vert), n in sorted(dm_agg.items())
+    ]
+    demand_install_from = dm_first_run.isoformat() if dm_first_run else None
+
+    # Months that ran before the mapping tab started are knowingly incomplete: a
+    # Demand campaign that finished before the first run_date was never written
+    # down anywhere, so its installs cannot be recovered. The front end greys
+    # those months out instead of showing a total that only looks whole.
+    dm_short = sorted({
+        m for m in sheet_last_day
+        if dm_first_run and m < dm_first_run.replace(day=1)
+    })
+    print(f"  Demand install: {len(demand_install)} month-channel-vertical rows, "
+          f"{sum(d['install'] for d in demand_install):,} installs, "
+          f"{dm_dropped} campaign-days outside the App window dropped")
+    if dm_short:
+        print(f"  Demand install: mapping starts {dm_first_run}, so "
+              f"{', '.join(m.strftime('%b %Y') for m in dm_short)} "
+              f"can only see campaigns that were still live then")
+except Exception as e:
+    note_skipped("Demand install", e)
+
 # Monthly targets per vertical, for the progress table in section 6.
 camp_target = D.get('camp_target', [])
 try:
@@ -1564,6 +1725,8 @@ out = {
     "attribution_assist": attribution_assist,
     "campaigns": campaigns,
     "camp_detail": camp_detail,
+    "demand_install": demand_install,
+    "demand_install_from": demand_install_from,
     "camp_target": camp_target,
     # Keyed by campaign name, not by (month, campaign): this is the campaign's
     # state right now, deliberately the same on a Mar row as on an Aug one. See

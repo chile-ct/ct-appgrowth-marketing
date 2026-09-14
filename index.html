@@ -555,14 +555,7 @@ canvas { max-height: 500px; }
   <div class="section-title">6. Detail Camp Performance — Growth Team (App)</div>
   <div class="section-subtitle">
     Performance từng campaign của <strong>8 ad account team Growth, phase App</strong> (FB: Chotot_growth_sgd, Chotot_pty_app, Chotot_job_app, Chotot_veh_app · GG: Chotot_app_pty, Chotot_app_veh, Chotot_app_job, Chotot_Growth_New)<br>
-    <span style="color:#9ca3af">Cost lấy từ sheet <em>raw_total</em> (phase install + activate) · <strong>Install lấy từ Airbridge</strong> (<em>airbridge_attributed_impression_raw</em>) · D0/D1/D7 &amp; Lead 7d (user) từ <em>retention_mapping_activation_by_source_campaign</em> · <strong>Lead event</strong> (lượt) từ <em>retention_activation_core_event_by_source_channel</em> (<code>SUM(total_lead)</code>) ·DAU &amp; Save ad in D0 từ <em>new_user_adopt_activate</em> (<code>save_ad_d0_users</code>) · cộng theo campaign name qua mọi channel, join bằng campaign name</span><br>
-    <span style="color:#9ca3af;font-size:11px"><em>Đổi từ 08/2026:</em> cột <strong>Install</strong> (và CPI) trước đây lấy từ sheet <em>raw_total</em>, tức là số của <strong>ads manager</strong> từng nền tảng; nay lấy từ <strong>Airbridge</strong> để cả trang dùng chung một cách attribution. Hai nguồn <em>không</em> lệch đều nhau: tổng 27 campaign tháng 8 gần như bằng nhau (69.334 so với 69.473, −0,2%), phần lớn campaign Google trong sheet thấp hơn Airbridge vài %, nhưng hai campaign Facebook <code>..._2026theme_targeting</code> và <code>..._2026theme</code> lại cao gấp đôi (2.244 so với 1.124 · 1.905 so với 820). Cost giữ nguyên từ sheet vì đó là tiền thật và còn phải khớp với tab <em>target</em>. Campaign nào Airbridge không có dòng thì Install để <strong>—</strong>, không lấy lại số ads manager.</span><br>
-    <span style="color:#9ca3af;font-size:11px">Install của mỗi campaign chỉ cộng <strong>đúng những ngày mà campaign đó có dòng cost trong sheet</strong> — không cộng cả tháng. Cost lấy ngày nào thì Install lấy đúng ngày đó, nên CPI luôn là cùng một khoảng thời gian. Cần vậy vì cửa sổ ngày của sheet khác nhau theo từng campaign chứ không chỉ theo tháng: tháng 3 các dòng pty lệch install 2,4–3,0x thì <em>cost cũng lệch</em> 1,7–2,5x cùng chiều, còn các dòng job khớp cả hai trong 1% — dấu hiệu sheet thiếu ngày, không phải khác cách attribution. Sau khi map theo ngày, tháng 3 từ +59,4% xuống <strong>+20,2%</strong>, tháng 8 còn +1,1%. Tháng 1 vẫn +42,2% vì lý do khác: các dòng <code>digital_activate_install7d_*</code> là buy <em>phase activate</em>, cột install trong sheet là số <em>optimisation event</em> của nền tảng chứ không phải install — Airbridge cao hơn 2,3–3,1x ở đây là đúng.</span><br>
-    <span style="color:#9ca3af;font-size:11px"><em>Đổi từ 21/08/2026:</em> bảng <em>new_user_adopt_activate</em> được DA build lại — <strong>đã có channel Facebook</strong>, nên campaign FB từ nay có Save ad in D0 &amp; % Save ad (trước đây trống). Cùng lúc đó cột <code>adopt_users</code> đổi tên thành <code>save_ad_d0_users</code> và <code>report_date</code> đổi nghĩa từ <em>ngày cài + 7</em> thành <em>đúng ngày cài</em>; hai ngày 22–23/08 mục này chết vì đổi tên cột nên toàn bộ mục 6 giữ lại số cũ của 19/08 (xem ghi chú "data đến" ở đầu trang). Số tuyệt đối DAU / Save ad có xê dịch vài % đến 20% so với trước vì bảng mới attribute lại, nhưng <strong>% Save ad gần như không đổi</strong> (lệch &lt;0,4 điểm % ở mọi dòng kiểm tra). Dấu <strong>*</strong> = cohort chưa chín đủ 7 ngày nên số tuyệt đối còn thiếu (tỉ lệ % vẫn đúng); dấu này <strong>tự mất</strong> khi cohort đủ 7 ngày, không cần chỉnh tay.</span><br>
-    <span style="color:#9ca3af;font-size:11px"><em>Đổi từ 27/08/2026:</em> cột <strong>Ch</strong> (FB/GG) đã thay bằng cột <strong>Status</strong> — vẫn lọc được theo channel bằng nút <em>Channel</em> ở trên. Không nguồn nào bọn mình đọc được từ CI có field status thật của ads manager (sheet không có cột này, Airbridge và các bảng BigQuery cũng không), nên status <strong>suy ra từ chi phí</strong>: campaign có spend trong <em>ngày mới nhất Airbridge có data</em> thì là <strong>Đang chạy</strong>, không có thì <strong>Tắt DD/MM</strong> = ngày cuối cùng còn tiêu tiền. Dùng cost của Airbridge chứ không dùng sheet vì Airbridge sớm hơn sheet ~2–3 ngày (sáng 27/08: Airbridge đã có 26/08, sheet mới tới 24/08). Hai lưu ý: campaign <em>bật</em> trong platform nhưng không tiêu tiền (hết budget, không deliver) sẽ hiện là tắt; và campaign vừa tắt sáng nay thì tới lần update sau mới đổi. Status là trạng thái <strong>hiện tại</strong>, giống nhau ở mọi tháng — xem dòng tháng 3 vẫn biết campaign đó giờ còn sống hay không.</span><br>
-    <span style="color:#9ca3af;font-size:11px"><strong>Lead 7d (user)</strong> = số <em>user</em> mới từ campaign đó có liên hệ với người bán <strong>trong 7 ngày kể từ ngày cài</strong>, cộng theo khoảng thời gian đang chọn. Tính <strong>mọi ngành</strong>, không riêng ngành đã mua campaign: user cài từ campaign job rồi đi liên hệ tin gds vẫn được đếm. <em>Đổi từ 08/2026:</em> cột này trước đây đếm <em>lượt</em> liên hệ trong ngày cài (D0); nay đếm <em>người</em> trong 7 ngày — cùng cột <code>user_1lead_7d</code> mà mục 3 và 4 đang dùng, nên cả trang giờ khớp nhau. Số tổng <strong>thấp hơn ~14%</strong> so với cách cũ vì đổi đơn vị lượt→người ăn nhiều hơn nới cửa sổ D0→7 ngày, và Cost/Lead tăng tương ứng ~16%.</span>
-    <span style="color:#9ca3af;font-size:11px"><em>Đổi từ 09/2026:</em> cột <strong>Cost/Lead 7d</strong> đổi tên thành <strong>Cost/User</strong> cho đúng bản chất — mẫu số là <em>người</em> (user_1lead_7d), không phải lượt. Thêm hai cột mới: <strong>Lead event</strong> = tổng <em>lượt</em> liên hệ người bán trong kỳ (<code>SUM(total_lead)</code> từ <em>retention_activation_core_event_by_source_channel</em>), và <strong>Cost/Lead</strong> = cost / lượt. <code>total_lead</code> là số đếm lượt gắn với <em>ngày cài (D0)</em>, tức cùng khung ngày với chi phí, nên Cost/Lead là cost-per-lead thông thường và <strong>có số ngay cho tháng đang chạy</strong> (không phải chờ cohort chín như cột 7 ngày). Nó cũng là tổng <em>đầy đủ</em> — lớn hơn tổng 4 cột vertical vì có lượt chưa phân loại ngành. (Ban đầu cột này dùng <code>lead_7d</code> = cửa sổ 7 ngày forward, đã đổi vì vướng maturity và không đúng nghĩa CPL của dash.) Lưu ý: số lượt còn lẫn user bot/outlier.</span>
-    <span style="color:#9ca3af;font-size:11px">Hai cột <strong>User LH ngành</strong> và <strong>Cost/User LH ngành</strong> đã <strong>gỡ bỏ 08/2026</strong>. Chúng chỉ đo được <em>trong ngày cài (D0)</em>, để cạnh cột Lead 7d thì mời gọi đúng phép chia sai — lấy D0 chia 7 ngày ra tỷ trọng đúng ngành thấp giả. Bảng nguồn <em>không có</em> cột 7 ngày tách theo ngành: chỉ <code>dau_lead</code> mới thật sự tách được, còn <code>user_1lead_7d</code> khi tách theo ngành là đếm user của ngành đó có liên hệ ở <strong>bất kỳ ngành nào</strong> (bằng chứng: bucket <em>other</em> có <code>dau_lead</code> = 0 suốt 221 ngày / 392.576 user, nhưng vẫn có 28.711 <code>user_1lead_7d</code>). Nguồn thay thế <em>traffic_lead_detail</em> thì không có campaign Facebook nào. Muốn có lại cột này cần DA cấp bảng mới, không phải đổi câu query.</span>
+    <span style="color:#9ca3af">Cost lấy từ sheet <em>raw_total</em> (phase install + activate) · <strong>Install lấy từ Airbridge</strong> (<em>airbridge_attributed_impression_raw</em>) · D0/D1/D7 &amp; Lead 7d (user) từ <em>retention_mapping_activation_by_source_campaign</em> · <strong>Lead event</strong> (lượt) từ <em>retention_activation_core_event_by_source_channel</em> (<code>SUM(total_lead)</code>) · DAU &amp; Save ad in D0 từ <em>new_user_adopt_activate</em> (<code>save_ad_d0_users</code>) · cộng theo campaign name qua mọi channel, join bằng campaign name</span>
   </div>
 
   <div class="kpi-grid kpi-10" id="cd-kpis">
@@ -577,6 +570,18 @@ canvas { max-height: 500px; }
     <div class="kpi-card"><div class="kpi-label">Lead event</div><div class="kpi-value" id="kpi-cd-leadev">—</div><div class="kpi-sub" id="kpi-cd-leadev-sub">—</div></div>
     <div class="kpi-card"><div class="kpi-label">Cost/Lead (event)</div><div class="kpi-value" id="kpi-cd-cple">—</div><div class="kpi-sub" id="kpi-cd-cple-sub">Cost / Lead event</div></div>
   </div>
+
+  <details id="cdDemand" style="margin:-4px 0 16px">
+    <summary style="cursor:pointer;font-size:12px;color:#4361ee;font-weight:600;padding:4px 0;user-select:none">Install từ 8 account nhánh Demand</summary>
+    <div style="margin-top:10px">
+      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:8px">
+        <div class="kpi-card"><div class="kpi-label">Install — account App</div><div class="kpi-value" id="kpi-dm-app">—</div><div class="kpi-sub">8 account phase App (bảng dưới)</div></div>
+        <div class="kpi-card"><div class="kpi-label">Install — account Demand</div><div class="kpi-value" id="kpi-dm-demand">—</div><div class="kpi-sub" id="kpi-dm-demand-sub">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Total install</div><div class="kpi-value" id="kpi-dm-total">—</div><div class="kpi-sub">App + Demand</div></div>
+      </div>
+      <div id="cdDemandNote" style="font-size:10px;color:#9ca3af;line-height:1.5"></div>
+    </div>
+  </details>
 
   <div class="card" style="margin-bottom:16px">
     <div class="card-title" id="cpTitle">Progress vs Target</div>
@@ -2497,6 +2502,40 @@ function renderCampDetail() {
   setTxt('kpi-cd-cost-sub', `${rows.length} campaign · ${_cdState.month==='all'?'tất cả tháng':_cdState.month}`);
   setTxt('kpi-cd-install', fmtNum(tInst));
   setTxt('kpi-cd-cpi', tInst?Math.round(tCost/tInst).toLocaleString('en')+' ₫':'—');
+
+  // Install from the Demand-phase accounts, in the collapsed panel under the
+  // scorecard. Scoped by Month + Channel + Vertical only. The name search is
+  // deliberately left out: it matches App campaign names, and narrowing one side
+  // of an App + Demand sum by a filter the other side cannot see would print a
+  // total that is not the sum of anything on screen.
+  (() => {
+    const dmWrap = document.getElementById('cdDemand');
+    if (!dmWrap) return;
+    const dmAll = (D && D.demand_install) || [];
+    if (!dmAll.length) { dmWrap.style.display = 'none'; return; }
+    dmWrap.style.display = '';
+    const dmChips = r =>
+         (_cdState.month    === 'all' || r.month === _cdState.month)
+      && (_cdState.channel  === 'all' || r.channel === _cdState.channel)
+      && (_cdState.vertical === 'all' || (r.vertical||'other') === _cdState.vertical);
+    const dmRows = dmAll.filter(dmChips);
+    const dmApp = rowsAll.filter(dmChips).reduce((s,r)=>s+(r.install||0),0);
+    const dmInst = dmRows.reduce((s,r)=>s+(r.install||0),0);
+    setTxt('kpi-dm-app', fmtNum(dmApp));
+    setTxt('kpi-dm-demand', fmtNum(dmInst));
+    setTxt('kpi-dm-total', fmtNum(dmApp + dmInst));
+    const dmCh = [...new Set(dmRows.map(r=>r.channel))].sort();
+    setTxt('kpi-dm-demand-sub',
+      dmCh.length ? dmCh.join(' + ') + ' · từ Airbridge' : 'Không có campaign nào');
+    const dmNote = document.getElementById('cdDemandNote');
+    if (dmNote) {
+      const bits = ['Campaign của 8 account Demand lấy từ sheet <em>raw_retention</em> (refresh hằng ngày) · install lấy từ Airbridge theo campaign name, cùng cửa sổ ngày với card Install phía trên'];
+      if (!dmCh.includes('FB')) bits.push('Chưa có Facebook — 4 account FB Demand hiện không chạy nên sheet không có data. Khi chạy lại sẽ tự động vào đây.');
+      if (D.demand_install_from) bits.push(`Mapping campaign → account bắt đầu từ ${_dmyCd(D.demand_install_from)}, nên tháng trước đó chỉ thấy campaign còn sống tới ngày đó`);
+      if (_cdState.search) bits.push('Ô tìm kiếm không áp dụng cho panel này — nó luôn theo Tháng + Channel + Vertical');
+      dmNote.innerHTML = bits.join('<br>');
+    }
+  })();
   setTxt('kpi-cd-d0', fmtNum(tD0));
   setTxt('kpi-cd-rr1', tD0d1?fmtPct(tD1/tD0d1):'—');
   // Name the window whenever it is shorter than the D0 card next to it, so the
