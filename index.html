@@ -2385,31 +2385,7 @@ function renderCampTarget() {
     <th ${th}>CPI target</th><th ${th}>CPI actual</th>
   </tr></thead><tbody>${body}</tbody>`;
 
-  if (noteEl) {
-    const running = (D.partial_months||[]).map(p=>p.replace('*','').trim())
-      .filter(m=>months.includes(m));
-    noteEl.innerHTML = [
-      `<strong>Target</strong> lấy từ tab <em>target</em> (cột A–H). <strong>Actual spend</strong> tính từ raw_total, <strong>Actual install</strong> từ Airbridge — cùng nguồn với bảng Campaign Detail bên dưới, <em>không</em> dùng cột "Actual spend/install" trong tab target (điền tay, tháng 7 còn trống, và ô job tháng 5 đang cộng gộp cả gds).`,
-      running.length ? `<span style="color:#f59e0b">* ${running.join(', ')} là tháng đang chạy — % còn tăng tiếp, đọc theo pace chứ đừng đọc là kết quả cuối.</span>` : '',
-      ...paceNotes.map(n=>`<span style="color:#f59e0b">${n}</span>`),
-      ...footNotes.map(n=>`<span style="color:#f59e0b">† ${n}</span>`),
-      // Targets are not split by ad channel, so applying the FB/GG chip here
-      // would divide one channel's spend by both channels' budget.
-      _cdState.channel !== 'all'
-        ? `<span style="color:#f59e0b">⚠ Filter <strong>${_cdState.channel}</strong> không áp dụng cho bảng này — target trong sheet không tách theo channel, nếu chỉ lấy spend của ${_cdState.channel} chia cho budget cả 2 channel thì % sẽ sai. Bảng này luôn là FB + GG.</span>`
-        : '',
-      emptyMonths.length
-        ? `${emptyMonths.join(', ')}: không có dòng nào khớp filter vertical <strong>${selV}</strong>.`
-        : '',
-      selM === 'all' && noTarget.length
-        ? `${noTarget.join(', ')} có spend nhưng chưa có target trong sheet nên không hiện ở bảng này.` : '',
-      `Bảng này chạy theo tab <strong>Tháng</strong> và <strong>Vertical</strong> ở bảng Campaign Detail bên dưới — chọn tháng nào thì % progress nhảy theo tháng đó.`,
-      `Số nhỏ màu xám cạnh Actual spend / Actual install / CPI actual là <strong>thay đổi so với tháng trước</strong> (▲ tăng, ▼ giảm) — hover để xem số gốc. Để xám vì tiêu nhiều hay ít tự nó không phải tốt hay xấu, phần đánh giá nằm ở cột % bên cạnh.`
-        + (running.length ? ` Riêng tháng đang chạy, spend và install so theo <strong>trung bình/ngày</strong> (so tổng thì tháng mới chạy vài ngày sẽ luôn âm, không nói lên điều gì). CPI thì so thẳng vì nó đã là tỷ lệ, không phụ thuộc số ngày.` : ''),
-      `<span style="color:#10b981;font-weight:600">xanh</span> = đạt (install ≥95% target · budget dùng 90–105% · CPI ≤ target) · <span style="color:#f59e0b;font-weight:600">vàng</span> = chưa dùng hết budget <em>và</em> install cũng không đạt · <span style="color:#ef4444;font-weight:600">đỏ</span> = install &lt;80%, vượt budget &gt;105%, hoặc CPI cao hơn target &gt;10%. Tiêu ít budget mà vẫn đạt install thì để màu trung tính — đó là hiệu quả, không phải miss.`
-        + (running.length ? ` Với tháng đang chạy, các ngưỡng này tính <strong>theo pace</strong> (chia cho phần tháng đã trôi qua), nếu không thì đầu tháng bảng nào cũng đỏ hết.` : ''),
-    ].filter(Boolean).map(s=>`<div style="margin-bottom:3px">${s}</div>`).join('');
-  }
+  if (noteEl) noteEl.innerHTML = '';
 }
 
 function renderCampDetail() {
