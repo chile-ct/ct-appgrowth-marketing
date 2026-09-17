@@ -1390,6 +1390,17 @@ try:
     try:
         camp_cv = {camp: (s['channel'], s['vertical'] or 'other')
                    for (m_date, camp), s in sheet_agg.items()}
+        # The monthly cards count a campaign's activation only in months the
+        # sheet priced it (camp_detail iterates sheet_agg's (month, campaign)
+        # keys). Anchor the daily rollup to the same set so a day's activation is
+        # counted only when the sheet has that campaign in that day's month —
+        # otherwise the daily sums drift a few tenths of a percent above the
+        # cards for campaigns that kept getting installs after their spend
+        # stopped (measured: Sep d0 +0.7%, lead_event +0.4%). cost/install come
+        # straight from sheet_daily_cost, so they are already anchored.
+        sheet_cm = set(sheet_agg.keys())  # {(month_first_day, campaign)}
+        def _anchored(camp, d):
+            return (datetime.date(d.year, d.month, 1), camp) in sheet_cm
         d1_through = MAT.get(('act', 'd1'), {}).get('through')
         # lead7_through was computed above, next to the monthly lead trim.
 
@@ -1451,30 +1462,36 @@ try:
                     cell['install_seen'] = True
 
         for r in day_act_rows:
-            cv = camp_cv.get(str(r['campaign']))
-            if not cv:
+            camp = str(r['campaign'])
+            cv = camp_cv.get(camp)
+            d = to_date(r['d'])
+            if not cv or not _anchored(camp, d):
                 continue
             ch, vt = cv
-            cell = _cell(to_date(r['d']), ch, vt)
+            cell = _cell(d, ch, vt)
             cell['ret_seen'] = True
             cell['d0'] += int(r['d0'] or 0)
             cell['d1'] += int(r['d1'] or 0)
             cell['lead7'] += int(r['lead7'] or 0)
         for r in day_adopt_rows:
-            cv = camp_cv.get(str(r['campaign']))
-            if not cv:
+            camp = str(r['campaign'])
+            cv = camp_cv.get(camp)
+            d = to_date(r['d'])
+            if not cv or not _anchored(camp, d):
                 continue
             ch, vt = cv
-            cell = _cell(to_date(r['d']), ch, vt)
+            cell = _cell(d, ch, vt)
             cell['adopt_seen'] = True
             cell['dau'] += int(r['dau'] or 0)
             cell['save_ad_d0'] += int(r['save_ad_d0'] or 0)
         for r in day_ev_rows:
-            cv = camp_cv.get(str(r['campaign']))
-            if not cv:
+            camp = str(r['campaign'])
+            cv = camp_cv.get(camp)
+            d = to_date(r['d'])
+            if not cv or not _anchored(camp, d):
                 continue
             ch, vt = cv
-            cell = _cell(to_date(r['d']), ch, vt)
+            cell = _cell(d, ch, vt)
             cell['ev_seen'] = True
             cell['lead_event'] += int(r['lead_event'] or 0)
 
