@@ -881,6 +881,14 @@ def fetch_targets():
 
 
 camp_detail = []
+# Daily time series behind section 6's scorecards — one row per
+# (day, channel, vertical), the volumes summable and the rates left as
+# numerator/denominator pairs so the front end can re-aggregate them under the
+# Channel/Vertical chips. Built inside this same try (it reuses sheet_agg,
+# ab_daily and the maturity cutoffs) but in its own nested try, so a fault in
+# the daily rollup republishes yesterday's daily data without taking the whole
+# camp-detail section down with it.
+camp_daily = []
 month_cover = {}
 try:
     sheet_agg, sheet_last_day, sheet_daily_cost = fetch_camp_cost()
@@ -1365,6 +1373,137 @@ try:
                                  or last_cohort > today - datetime.timedelta(days=7))),
             'save_through': last_cohort.strftime('%d/%m') if last_cohort else None,
         })
+
+    # ── Daily series behind the scorecards (chart "Xu hướng theo ngày") ──────
+    # Same sources, filters and maturity rules as the monthly rows above, only
+    # at visit_date grain and rolled up to (day, channel, vertical). Cost is the
+    # sheet's own daily spend and install is Airbridge over the days the sheet
+    # priced that campaign — the exact monthly rule (Duyen, 2026-08-18), applied
+    # a day at a time. d1 / lead / dau / lead_event come from three daily
+    # queries mirroring act_rows / adopt_rows / ev_rows. Rates are NOT computed
+    # here: the numerator and denominator ride along separately (d1 & d0_d1,
+    # save_ad_d0 & dau, cost & install/lead/lead_event) so the front end can sum
+    # each side across whatever channels/verticals the chips leave on and only
+    # then divide. A day whose D1 (resp. 7-day lead) window has not closed yet
+    # gets null for that pair, so the rate line stops instead of diving toward
+    # zero on cohorts that simply have not had time to come back.
+    try:
+        camp_cv = {camp: (s['channel'], s['vertical'] or 'other')
+                   for (m_date, camp), s in sheet_agg.items()}
+        d1_through = MAT.get(('act', 'd1'), {}).get('through')
+        # lead7_through was computed above, next to the monthly lead trim.
+
+        day_act_rows = run(f"""
+        SELECT visit_date AS d, campaign,
+          SUM(d0) AS d0, SUM(d1) AS d1, SUM(user_1lead_7d) AS lead7
+        FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
+        WHERE return_status = 'new' AND vertical_user = 'all' AND channel != 'all'
+          AND visit_date >= '2026-01-01' AND visit_date <= '{sheet_max}'
+          AND campaign IN ({in_list})
+        GROUP BY 1, 2
+        """)
+        day_adopt_rows = run(f"""
+        SELECT report_date AS d, campaign,
+          SUM(dau) AS dau, SUM(save_ad_d0_users) AS save_ad_d0
+        FROM ct_product_analytics.new_user_adopt_activate
+        WHERE channel != 'all' AND vertical = 'all' AND category = 'all'
+          AND report_date >= '2026-01-01' AND report_date <= '{sheet_max}'
+          AND campaign IN ({in_list})
+        GROUP BY 1, 2
+        """)
+        day_ev_rows = run(f"""
+        SELECT visit_date AS d, campaign, SUM(total_lead) AS lead_event
+        FROM ct_digital.retention_activation_core_event_by_source_channel
+        WHERE return_status = 'new'
+          AND visit_date >= '2026-01-01' AND visit_date <= '{sheet_max}'
+          AND campaign IN ({in_list})
+        GROUP BY 1, 2
+        """)
+
+        # (date, channel, vertical) -> running sums. The *_seen flags separate a
+        # real zero from "no source row for this cell", so an untracked day shows
+        # "—" rather than a misleading 0 / 0% .
+        dacc = {}
+        def _cell(d, ch, vt):
+            k = (d, ch, vt)
+            c = dacc.get(k)
+            if c is None:
+                c = dacc[k] = {
+                    'cost': 0.0, 'install': 0, 'd0': 0, 'd1': 0, 'lead7': 0,
+                    'dau': 0, 'save_ad_d0': 0, 'lead_event': 0,
+                    'install_seen': False, 'ret_seen': False,
+                    'adopt_seen': False, 'ev_seen': False}
+            return c
+
+        # Cost (sheet) + install (Airbridge, only on the days the sheet priced
+        # that campaign — same window the monthly install used).
+        for (m_date, camp), day_cost in sheet_daily_cost.items():
+            cv = camp_cv.get(camp)
+            if not cv:
+                continue
+            ch, vt = cv
+            for d, c in day_cost.items():
+                cell = _cell(d, ch, vt)
+                cell['cost'] += c
+                iv = ab_daily.get((camp, d))
+                if iv is not None:
+                    cell['install'] += iv
+                    cell['install_seen'] = True
+
+        for r in day_act_rows:
+            cv = camp_cv.get(str(r['campaign']))
+            if not cv:
+                continue
+            ch, vt = cv
+            cell = _cell(to_date(r['d']), ch, vt)
+            cell['ret_seen'] = True
+            cell['d0'] += int(r['d0'] or 0)
+            cell['d1'] += int(r['d1'] or 0)
+            cell['lead7'] += int(r['lead7'] or 0)
+        for r in day_adopt_rows:
+            cv = camp_cv.get(str(r['campaign']))
+            if not cv:
+                continue
+            ch, vt = cv
+            cell = _cell(to_date(r['d']), ch, vt)
+            cell['adopt_seen'] = True
+            cell['dau'] += int(r['dau'] or 0)
+            cell['save_ad_d0'] += int(r['save_ad_d0'] or 0)
+        for r in day_ev_rows:
+            cv = camp_cv.get(str(r['campaign']))
+            if not cv:
+                continue
+            ch, vt = cv
+            cell = _cell(to_date(r['d']), ch, vt)
+            cell['ev_seen'] = True
+            cell['lead_event'] += int(r['lead_event'] or 0)
+
+        for (d, ch, vt), c in sorted(dacc.items()):
+            mature_d1 = d1_through is None or d <= d1_through
+            mature_lead = lead7_through is None or d <= lead7_through
+            camp_daily.append({
+                'date': d.strftime('%Y-%m-%d'),
+                'channel': ch,
+                'vertical': vt,
+                'cost': round(c['cost']),
+                'install': c['install'] if c['install_seen'] else None,
+                'd0': c['d0'] if c['ret_seen'] else None,
+                # d1 and its matched denominator only once the D1 window closed.
+                'd1': (c['d1'] if c['ret_seen'] else None) if mature_d1 else None,
+                'd0_d1': (c['d0'] if c['ret_seen'] else None) if mature_d1 else None,
+                # user 7-day lead — null until the 7-day window has matured.
+                'lead': (c['lead7'] if c['ret_seen'] else None) if mature_lead else None,
+                'dau': c['dau'] if c['adopt_seen'] else None,
+                'save_ad_d0': c['save_ad_d0'] if c['adopt_seen'] else None,
+                'lead_event': c['lead_event'] if c['ev_seen'] else None,
+            })
+        _dd_days = len({r['date'] for r in camp_daily})
+        print(f"  Camp daily: {len(camp_daily)} (day×channel×vertical) rows over "
+              f"{_dd_days} days OK")
+    except Exception as e:
+        note_skipped("Camp daily", e)
+        camp_daily = D.get('camp_daily', [])
+
     matched = sum(1 for r in camp_detail if r['d0'] is not None)
     save_matched = sum(1 for r in camp_detail if r['save_ad_d0'] is not None)
     # cd_ prefix on purpose: this module already has a module-level `lead_total`
@@ -1466,6 +1605,7 @@ try:
 except Exception as e:
     note_skipped("Camp detail", e)
     camp_detail = D.get('camp_detail', [])
+    camp_daily = D.get('camp_daily', [])
     month_cover = D.get('month_cover', {})
     camp_status = D.get('camp_status', {})
     status_asof = D.get('camp_status_asof')
@@ -1751,6 +1891,10 @@ out = {
     "attribution_assist": attribution_assist,
     "campaigns": campaigns,
     "camp_detail": camp_detail,
+    # Daily (day×channel×vertical) series behind section 6's scorecards, for the
+    # "Xu hướng theo ngày" chart. Falls back to the last good copy if this run's
+    # daily rollup was skipped, same as camp_detail.
+    "camp_daily": camp_daily,
     "demand_install": demand_install,
     "demand_install_from": demand_install_from,
     "camp_target": camp_target,

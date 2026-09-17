@@ -590,6 +590,19 @@ canvas { max-height: 500px; }
   </details>
 
   <div class="card" style="margin-bottom:16px">
+    <div class="card-title">Xu hướng theo ngày</div>
+    <div class="section-subtitle" style="margin:-4px 0 10px">
+      Các chỉ số trong scorecard ở trên, vẽ theo <strong>từng ngày</strong>. Theo chip
+      <strong>Channel</strong> &amp; <strong>Vertical</strong> đang chọn (không theo ô tìm campaign).
+      Chọn tháng cụ thể để xem ngày trong tháng đó, hoặc <em>Tất cả</em> để xem toàn bộ.
+      Bấm vào tên chỉ số ở chú thích để bật/tắt từng đường.
+    </div>
+    <div id="cdDailyControls" style="margin-bottom:10px"></div>
+    <div style="position:relative;height:320px"><canvas id="chartCampDaily"></canvas></div>
+    <div id="cdDailyNote" style="font-size:10px;color:#9ca3af;margin-top:8px"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
     <div class="card-title" id="cpTitle">Progress vs Target</div>
     <div style="overflow-x:auto"><table id="campTargetTable"></table></div>
     <div id="cpNote" style="font-size:10px;color:#9ca3af;margin-top:8px"></div>
@@ -2054,6 +2067,9 @@ window.cdFilter = function(key, val) {
   _cdState[key] = val; _cdState.page = 0;
   renderCampDetail();
   try { renderCampTarget(); } catch (e) { console.error('renderCampTarget failed:', e); }
+  // The daily chart follows the Month/Channel/Vertical chips (not the name
+  // search, which the aggregate does not carry).
+  try { renderCampDaily(); } catch (e) { console.error('renderCampDaily failed:', e); }
 };
 window.cdPage = function(pg) { _cdState.page = pg; renderCampDetail(); };
 window.cdSort = function(key) {
@@ -2080,9 +2096,165 @@ window.cdSearchWiden = function() {
   _cdState.page = 0;
   renderCampDetail();
   try { renderCampTarget(); } catch (e) { console.error('renderCampTarget failed:', e); }
+  try { renderCampDaily(); } catch (e) { console.error('renderCampDaily failed:', e); }
   const el = document.getElementById('cdSearchInput');
   if (el) el.focus();
 };
+
+// ── Section 6 daily-trend chart ("Xu hướng theo ngày") ──────────────────────
+// The same scorecard metrics as the cards above, but one point per day, rolled
+// up from D.camp_daily (day × channel × vertical). It follows the Month /
+// Channel / Vertical chips through _cdState; the name search does not apply,
+// because the daily series is an aggregate that carries no campaign name.
+//
+// Two things this chart has to get right or it lies:
+//  1. Rates are re-derived after summing, never averaged. RR D1 for a day is
+//     Σd1 / Σd0_d1 across the visible channels/verticals, not the mean of each
+//     cell's rate — a day with one big low-RR cell and one tiny high-RR cell
+//     must read as the big one. Same for % Save, CPI and the cost-per metrics.
+//  2. Immature days carry null, not zero. The pipeline already blanks d1/d0_d1
+//     (and the 7-day lead) for days whose window has not closed, so those
+//     points are gaps; spanGaps:false keeps the line honest by stopping rather
+//     than plunging to 0 on cohorts that simply have not had time yet.
+const _cdDaily = { mode: 'volume' };  // 'volume' | 'cost'
+window.cdDailyMode = function(m) {
+  _cdDaily.mode = m;
+  try { renderCampDaily(); } catch (e) { console.error('renderCampDaily failed:', e); }
+};
+
+function renderCampDaily() {
+  const ctx = document.getElementById('chartCampDaily');
+  if (!ctx) return;
+  const controls = document.getElementById('cdDailyControls');
+  const note = document.getElementById('cdDailyNote');
+  const rowsAll = (D && D.camp_daily) || [];
+
+  // Destroy any prior instance before redrawing (mode/chip change).
+  const ex = Object.values(Chart.instances || {}).find(c => c.canvas && c.canvas.id === 'chartCampDaily');
+  if (ex) ex.destroy();
+
+  if (!rowsAll.length) {
+    if (controls) controls.innerHTML = '';
+    if (note) note.textContent = 'Chưa có data theo ngày — sẽ xuất hiện sau lần update tiếp theo.';
+    return;
+  }
+
+  // Mode switch (Volume vs Cost). Rendered every call so the active state stays
+  // in sync after a redraw.
+  if (controls) {
+    const btn = (m, label) => {
+      const on = _cdDaily.mode === m;
+      return `<button onclick="cdDailyMode('${m}')" style="padding:3px 12px;border-radius:10px;border:1.5px solid ${on?'#4361ee':'#d1d5db'};background:${on?'#4361ee':'#f9fafb'};color:${on?'white':'#6b7280'};font-size:11px;font-weight:600;cursor:pointer">${label}</button>`;
+    };
+    controls.innerHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">`
+      + `<span style="font-size:10px;color:#9ca3af;min-width:60px">Nhóm chỉ số</span>`
+      + btn('volume', 'Số lượng + Tỉ lệ') + btn('cost', 'Chi phí') + `</div>`;
+  }
+
+  // Filter to the visible chips. Month: a specific month restricts to its days,
+  // 'all' keeps the whole range. Channel / Vertical mirror the table's chips.
+  const MO = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  const monthOf = d => { const D2 = new Date(d + 'T00:00:00'); return _MONTH_NAMES[D2.getMonth()] + ' ' + D2.getFullYear(); };
+  let rows = rowsAll.filter(r =>
+       (_cdState.channel  === 'all' || r.channel === _cdState.channel)
+    && (_cdState.vertical === 'all' || (r.vertical || 'other') === _cdState.vertical)
+    && (_cdState.month    === 'all' || monthOf(r.date) === _cdState.month));
+
+  if (!rows.length) {
+    if (note) note.textContent = 'Không có data theo ngày cho bộ lọc đang chọn.';
+    return;
+  }
+
+  // Sum numerators and denominators per day; rates are derived afterwards.
+  const days = [...new Set(rows.map(r => r.date))].sort();
+  const acc = {};
+  days.forEach(d => acc[d] = {cost:0, install:null, d0:null, d1:null, d0_d1:null,
+                             lead:null, dau:null, save:null, lead_event:null});
+  const add = (o, k, v) => { if (v != null) o[k] = (o[k] || 0) + v; };
+  rows.forEach(r => {
+    const o = acc[r.date];
+    o.cost += (r.cost || 0);
+    add(o, 'install', r.install);
+    add(o, 'd0', r.d0);
+    add(o, 'd1', r.d1);
+    add(o, 'd0_d1', r.d0_d1);
+    add(o, 'lead', r.lead);
+    add(o, 'dau', r.dau);
+    add(o, 'save', r.save_ad_d0);
+    add(o, 'lead_event', r.lead_event);
+  });
+  const labels = days.map(d => d.slice(5).split('-').reverse().join('/'));  // dd/mm
+  const col = acc; // alias
+  const arr = (fn) => days.map(d => { const v = fn(col[d]); return (v == null || Number.isNaN(v)) ? null : v; });
+  const rate = (num, den) => (num == null || !den) ? null : num / den;
+
+  // Dataset builders. Volume/count series are bars on the left axis; rates are
+  // lines on the right (%) axis. Cost mode swaps the left axis to money.
+  const bar = (label, data, color, axis) => ({type:'bar', label, data, backgroundColor:color+'cc', borderColor:color, borderWidth:1, borderRadius:3, yAxisID:axis, order:2});
+  const line = (label, data, color, axis, hidden) => ({type:'line', label, data, borderColor:color, backgroundColor:color+'22', borderWidth:2, tension:0.35, pointRadius:2, pointHoverRadius:4, spanGaps:false, yAxisID:axis, order:1, hidden:!!hidden});
+
+  let datasets, scales, C = {blue:'#4361ee', green:'#22c55e', orange:'#f59e0b', purple:'#a855f7', red:'#ef4444', teal:'#14b8a6', pink:'#ec4899'};
+  const fmtVnd = v => v>=1e9?(v/1e9).toFixed(2)+'B':v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':Math.round(v);
+
+  if (_cdDaily.mode === 'cost') {
+    datasets = [
+      bar('Cost (₫)', arr(o=>o.cost), C.blue, 'yMoney'),
+      line('CPI (₫)', arr(o=>rate(o.cost, o.install)), C.orange, 'yPer'),
+      line('Cost/User (₫)', arr(o=>rate(o.cost, o.lead)), C.purple, 'yPer'),
+      line('Cost/Lead event (₫)', arr(o=>rate(o.cost, o.lead_event)), C.red, 'yPer'),
+    ];
+    scales = {
+      x:{grid:{display:false}, ticks:{font:{size:9}, maxRotation:0, autoSkip:true, maxTicksLimit:16}},
+      yMoney:{position:'left', beginAtZero:true, grid:{color:'#f3f4f6'}, title:{display:true, text:'Cost', font:{size:10}}, ticks:{font:{size:9}, callback:v=>fmtVnd(v)+'₫'}},
+      yPer:{position:'right', beginAtZero:true, grid:{display:false}, title:{display:true, text:'Chi phí / đơn vị', font:{size:10}}, ticks:{font:{size:9}, callback:v=>fmtVnd(v)+'₫'}},
+    };
+  } else {
+    datasets = [
+      bar('Install', arr(o=>o.install), C.blue, 'yCount'),
+      bar('D0 (new users)', arr(o=>o.d0), C.teal, 'yCount'),
+      line('Lead 7d (user)', arr(o=>o.lead), C.green, 'yCount'),
+      line('Lead event', arr(o=>o.lead_event), C.orange, 'yCount', true),
+      line('RR D1', arr(o=>rate(o.d1, o.d0_d1)), C.purple, 'yPct'),
+      line('% Save ad', arr(o=>rate(o.save, o.dau)), C.pink, 'yPct'),
+    ];
+    scales = {
+      x:{grid:{display:false}, ticks:{font:{size:9}, maxRotation:0, autoSkip:true, maxTicksLimit:16}},
+      yCount:{position:'left', beginAtZero:true, grid:{color:'#f3f4f6'}, title:{display:true, text:'Số lượng', font:{size:10}}, ticks:{font:{size:9}, callback:v=>v>=1e3?(v/1e3).toFixed(0)+'K':v}},
+      yPct:{position:'right', beginAtZero:true, grid:{display:false}, title:{display:true, text:'Tỉ lệ', font:{size:10}}, ticks:{font:{size:9}, callback:v=>(v*100).toFixed(0)+'%'}},
+    };
+  }
+
+  new Chart(ctx, {
+    data:{labels, datasets},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{position:'bottom', labels:{boxWidth:12, font:{size:11}, usePointStyle:true}},
+        tooltip:{callbacks:{label:c=>{
+          const v = c.parsed.y;
+          if (v == null) return null;
+          const lbl = c.dataset.label;
+          if (lbl === 'RR D1' || lbl === '% Save ad') return ` ${lbl}: ${(v*100).toFixed(1)}%`;
+          if (lbl.includes('₫')) return ` ${lbl}: ${Math.round(v).toLocaleString('en')} ₫`;
+          return ` ${lbl}: ${Math.round(v).toLocaleString('en')}`;
+        }}}
+      },
+      scales
+    }
+  });
+
+  if (note) {
+    const scope = [
+      _cdState.month === 'all' ? 'tất cả tháng' : _cdState.month,
+      _cdState.channel === 'all' ? 'tất cả channel' : _cdState.channel,
+      _cdState.vertical === 'all' ? 'tất cả vertical' : _cdState.vertical,
+    ].join(' · ');
+    note.innerHTML = `${days.length} ngày · ${scope}. `
+      + `RR D1 / Lead 7d (user) chỉ hiện tới ngày cohort đã đủ thời gian trưởng thành nên `
+      + `vài ngày cuối có thể trống — đó là dữ liệu chưa chín, không phải tụt.`;
+  }
+}
 
 const _MO = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
 const _MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -3391,6 +3563,7 @@ async function initDashboard() {
   // and renderCampTarget filters on that same state.
   try { renderCampDetail(); } catch (e) { console.error('renderCampDetail failed:', e); }
   try { renderCampTarget(); } catch (e) { console.error('renderCampTarget failed:', e); }
+  try { renderCampDaily(); } catch (e) { console.error('renderCampDaily failed:', e); }
 
   // Partial month badge — show "* Tháng 6: data đến DD/MM/YYYY"
   if (D.partial_months && D.partial_months.length && D.updated_at) {
