@@ -1413,12 +1413,18 @@ try:
           AND campaign IN ({in_list})
         GROUP BY 1, 2
         """)
+        # No upper date cap here, deliberately: the monthly DAU / Save-ad card
+        # (adopt_rows above) is uncapped too, so capping at sheet_max would make
+        # the daily sums fall a day short of the card in the running month (Sep
+        # DAU read 3,121 low until this was removed). save_ad/dau are an
+        # internally consistent pair from the same table, so the extra day past
+        # the spend frontier carries a valid % Save even where cost is absent.
         day_adopt_rows = run(f"""
         SELECT report_date AS d, campaign,
           SUM(dau) AS dau, SUM(save_ad_d0_users) AS save_ad_d0
         FROM ct_product_analytics.new_user_adopt_activate
         WHERE channel != 'all' AND vertical = 'all' AND category = 'all'
-          AND report_date >= '2026-01-01' AND report_date <= '{sheet_max}'
+          AND report_date >= '2026-01-01'
           AND campaign IN ({in_list})
         GROUP BY 1, 2
         """)
