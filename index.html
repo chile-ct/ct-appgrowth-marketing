@@ -618,8 +618,8 @@ canvas { max-height: 500px; }
   <div class="card">
     <div class="card-title">Xu hướng theo ngày — theo campaign</div>
     <div class="section-subtitle" style="margin:-4px 0 10px">
-      Chọn <strong>một campaign</strong> để xem các chỉ số của riêng nó tăng/giảm
-      <strong>theo từng ngày</strong> — cùng bộ chỉ số với scorecard &amp; bảng ở trên,
+      <strong>Gõ để lọc</strong> rồi chọn <strong>một campaign</strong> để xem các chỉ số của riêng nó
+      tăng/giảm <strong>theo từng ngày</strong> — cùng bộ chỉ số với scorecard &amp; bảng ở trên,
       nhưng ở <strong>mức campaign</strong>. Cũng có thể bấm thẳng vào tên campaign trong
       bảng <em>Campaign Detail</em> phía trên để nạp campaign đó vào chart này.
       Bấm tên chỉ số ở chú thích để bật/tắt từng đường.
@@ -2313,22 +2313,115 @@ function renderCampDaily() {
 // cost-per metrics = cost/x) rather than stored, and immature days carry null so
 // the line stops instead of diving. Picked from a dropdown, or from clicking a
 // campaign name in the table above (cdNameFocus).
-const _cdName = { campaign: null, mode: 'volume', _touched: false };
+const _cdName = { campaign: null, mode: 'volume', query: '', _touched: false };
+// {name, vertical, cost} for every campaign, cost-ranked — the type-to-filter box
+// filters this array on each keystroke instead of rescanning the data. Rebuilt on
+// each render (cheap; data.json only changes on reload).
+let _cdNameIndex = [];
 window.cdNameMode = function(m) {
   _cdName.mode = m;
   try { renderCampByNameDaily(); } catch (e) { console.error('renderCampByNameDaily failed:', e); }
 };
-window.cdNamePick = function(name) {
-  _cdName.campaign = name; _cdName._touched = true;
+// One code path for "a campaign was chosen" — from the dropdown, from Enter in the
+// filter box, or from clicking a name in the table. Syncs the box text to the
+// pick and redraws the chart (which won't rebuild the box: it exists already).
+function _cdNameSelect(name) {
+  if (!name) return;
+  _cdName.campaign = name; _cdName.query = name; _cdName._touched = true;
+  const inp = document.getElementById('cdNameSearchInput');
+  if (inp) inp.value = name;
+  const panel = document.getElementById('cdNameResults');
+  if (panel) panel.style.display = 'none';
+  const xb = document.getElementById('cdNameSearchX');
+  if (xb) xb.style.display = 'none';
   try { renderCampByNameDaily(); } catch (e) { console.error('renderCampByNameDaily failed:', e); }
-};
+}
+window.cdNamePick = function(name) { _cdNameSelect(name); };
 // Called from a campaign name in the Campaign Detail table: load it into the
 // chart and bring the chart into view so the click has a visible result.
 window.cdNameFocus = function(name) {
-  _cdName.campaign = name; _cdName._touched = true;
-  try { renderCampByNameDaily(); } catch (e) { console.error('renderCampByNameDaily failed:', e); }
+  _cdNameSelect(name);
   const el = document.getElementById('chartCampByName');
   if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
+};
+
+// The campaigns matching what is currently typed. While the box still shows the
+// picked campaign's own name (query === selection, i.e. nothing typed yet), treat
+// it as an empty filter so focusing shows the whole cost-ranked list.
+function _cdNameMatches() {
+  const q = _cdName.query;
+  const terms = (q && q !== _cdName.campaign) ? _cdTerms(q) : [];
+  return terms.length ? _cdNameIndex.filter(o => terms.every(t => o.name.toLowerCase().includes(t)))
+                      : _cdNameIndex;
+}
+// Renders the dropdown of matches under the box. Not the chart — typing filters
+// the list only; the chart moves when a campaign is actually picked.
+function _cdNameRenderResults(show) {
+  const panel = document.getElementById('cdNameResults');
+  if (!panel) return;
+  const q = _cdName.query;
+  const terms = (q && q !== _cdName.campaign) ? _cdTerms(q) : [];
+  const list = _cdNameMatches();
+  const CAP = 60, top = list.slice(0, CAP);
+  const fmtC = v => v>=1e9?(v/1e9).toFixed(2)+'B':v>=1e6?(v/1e6).toFixed(0)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':String(v);
+  if (!top.length) {
+    panel.innerHTML = `<div style="padding:8px 10px;color:#9ca3af;font-size:11px">Không có campaign nào khớp</div>`;
+  } else {
+    panel.innerHTML = top.map(o => {
+      const active = o.name === _cdName.campaign;
+      const bg = active ? '#eef2ff' : '#fff';
+      return `<div onmousedown="event.preventDefault()" onclick="cdNamePick(this.dataset.camp)" data-camp="${_attrEsc(o.name)}"`
+        + ` style="padding:6px 10px;font-size:11px;cursor:pointer;border-bottom:1px solid #f1f3f5;display:flex;justify-content:space-between;gap:10px;align-items:center;background:${bg}"`
+        + ` onmouseover="this.style.background='#f5f7ff'" onmouseout="this.style.background='${bg}'">`
+        +   `<span style="word-break:break-all;line-height:1.3">${_cdHi(o.name, terms)}</span>`
+        +   `<span style="white-space:nowrap;color:#9ca3af;font-size:10px">${(o.vertical||'other').toUpperCase()} · ${fmtC(o.cost)}₫</span>`
+        + `</div>`;
+    }).join('')
+    + (list.length > CAP ? `<div style="padding:6px 10px;color:#9ca3af;font-size:10px">Hiện ${CAP}/${list.length} — gõ thêm để thu hẹp</div>` : '');
+  }
+  if (show !== false) panel.style.display = 'block';
+}
+// Box handlers. oninput filters; focus opens the list (and selects the text so
+// typing replaces the shown name); blur hides after a beat so a click on a result
+// still registers; Enter picks the top match; Esc restores the current selection.
+window.cdNameFilter = function(val) {
+  _cdName.query = val;
+  const xb = document.getElementById('cdNameSearchX');
+  if (xb) xb.style.display = val ? 'block' : 'none';
+  _cdNameRenderResults(true);
+};
+window.cdNameOpen = function(inp) {
+  if (inp) inp.select();
+  _cdNameRenderResults(true);
+};
+window.cdNameClose = function() {
+  setTimeout(() => {
+    const p = document.getElementById('cdNameResults');
+    if (p) p.style.display = 'none';
+    const inp = document.getElementById('cdNameSearchInput');
+    if (inp && document.activeElement !== inp) {
+      inp.value = _cdName.campaign || ''; _cdName.query = inp.value;
+      const xb = document.getElementById('cdNameSearchX'); if (xb) xb.style.display = 'none';
+    }
+  }, 150);
+};
+window.cdNameClear = function() {
+  _cdName.query = '';
+  const inp = document.getElementById('cdNameSearchInput');
+  if (inp) { inp.value = ''; inp.focus(); }
+  const xb = document.getElementById('cdNameSearchX'); if (xb) xb.style.display = 'none';
+  _cdNameRenderResults(true);
+};
+window.cdNameKey = function(e) {
+  if (e.key === 'Escape') {
+    const inp = document.getElementById('cdNameSearchInput');
+    if (inp) { inp.value = _cdName.campaign || ''; _cdName.query = inp.value; inp.blur(); }
+    const p = document.getElementById('cdNameResults'); if (p) p.style.display = 'none';
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    const first = _cdNameMatches()[0];
+    if (first) cdNamePick(first.name);
+  }
 };
 
 function renderCampByNameDaily() {
@@ -2360,25 +2453,47 @@ function renderCampByNameDaily() {
     _cdName.campaign = names[0];
   }
 
+  // Cost-ranked index for the type-to-filter box (see _cdNameIndex declaration).
+  _cdNameIndex = names.map(n => ({name:n, vertical:vertByName[n]||'other', cost:costByName[n]||0}));
+
   if (controls) {
-    const opts = names.map(n =>
-      `<option value="${_attrEsc(n)}"${n === _cdName.campaign ? ' selected' : ''}>`
-      + `${_attrEsc(n)} · ${(vertByName[n]||'other').toUpperCase()}</option>`).join('');
     const btn = (m, label) => {
       const on = _cdName.mode === m;
       return `<button onclick="cdNameMode('${m}')" style="padding:3px 12px;border-radius:10px;border:1.5px solid ${on?'#4361ee':'#d1d5db'};background:${on?'#4361ee':'#f9fafb'};color:${on?'white':'#6b7280'};font-size:11px;font-weight:600;cursor:pointer">${label}</button>`;
     };
-    controls.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px">`
-      + `<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">`
-      +   `<span style="font-size:10px;color:#9ca3af;min-width:60px">Campaign:</span>`
-      +   `<select onchange="cdNamePick(this.value)" title="Chọn campaign để xem xu hướng theo ngày"`
-      +     ` style="max-width:min(560px,90vw);padding:5px 9px;border:1.5px solid #d1d5db;border-radius:10px;font-size:11px;font-family:inherit;color:#374151;background:#f9fafb;cursor:pointer;outline:none">${opts}</select>`
-      + `</div>`
-      + `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">`
-      +   `<span style="font-size:10px;color:#9ca3af;min-width:60px">Nhóm chỉ số</span>`
-      +   btn('volume', 'Số lượng + Tỉ lệ') + btn('cost', 'Chi phí')
-      + `</div>`
-      + `</div>`;
+    // Build the combobox ONCE. Rebuilding it every render (on a mode toggle or a
+    // pick) would recreate the <input> mid-typing and take focus/caret/IME with
+    // it — the same trap the Campaign Detail search box avoids. Only the mode-
+    // toggle row is rebuilt each render.
+    if (!document.getElementById('cdNameSearchInput')) {
+      controls.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px">`
+        + `<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">`
+        +   `<span style="font-size:10px;color:#9ca3af;min-width:60px">Campaign:</span>`
+        +   `<span style="position:relative;display:inline-flex;align-items:center">`
+        +     `<input id="cdNameSearchInput" type="text" autocomplete="off" spellcheck="false"`
+        +       ` placeholder="gõ để lọc campaign — vd: pty fb b2s"`
+        +       ` oninput="cdNameFilter(this.value)" onfocus="cdNameOpen(this)"`
+        +       ` onblur="cdNameClose()" onkeydown="cdNameKey(event)"`
+        +       ` title="Gõ để lọc — nhiều từ cách nhau bởi dấu cách phải khớp TẤT CẢ, không cần đúng thứ tự. Enter chọn kết quả đầu, Esc đóng."`
+        +       ` style="width:420px;max-width:80vw;padding:5px 26px 5px 10px;border:1.5px solid #d1d5db;border-radius:10px;font-size:11px;font-family:inherit;color:#374151;background:#f9fafb;outline:none">`
+        +     `<button id="cdNameSearchX" onclick="cdNameClear()" title="Xoá lọc (Esc)" style="display:none;position:absolute;right:6px;border:0;background:none;color:#9ca3af;font-size:14px;line-height:1;cursor:pointer;padding:0 2px">×</button>`
+        +     `<div id="cdNameResults" style="display:none;position:absolute;top:100%;left:0;z-index:30;margin-top:4px;min-width:100%;max-width:80vw;max-height:260px;overflow-y:auto;background:#fff;border:1.5px solid #d1d5db;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.12)"></div>`
+        +   `</span>`
+        + `</div>`
+        + `<div id="cdNameModeRow" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"></div>`
+        + `</div>`;
+      const inp = document.getElementById('cdNameSearchInput');
+      if (inp) inp.value = _cdName.campaign || '';
+      if (!_cdName.query) _cdName.query = _cdName.campaign || '';
+    }
+    const modeRow = document.getElementById('cdNameModeRow');
+    if (modeRow) modeRow.innerHTML =
+        `<span style="font-size:10px;color:#9ca3af;min-width:60px">Nhóm chỉ số</span>`
+      + btn('volume', 'Số lượng + Tỉ lệ') + btn('cost', 'Chi phí');
+    // Keep the box showing the current selection unless the user is typing in it
+    // (e.g. after a table-name click loaded a different campaign).
+    const inp2 = document.getElementById('cdNameSearchInput');
+    if (inp2 && document.activeElement !== inp2) inp2.value = _cdName.campaign || '';
   }
 
   const rows = rowsAll.filter(r => r.name === _cdName.campaign)
