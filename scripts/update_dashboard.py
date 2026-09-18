@@ -889,6 +889,11 @@ camp_detail = []
 # the daily rollup republishes yesterday's daily data without taking the whole
 # camp-detail section down with it.
 camp_daily = []
+# Same daily series as camp_daily but kept at (day, campaign) grain instead of
+# collapsing the name into (day, channel, vertical) — this is what section 6's
+# per-campaign daily-trend chart reads. Built in the same nested try, off the
+# same source rows, and falls back to the last good copy the same way.
+camp_daily_by_name = []
 month_cover = {}
 try:
     sheet_agg, sheet_last_day, sheet_daily_cost = fetch_camp_cost()
@@ -1523,9 +1528,108 @@ try:
         _dd_days = len({r['date'] for r in camp_daily})
         print(f"  Camp daily: {len(camp_daily)} (day×channel×vertical) rows over "
               f"{_dd_days} days OK")
+
+        # ── Same rollup, kept at CAMPAIGN grain ──────────────────────────────
+        # A second pass over the exact same source rows, accumulated by
+        # (day, campaign) rather than (day, channel, vertical), so the front end
+        # can draw one campaign's daily trend. No new BigQuery reads — it reuses
+        # sheet_daily_cost / ab_daily / day_act_rows / day_adopt_rows /
+        # day_ev_rows already fetched above, with the same _anchored gate and the
+        # same maturity nulling (mature_d1 / mature_lead). Done as its own pass
+        # instead of folded into the loops above so a fault here cannot disturb
+        # the working channel/vertical chart; summing these rows back over the
+        # channels/verticals reproduces camp_daily exactly.
+        nacc = {}
+        def _ncell(d, camp, ch, vt):
+            k = (d, camp)
+            c = nacc.get(k)
+            if c is None:
+                c = nacc[k] = {
+                    'channel': ch, 'vertical': vt,
+                    'cost': 0.0, 'install': 0, 'd0': 0, 'd1': 0, 'lead7': 0,
+                    'dau': 0, 'save_ad_d0': 0, 'lead_event': 0,
+                    'install_seen': False, 'ret_seen': False,
+                    'adopt_seen': False, 'ev_seen': False}
+            return c
+
+        for (m_date, camp), day_cost in sheet_daily_cost.items():
+            cv = camp_cv.get(camp)
+            if not cv:
+                continue
+            ch, vt = cv
+            for d, c in day_cost.items():
+                cell = _ncell(d, camp, ch, vt)
+                cell['cost'] += c
+                iv = ab_daily.get((camp, d))
+                if iv is not None:
+                    cell['install'] += iv
+                    cell['install_seen'] = True
+        for r in day_act_rows:
+            camp = str(r['campaign'])
+            cv = camp_cv.get(camp)
+            d = to_date(r['d'])
+            if not cv or not _anchored(camp, d):
+                continue
+            ch, vt = cv
+            cell = _ncell(d, camp, ch, vt)
+            cell['ret_seen'] = True
+            cell['d0'] += int(r['d0'] or 0)
+            cell['d1'] += int(r['d1'] or 0)
+            cell['lead7'] += int(r['lead7'] or 0)
+        for r in day_adopt_rows:
+            camp = str(r['campaign'])
+            cv = camp_cv.get(camp)
+            d = to_date(r['d'])
+            if not cv or not _anchored(camp, d):
+                continue
+            ch, vt = cv
+            cell = _ncell(d, camp, ch, vt)
+            cell['adopt_seen'] = True
+            cell['dau'] += int(r['dau'] or 0)
+            cell['save_ad_d0'] += int(r['save_ad_d0'] or 0)
+        for r in day_ev_rows:
+            camp = str(r['campaign'])
+            cv = camp_cv.get(camp)
+            d = to_date(r['d'])
+            if not cv or not _anchored(camp, d):
+                continue
+            ch, vt = cv
+            cell = _ncell(d, camp, ch, vt)
+            cell['ev_seen'] = True
+            cell['lead_event'] += int(r['lead_event'] or 0)
+
+        for (d, camp), c in sorted(nacc.items()):
+            # Drop a cell that carries nothing at all (no spend and no source
+            # row of any kind) so the payload stays close to the campaigns'
+            # real active windows instead of a full day×campaign grid.
+            if (not c['cost'] and not c['install_seen'] and not c['ret_seen']
+                    and not c['adopt_seen'] and not c['ev_seen']):
+                continue
+            mature_d1 = d1_through is None or d <= d1_through
+            mature_lead = lead7_through is None or d <= lead7_through
+            camp_daily_by_name.append({
+                'date': d.strftime('%Y-%m-%d'),
+                'name': camp,
+                'channel': c['channel'],
+                'vertical': c['vertical'],
+                'cost': round(c['cost']),
+                'install': c['install'] if c['install_seen'] else None,
+                'd0': c['d0'] if c['ret_seen'] else None,
+                'd1': (c['d1'] if c['ret_seen'] else None) if mature_d1 else None,
+                'd0_d1': (c['d0'] if c['ret_seen'] else None) if mature_d1 else None,
+                'lead': (c['lead7'] if c['ret_seen'] else None) if mature_lead else None,
+                'dau': c['dau'] if c['adopt_seen'] else None,
+                'save_ad_d0': c['save_ad_d0'] if c['adopt_seen'] else None,
+                'lead_event': c['lead_event'] if c['ev_seen'] else None,
+            })
+        _dn_days = len({r['date'] for r in camp_daily_by_name})
+        _dn_camps = len({r['name'] for r in camp_daily_by_name})
+        print(f"  Camp daily by name: {len(camp_daily_by_name)} (day×campaign) "
+              f"rows · {_dn_camps} campaigns over {_dn_days} days OK")
     except Exception as e:
         note_skipped("Camp daily", e)
         camp_daily = D.get('camp_daily', [])
+        camp_daily_by_name = D.get('camp_daily_by_name', [])
 
     matched = sum(1 for r in camp_detail if r['d0'] is not None)
     save_matched = sum(1 for r in camp_detail if r['save_ad_d0'] is not None)
@@ -1629,6 +1733,7 @@ except Exception as e:
     note_skipped("Camp detail", e)
     camp_detail = D.get('camp_detail', [])
     camp_daily = D.get('camp_daily', [])
+    camp_daily_by_name = D.get('camp_daily_by_name', [])
     month_cover = D.get('month_cover', {})
     camp_status = D.get('camp_status', {})
     status_asof = D.get('camp_status_asof')
@@ -1918,6 +2023,9 @@ out = {
     # "Xu hướng theo ngày" chart. Falls back to the last good copy if this run's
     # daily rollup was skipped, same as camp_detail.
     "camp_daily": camp_daily,
+    # Same series at (day, campaign) grain, for the per-campaign daily-trend
+    # chart under the Campaign Detail table in section 6.
+    "camp_daily_by_name": camp_daily_by_name,
     "demand_install": demand_install,
     "demand_install_from": demand_install_from,
     "camp_target": camp_target,

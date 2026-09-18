@@ -608,11 +608,25 @@ canvas { max-height: 500px; }
     <div id="cpNote" style="font-size:10px;color:#9ca3af;margin-top:8px"></div>
   </div>
 
-  <div class="card">
+  <div class="card" style="margin-bottom:16px">
     <div class="card-title">Campaign Detail</div>
     <div id="cdFilter" style="margin-bottom:10px"></div>
     <div style="overflow-x:auto"><table id="campDetailTable"></table></div>
     <div id="cdPage" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Xu hướng theo ngày — theo campaign</div>
+    <div class="section-subtitle" style="margin:-4px 0 10px">
+      Chọn <strong>một campaign</strong> để xem các chỉ số của riêng nó tăng/giảm
+      <strong>theo từng ngày</strong> — cùng bộ chỉ số với scorecard &amp; bảng ở trên,
+      nhưng ở <strong>mức campaign</strong>. Cũng có thể bấm thẳng vào tên campaign trong
+      bảng <em>Campaign Detail</em> phía trên để nạp campaign đó vào chart này.
+      Bấm tên chỉ số ở chú thích để bật/tắt từng đường.
+    </div>
+    <div id="cdNameControls" style="margin-bottom:10px"></div>
+    <div style="position:relative;height:320px"><canvas id="chartCampByName"></canvas></div>
+    <div id="cdNameNote" style="font-size:10px;color:#9ca3af;margin-top:8px"></div>
   </div>
 </div><!-- /section 6 -->
 
@@ -2052,6 +2066,13 @@ function _cdHi(s, terms) {
   }
   return out + (open ? '</span>' : '');
 }
+// Escapes a raw campaign name for a double-quoted HTML attribute (data-camp),
+// so a name can round-trip back into cdNameFocus() untouched by the browser.
+function _attrEsc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 
 function _cdChips(label, key, opts, labels) {
   const chips = opts.map(o => {
@@ -2280,6 +2301,160 @@ function renderCampDaily() {
     note.innerHTML = `${days.length} ngày · ${scope}. `
       + `RR D1 / Lead 7d (user) chỉ hiện tới ngày cohort đã đủ thời gian trưởng thành nên `
       + `vài ngày cuối có thể trống — đó là dữ liệu chưa chín, không phải tụt.`;
+  }
+}
+
+// ── Section 6 per-campaign daily-trend chart ────────────────────────────────
+// Same scorecard metrics as renderCampDaily, one point per day, but for ONE
+// campaign at a time, read from D.camp_daily_by_name (day × campaign). A
+// campaign maps to a single channel/vertical, so there is exactly one source row
+// per day and no cross-cell summing is needed — but rates are still re-derived
+// from the numerator/denominator pair (RR D1 = d1/d0_d1, % Save = save/dau, the
+// cost-per metrics = cost/x) rather than stored, and immature days carry null so
+// the line stops instead of diving. Picked from a dropdown, or from clicking a
+// campaign name in the table above (cdNameFocus).
+const _cdName = { campaign: null, mode: 'volume', _touched: false };
+window.cdNameMode = function(m) {
+  _cdName.mode = m;
+  try { renderCampByNameDaily(); } catch (e) { console.error('renderCampByNameDaily failed:', e); }
+};
+window.cdNamePick = function(name) {
+  _cdName.campaign = name; _cdName._touched = true;
+  try { renderCampByNameDaily(); } catch (e) { console.error('renderCampByNameDaily failed:', e); }
+};
+// Called from a campaign name in the Campaign Detail table: load it into the
+// chart and bring the chart into view so the click has a visible result.
+window.cdNameFocus = function(name) {
+  _cdName.campaign = name; _cdName._touched = true;
+  try { renderCampByNameDaily(); } catch (e) { console.error('renderCampByNameDaily failed:', e); }
+  const el = document.getElementById('chartCampByName');
+  if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
+};
+
+function renderCampByNameDaily() {
+  const ctx = document.getElementById('chartCampByName');
+  if (!ctx) return;
+  const controls = document.getElementById('cdNameControls');
+  const note = document.getElementById('cdNameNote');
+  const rowsAll = (D && D.camp_daily_by_name) || [];
+
+  const ex = Object.values(Chart.instances || {}).find(c => c.canvas && c.canvas.id === 'chartCampByName');
+  if (ex) ex.destroy();
+
+  if (!rowsAll.length) {
+    if (controls) controls.innerHTML = '';
+    if (note) note.textContent = 'Chưa có data theo ngày ở mức campaign — sẽ xuất hiện sau lần update tiếp theo.';
+    return;
+  }
+
+  // Campaign list ranked by total cost, so the dropdown opens on the campaigns
+  // that actually spent. Default = biggest spender until the user picks one; if
+  // a previously-picked campaign is no longer in the data, fall back to the top.
+  const costByName = {}, vertByName = {};
+  rowsAll.forEach(r => {
+    costByName[r.name] = (costByName[r.name] || 0) + (r.cost || 0);
+    vertByName[r.name] = r.vertical || 'other';
+  });
+  const names = Object.keys(costByName).sort((a, b) => costByName[b] - costByName[a]);
+  if (!_cdName.campaign || costByName[_cdName.campaign] == null) {
+    _cdName.campaign = names[0];
+  }
+
+  if (controls) {
+    const opts = names.map(n =>
+      `<option value="${_attrEsc(n)}"${n === _cdName.campaign ? ' selected' : ''}>`
+      + `${_attrEsc(n)} · ${(vertByName[n]||'other').toUpperCase()}</option>`).join('');
+    const btn = (m, label) => {
+      const on = _cdName.mode === m;
+      return `<button onclick="cdNameMode('${m}')" style="padding:3px 12px;border-radius:10px;border:1.5px solid ${on?'#4361ee':'#d1d5db'};background:${on?'#4361ee':'#f9fafb'};color:${on?'white':'#6b7280'};font-size:11px;font-weight:600;cursor:pointer">${label}</button>`;
+    };
+    controls.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px">`
+      + `<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">`
+      +   `<span style="font-size:10px;color:#9ca3af;min-width:60px">Campaign:</span>`
+      +   `<select onchange="cdNamePick(this.value)" title="Chọn campaign để xem xu hướng theo ngày"`
+      +     ` style="max-width:min(560px,90vw);padding:5px 9px;border:1.5px solid #d1d5db;border-radius:10px;font-size:11px;font-family:inherit;color:#374151;background:#f9fafb;cursor:pointer;outline:none">${opts}</select>`
+      + `</div>`
+      + `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">`
+      +   `<span style="font-size:10px;color:#9ca3af;min-width:60px">Nhóm chỉ số</span>`
+      +   btn('volume', 'Số lượng + Tỉ lệ') + btn('cost', 'Chi phí')
+      + `</div>`
+      + `</div>`;
+  }
+
+  const rows = rowsAll.filter(r => r.name === _cdName.campaign)
+                      .sort((a, b) => a.date < b.date ? -1 : 1);
+  if (!rows.length) {
+    if (note) note.textContent = 'Không có data theo ngày cho campaign đang chọn.';
+    return;
+  }
+
+  const days = rows.map(r => r.date);
+  const byDay = {}; rows.forEach(r => byDay[r.date] = r);
+  const labels = days.map(d => d.slice(5).split('-').reverse().join('/'));  // dd/mm
+  const arr = (fn) => days.map(d => { const v = fn(byDay[d]); return (v == null || Number.isNaN(v)) ? null : v; });
+  const rate = (num, den) => (num == null || !den) ? null : num / den;
+
+  const bar = (label, data, color, axis) => ({type:'bar', label, data, backgroundColor:color+'cc', borderColor:color, borderWidth:1, borderRadius:3, yAxisID:axis, order:2});
+  const line = (label, data, color, axis, hidden) => ({type:'line', label, data, borderColor:color, backgroundColor:color+'22', borderWidth:2, tension:0.35, pointRadius:2, pointHoverRadius:4, spanGaps:false, yAxisID:axis, order:1, hidden:!!hidden});
+
+  let datasets, scales, C = {blue:'#4361ee', green:'#22c55e', orange:'#f59e0b', purple:'#a855f7', red:'#ef4444', teal:'#14b8a6', pink:'#ec4899'};
+  const fmtVnd = v => v>=1e9?(v/1e9).toFixed(2)+'B':v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':Math.round(v);
+
+  if (_cdName.mode === 'cost') {
+    datasets = [
+      bar('Cost (₫)', arr(o=>o.cost), C.blue, 'yMoney'),
+      line('CPI (₫)', arr(o=>rate(o.cost, o.install)), C.orange, 'yPer'),
+      line('Cost/User (₫)', arr(o=>rate(o.cost, o.lead)), C.purple, 'yPer'),
+      line('Cost/Lead event (₫)', arr(o=>rate(o.cost, o.lead_event)), C.red, 'yPer'),
+    ];
+    scales = {
+      x:{grid:{display:false}, ticks:{font:{size:9}, maxRotation:0, autoSkip:true, maxTicksLimit:16}},
+      yMoney:{position:'left', beginAtZero:true, grid:{color:'#f3f4f6'}, title:{display:true, text:'Cost', font:{size:10}}, ticks:{font:{size:9}, callback:v=>fmtVnd(v)+'₫'}},
+      yPer:{position:'right', beginAtZero:true, grid:{display:false}, title:{display:true, text:'Chi phí / đơn vị', font:{size:10}}, ticks:{font:{size:9}, callback:v=>fmtVnd(v)+'₫'}},
+    };
+  } else {
+    datasets = [
+      bar('Install', arr(o=>o.install), C.blue, 'yCount'),
+      bar('D0 (new users)', arr(o=>o.d0), C.teal, 'yCount'),
+      line('Lead 7d (user)', arr(o=>o.lead), C.green, 'yCount'),
+      line('Lead event', arr(o=>o.lead_event), C.orange, 'yCount', true),
+      line('RR D1', arr(o=>rate(o.d1, o.d0_d1)), C.purple, 'yPct'),
+      line('% Save ad', arr(o=>rate(o.save_ad_d0, o.dau)), C.pink, 'yPct'),
+    ];
+    scales = {
+      x:{grid:{display:false}, ticks:{font:{size:9}, maxRotation:0, autoSkip:true, maxTicksLimit:16}},
+      yCount:{position:'left', beginAtZero:true, grid:{color:'#f3f4f6'}, title:{display:true, text:'Số lượng', font:{size:10}}, ticks:{font:{size:9}, callback:v=>v>=1e3?(v/1e3).toFixed(0)+'K':v}},
+      yPct:{position:'right', beginAtZero:true, grid:{display:false}, title:{display:true, text:'Tỉ lệ', font:{size:10}}, ticks:{font:{size:9}, callback:v=>(v*100).toFixed(0)+'%'}},
+    };
+  }
+
+  new Chart(ctx, {
+    data:{labels, datasets},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{position:'bottom', labels:{boxWidth:12, font:{size:11}, usePointStyle:true}},
+        tooltip:{callbacks:{label:c=>{
+          const v = c.parsed.y;
+          if (v == null) return null;
+          const lbl = c.dataset.label;
+          if (lbl === 'RR D1' || lbl === '% Save ad') return ` ${lbl}: ${(v*100).toFixed(1)}%`;
+          if (lbl.includes('₫')) return ` ${lbl}: ${Math.round(v).toLocaleString('en')} ₫`;
+          return ` ${lbl}: ${Math.round(v).toLocaleString('en')}`;
+        }}}
+      },
+      scales
+    }
+  });
+
+  if (note) {
+    const tCost = rows.reduce((s,r)=>s+(r.cost||0),0);
+    const ch = rows[0].channel || '—', vt = (rows[0].vertical||'other').toUpperCase();
+    note.innerHTML = `<strong>${_attrEsc(_cdName.campaign)}</strong> · ${ch} · ${vt} · `
+      + `${days.length} ngày có data · tổng cost ${Math.round(tCost).toLocaleString('en')} ₫. `
+      + `RR D1 / Lead 7d (user) chỉ hiện tới ngày cohort đã đủ tuổi nên vài ngày cuối `
+      + `có thể trống — đó là dữ liệu chưa chín, không phải tụt.`;
   }
 }
 
@@ -3082,7 +3257,7 @@ function renderCampDetail() {
   </tr>`;
   const body = pageRows.map((r,i)=>`<tr>
     <td ${tdL} style="color:#9ca3af;font-size:11px;text-align:left">${offset+i+1}</td>
-    <td style="text-align:left;max-width:300px;font-size:11px;word-break:break-all;line-height:1.35" title="${r.name} · ngành: ${(r.vertical||'other').toUpperCase()}">${_cdHi(r.name, cdQ)}</td>
+    <td style="text-align:left;max-width:300px;font-size:11px;word-break:break-all;line-height:1.35" title="${r.name} · ngành: ${(r.vertical||'other').toUpperCase()}"><span onclick="cdNameFocus(this.dataset.camp)" data-camp="${_attrEsc(r.name)}" title="Bấm để xem xu hướng theo ngày của campaign này" style="cursor:pointer;color:#4361ee;text-decoration:underline dotted;text-underline-offset:2px">${_cdHi(r.name, cdQ)}</span></td>
     ${stBadge(r.name)}
     <td ${tdL} style="text-align:left;font-weight:600">${fmtVnd(r.cost||0)}</td>
     <td ${tdL}>${fmtNum(r.install)}</td>
@@ -3591,6 +3766,7 @@ async function initDashboard() {
   try { renderCampDetail(); } catch (e) { console.error('renderCampDetail failed:', e); }
   try { renderCampTarget(); } catch (e) { console.error('renderCampTarget failed:', e); }
   try { renderCampDaily(); } catch (e) { console.error('renderCampDaily failed:', e); }
+  try { renderCampByNameDaily(); } catch (e) { console.error('renderCampByNameDaily failed:', e); }
 
   // Partial month badge — show "* Tháng 6: data đến DD/MM/YYYY"
   if (D.partial_months && D.partial_months.length && D.updated_at) {
