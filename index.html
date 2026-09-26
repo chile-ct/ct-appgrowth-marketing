@@ -558,7 +558,7 @@ canvas { max-height: 500px; }
 <div class="section" id="section-6">
   <div class="section-title">6. Detail Camp Performance — Growth Team (App)</div>
   <div class="section-subtitle">
-    Performance từng campaign của <strong>8 ad account team Growth, phase App</strong> (FB: Chotot_growth_sgd, Chotot_pty_app, Chotot_job_app, Chotot_veh_app · GG: Chotot_app_pty, Chotot_app_veh, Chotot_app_job, Chotot_Growth_New)<br>
+    Performance từng campaign của <strong>8 ad account team Growth, phase App</strong> (FB: Chotot_growth_sgd, Chotot_pty_app, Chotot_job_app, Chotot_veh_app · GG: Chotot_app_pty, Chotot_app_veh, Chotot_app_job, Chotot_Growth_New) + <strong>Apple Ads</strong> (channel <code>apple.searchads</code>, cost/install lấy thẳng từ Airbridge — không qua sheet raw_total vì kênh này không có ai nhập tay)<br>
     <span style="color:#9ca3af">Cost lấy từ sheet <em>raw_total</em> (phase install + activate) · <strong>Install lấy từ Airbridge</strong> (<em>airbridge_attributed_impression_raw</em>) · D0/D1/D7 &amp; Lead 7d (user) từ <em>retention_mapping_activation_by_source_campaign</em> · <strong>Lead event</strong> (lượt) từ <em>retention_activation_core_event_by_source_channel</em> (<code>SUM(total_lead)</code>) · DAU &amp; Save ad in D0 từ <em>new_user_adopt_activate</em> (<code>save_ad_d0_users</code>) · cộng theo campaign name qua mọi channel, join bằng campaign name</span>
   </div>
 
@@ -2192,7 +2192,7 @@ function renderCampDaily() {
     };
     controls.innerHTML = `<div style="display:flex;flex-direction:column;gap:6px">`
       + _cdDailyChips('Tháng:', 'month', ['all', ...months], {all: 'All Months'})
-      + _cdDailyChips('Channel:', 'channel', ['all', 'FB', 'GG'], {all: 'All'})
+      + _cdDailyChips('Channel:', 'channel', ['all', 'FB', 'GG', 'APPLE'], {all: 'All', APPLE: 'Apple Ads'})
       + _cdDailyChips('Vertical:', 'vertical', ['all', ...dVerts], {all: 'All'})
       + `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">`
       +   `<span style="font-size:10px;color:#9ca3af;min-width:60px">Nhóm chỉ số</span>`
@@ -3146,7 +3146,7 @@ function renderCampDetail() {
   }
   cdChipsEl.innerHTML = `<div style="display:flex;flex-direction:column;gap:6px">
     ${_cdChips('Tháng:','month',['all',...months],{all:'All Months'})}
-    ${_cdChips('Channel:','channel',['all','FB','GG'],{all:'All'})}
+    ${_cdChips('Channel:','channel',['all','FB','GG','APPLE'],{all:'All',APPLE:'Apple Ads'})}
     ${_cdChips('Vertical:','vertical',['all',...verts],{all:'All'})}
     ${_cdChips('Sort:','sort',['cost','install','cpi','d0','rr_d1','save_ad_rate','lead','cpl','lead_event','cpl_event'],
         {cost:'Cost',install:'Install',cpi:'CPI',d0:'D0',rr_d1:'RR D1',save_ad_rate:'% Save',

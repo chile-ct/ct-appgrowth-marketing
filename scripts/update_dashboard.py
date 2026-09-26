@@ -611,7 +611,10 @@ SHEET_DEMAND_GID = '118997184'   # raw_retention
 # to be supplied here. Bump this when a 2027 workbook replaces it.
 TARGET_YEAR = 2026
 
-# Growth team / App phase ad accounts -> ad channel
+# Growth team / App phase ad accounts -> ad channel. Apple Search Ads is NOT
+# here — unlike FB/GG, its cost/install come straight from Airbridge
+# (fetch_apple_camp_cost() below) rather than a hand-typed row in raw_total,
+# because Duyen has no manual entry for it in the sheet.
 GROWTH_ACCOUNTS = {
     'chotot_growth_sgd': 'FB',
     'chotot_pty_app':    'FB',
@@ -742,6 +745,94 @@ def fetch_camp_cost():
     if bad_dates:
         print(f"  Sheet: {bad_dates} rows with unparseable dates skipped")
     print(f"  Sheet: {seen} growth rows -> {len(agg)} campaign-months")
+    return agg, last_day, daily
+
+
+# Airbridge's own channel string for Apple Search Ads, clustered alongside
+# `campaign` on airbridge_attributed_impression_raw (confirmed against the
+# table 2026-09-25: ~92.7M VND cost since 2025-12-16).
+APPLE_CHANNEL = 'apple.searchads'
+
+# channel='apple.searchads' is NOT Growth-team-exclusive: the same channel
+# value also carries a second, unrelated campaign family prefixed
+# digital_install_ios_asa_* / pty_digital_asa_* (confirmed 2026-09-25 — e.g.
+# digital_install_ios_asa_search_tab, pty_digital_asa_search_result_
+# brandcamp25_nhaquyhiem). Those belong to a different team, the same way
+# GROWTH_ACCOUNTS' 8 accounts are only ONE slice of all FB/GG spend. This
+# prefix is what GROWTH_ACCOUNTS does for FB/GG (scope to Growth team's own
+# accounts) — every Growth Apple campaign seen so far follows
+# asa_growth_<vertical>_app_..., matching the fb_growth_/gg_growth_ naming
+# convention those two channels already use.
+APPLE_CAMPAIGN_PREFIX = 'asa_growth_'
+
+
+def fetch_apple_camp_cost():
+    """Apple Search Ads cost + install straight from Airbridge, not the
+    raw_total sheet.
+
+    Every other Growth channel's cost is a person typing a number from that
+    platform's ads manager into raw_total by hand (see GROWTH_ACCOUNTS).
+    Nobody does that for Apple Search Ads — there is no account name for it in
+    the sheet — but Airbridge already carries its cost natively
+    (cost_channel_metric on channel='apple.searchads'), so this reads that
+    directly instead of waiting on a manual entry that doesn't exist.
+
+    Returns the same (agg, last_day, daily) shape as fetch_camp_cost(), keyed
+    the same way ((month, campaign) -> {cost, install, channel, vertical,
+    phases}), so the caller can merge it straight into that function's output
+    and the rest of the pipeline — channel-agnostic beyond this point — picks
+    it up with no further changes.
+
+    `last_day`/`daily` are returned but deliberately NOT merged into
+    fetch_camp_cost()'s own last_day by the caller: that dict feeds sheet_max,
+    the cap that stops BigQuery activation/lead queries from running ahead of
+    the sheet's (manually-entered, laggier) cost. Folding Apple's own —
+    usually fresher — last day into it would raise that cap for every FB/GG
+    campaign too and reopen the exact bug fixed 2026-08-10 (leads counted for
+    days the sheet had no matching cost for). Apple campaigns simply inherit
+    the shared FB/GG-set cap instead, so their freshest 1-3 days read
+    "pending" until sheet_max catches up — the same maturity behaviour every
+    other campaign already has, not a new one.
+
+    Vertical is parsed off the campaign name (asa_growth_<vertical>_app_...)
+    since there is no sheet row here to carry it.
+    """
+    rows = run(f"""
+    SELECT event_date, campaign,
+           SUM(cost_channel_metric) as cost,
+           GREATEST(SUM(app_installs_metric),
+                    SUM(app_install_users_metric)) as install
+    FROM chotot_airbridge.airbridge_attributed_impression_raw
+    WHERE channel = '{APPLE_CHANNEL}'
+      AND campaign LIKE '{APPLE_CAMPAIGN_PREFIX}%'
+      AND event_date >= '2026-01-01'
+    GROUP BY 1, 2
+    """)
+    agg, last_day, daily = {}, {}, {}
+    for r in rows:
+        camp = str(r['campaign'])
+        d_date = to_date(r['event_date'])
+        m_date = d_date.replace(day=1)
+        # Campaign names look like asa_growth_job_app_ios_install_... /
+        # asa_growth_pty_let_app_ios_..., i.e. the vertical always sits between
+        # two underscores right after the fixed asa_growth_ prefix.
+        vertical = next(
+            (v for v in ('job', 'veh', 'pty', 'gds') if f'_{v}_' in camp),
+            'other')
+        prev = last_day.get(m_date)
+        if prev is None or d_date > prev:
+            last_day[m_date] = d_date
+        e = agg.setdefault((m_date, camp), {
+            'cost': 0.0, 'install': 0.0, 'channel': 'APPLE',
+            'vertical': vertical, 'phases': {'install'},
+        })
+        cost = float(r['cost'] or 0)
+        e['cost'] += cost
+        e['install'] += float(r['install'] or 0)
+        d = daily.setdefault((m_date, camp), {})
+        d[d_date] = d.get(d_date, 0.0) + cost
+    print(f"  Airbridge (Apple Search Ads): {len(rows)} rows -> "
+          f"{len(agg)} campaign-months")
     return agg, last_day, daily
 
 
@@ -899,6 +990,16 @@ try:
     sheet_agg, sheet_last_day, sheet_daily_cost = fetch_camp_cost()
     if not sheet_agg:
         raise RuntimeError('no growth rows found in raw_total')
+
+    # Apple Search Ads merges into the same campaign→(cost,install,channel,
+    # vertical) map, straight from Airbridge — see fetch_apple_camp_cost() for
+    # why it can't come from the sheet like FB/GG. Only agg and daily-cost get
+    # merged; apple_last_day is intentionally dropped (see that function's
+    # docstring) so sheet_max below stays anchored to FB/GG's sheet, not
+    # Apple's usually-fresher Airbridge feed.
+    apple_agg, _apple_last_day, apple_daily_cost = fetch_apple_camp_cost()
+    sheet_agg.update(apple_agg)
+    sheet_daily_cost.update(apple_daily_cost)
 
     names = sorted({c for _m, c in sheet_agg})
     in_list = ','.join(
