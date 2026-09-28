@@ -592,8 +592,9 @@ canvas { max-height: 500px; }
   <div class="card" style="margin-bottom:16px">
     <div class="card-title">Xu hướng theo ngày</div>
     <div class="section-subtitle" style="margin:-4px 0 10px">
-      Các chỉ số trong scorecard ở trên, vẽ theo <strong>từng ngày</strong>. Chart có
-      <strong>bộ lọc riêng</strong> (Tháng / Channel / Vertical) — độc lập với bảng Campaign Detail bên dưới.
+      Các chỉ số trong scorecard ở trên, vẽ theo <strong>từng ngày</strong>. Chip
+      <strong>Tháng / Channel / Vertical</strong> bên dưới dùng chung với scorecard ở trên và
+      bảng Campaign Detail bên dưới — đổi ở đây thì cả ba cùng đổi theo.
       Chọn tháng cụ thể để xem ngày trong tháng đó, hoặc <em>All Months</em> để xem toàn bộ.
       Bấm vào tên chỉ số ở chú thích để bật/tắt từng đường.
     </div>
@@ -2088,6 +2089,7 @@ window.cdFilter = function(key, val) {
   _cdState[key] = val; _cdState.page = 0;
   renderCampDetail();
   try { renderCampTarget(); } catch (e) { console.error('renderCampTarget failed:', e); }
+  try { renderCampDaily(); } catch (e) { console.error('renderCampDaily failed:', e); }
 };
 window.cdPage = function(pg) { _cdState.page = pg; renderCampDetail(); };
 window.cdSort = function(key) {
@@ -2114,6 +2116,7 @@ window.cdSearchWiden = function() {
   _cdState.page = 0;
   renderCampDetail();
   try { renderCampTarget(); } catch (e) { console.error('renderCampTarget failed:', e); }
+  try { renderCampDaily(); } catch (e) { console.error('renderCampDaily failed:', e); }
   const el = document.getElementById('cdSearchInput');
   if (el) el.focus();
 };
@@ -2133,24 +2136,25 @@ window.cdSearchWiden = function() {
 //     (and the 7-day lead) for days whose window has not closed, so those
 //     points are gaps; spanGaps:false keeps the line honest by stopping rather
 //     than plunging to 0 on cohorts that simply have not had time yet.
-// The daily chart carries its OWN Month / Channel / Vertical selection, separate
-// from the campaign table's _cdState, so the two can be read at different scopes
-// at once. mode is the Volume/Cost axis switch. _touched guards the one-time
-// default-to-latest-month, same as the table.
-const _cdDaily = { mode: 'volume', month: 'all', channel: 'all', vertical: 'all', _touched: false };
+// Month / Channel / Vertical here ARE _cdState — the same filter the scorecards
+// and the Campaign Detail table read, so picking a chip anywhere in section 6
+// moves all three together. mode (Volume/Cost axis switch) is the only thing
+// that stays local to this chart, since the table/scorecards have no such axis.
+const _cdDaily = { mode: 'volume' };
 window.cdDailyMode = function(m) {
   _cdDaily.mode = m;
   try { renderCampDaily(); } catch (e) { console.error('renderCampDaily failed:', e); }
 };
 window.cdDailyFilter = function(key, val) {
-  _cdDaily[key] = val;
-  try { renderCampDaily(); } catch (e) { console.error('renderCampDaily failed:', e); }
+  // Delegate to cdFilter: it owns _cdState and already re-renders the table +
+  // target card + (below) this chart, so all three stay in lockstep either way.
+  window.cdFilter(key, val);
 };
-// Same chip look as the campaign table's _cdChips, but wired to cdDailyFilter and
-// reading the chart's own state.
+// Same chip look as the campaign table's _cdChips, but wired to cdDailyFilter —
+// both read/write the same _cdState now, so the two chip rows always agree.
 function _cdDailyChips(label, key, opts, labels) {
   const chips = opts.map(o => {
-    const active = _cdDaily[key] === o;
+    const active = _cdState[key] === o;
     return `<button onclick="cdDailyFilter('${key}','${o}')" style="padding:3px 10px;border-radius:10px;border:1.5px solid ${active?'#4361ee':'#d1d5db'};background:${active?'#4361ee':'#f9fafb'};color:${active?'white':'#6b7280'};font-size:11px;font-weight:600;cursor:pointer">${(labels&&labels[o])||o}</button>`;
   }).join('');
   return `<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center"><span style="font-size:10px;color:#9ca3af;min-width:60px">${label}</span>${chips}</div>`;
@@ -2179,12 +2183,9 @@ function renderCampDaily() {
   const ymList = [...new Set(rowsAll.map(r => r.date.slice(0, 7)))].sort();
   const months = ymList.map(s => { const [y, m] = s.split('-'); return _MONTH_NAMES[+m - 1] + ' ' + y; });
   const dVerts = [...new Set(rowsAll.map(r => r.vertical || 'other'))].sort();
-  // Open on the latest month (like the table) so the chart starts readable, not
-  // on every day since January; the user can pick All Months for the full trend.
-  if (_cdDaily.month === 'all' && !_cdDaily._touched && months.length) {
-    _cdDaily.month = months[months.length - 1];
-    _cdDaily._touched = true;
-  }
+  // _cdState's own default-to-latest-month already ran in renderCampDetail
+  // (which always runs before this, per cdFilter/init order), so there is
+  // nothing to default here.
   if (controls) {
     const btn = (m, label) => {
       const on = _cdDaily.mode === m;
@@ -2201,12 +2202,12 @@ function renderCampDaily() {
       + `</div>`;
   }
 
-  // Filter to the chart's own chips. Month: a specific month restricts to its
-  // days, 'all' keeps the whole range.
+  // Filter to the shared _cdState chips. Month: a specific month restricts to
+  // its days, 'all' keeps the whole range.
   let rows = rowsAll.filter(r =>
-       (_cdDaily.channel  === 'all' || r.channel === _cdDaily.channel)
-    && (_cdDaily.vertical === 'all' || (r.vertical || 'other') === _cdDaily.vertical)
-    && (_cdDaily.month    === 'all' || monthOf(r.date) === _cdDaily.month));
+       (_cdState.channel  === 'all' || r.channel === _cdState.channel)
+    && (_cdState.vertical === 'all' || (r.vertical || 'other') === _cdState.vertical)
+    && (_cdState.month    === 'all' || monthOf(r.date) === _cdState.month));
 
   if (!rows.length) {
     if (note) note.textContent = 'Không có data theo ngày cho bộ lọc đang chọn.';
@@ -2294,9 +2295,9 @@ function renderCampDaily() {
 
   if (note) {
     const scope = [
-      _cdDaily.month === 'all' ? 'tất cả tháng' : _cdDaily.month,
-      _cdDaily.channel === 'all' ? 'tất cả channel' : _cdDaily.channel,
-      _cdDaily.vertical === 'all' ? 'tất cả vertical' : _cdDaily.vertical,
+      _cdState.month === 'all' ? 'tất cả tháng' : _cdState.month,
+      _cdState.channel === 'all' ? 'tất cả channel' : _cdState.channel,
+      _cdState.vertical === 'all' ? 'tất cả vertical' : _cdState.vertical,
     ].join(' · ');
     note.innerHTML = `${days.length} ngày · ${scope}. `
       + `RR D1 / Lead 7d (user) chỉ hiện tới ngày cohort đã đủ thời gian trưởng thành nên `
