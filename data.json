@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-28",
+  "updated_at": "2026-09-29",
   "months": [
     "Jan 2026",
     "Feb 2026",
@@ -24,7 +24,7 @@
       1490027,
       1552347,
       1617879,
-      1459047
+      1488212
     ],
     "mau_login": [
       1030263,
@@ -35,7 +35,7 @@
       1220678,
       1263106,
       1317824,
-      1189247
+      1210132
     ],
     "mau_nonlogin": [
       364334,
@@ -46,7 +46,7 @@
       269349,
       289241,
       300055,
-      269800
+      278080
     ],
     "avg_dau": [
       225026,
@@ -57,7 +57,7 @@
       231745,
       233535,
       235672,
-      229064
+      229148
     ],
     "total_ct_mau": [
       6258813,
@@ -68,7 +68,7 @@
       6521358,
       7321100,
       7643852,
-      6232900
+      6440778
     ],
     "web_other_mau": [
       4864216,
@@ -79,7 +79,7 @@
       5031331,
       5768753,
       6025973,
-      4773853
+      4952566
     ],
     "new_mau": [
       261240,
@@ -90,7 +90,7 @@
       305346,
       337906,
       384854,
-      275479
+      285486
     ],
     "new_login_mau": [
       120641,
@@ -101,7 +101,7 @@
       214382,
       226082,
       258733,
-      169388
+      174903
     ],
     "avg_new_dau": [
       8427,
@@ -112,7 +112,7 @@
       10178,
       10900,
       12415,
-      10203
+      10196
     ],
     "returning_mau": [
       1133357,
@@ -123,7 +123,7 @@
       1184681,
       1214441,
       1233025,
-      1183568
+      1202726
     ],
     "pct_new": [
       0.1873,
@@ -134,7 +134,7 @@
       0.2049,
       0.2177,
       0.2379,
-      0.1888
+      0.1918
     ],
     "login_rate": [
       0.7388,
@@ -145,7 +145,7 @@
       0.8192,
       0.8137,
       0.8145,
-      0.8151
+      0.8131
     ],
     "new_login_rate": [
       0.4618,
@@ -156,7 +156,7 @@
       0.7021,
       0.6691,
       0.6723,
-      0.6149
+      0.6127
     ],
     "pct_app_ct": [
       0.2228,
@@ -167,7 +167,7 @@
       0.2285,
       0.212,
       0.2117,
-      0.2341
+      0.2311
     ]
   },
   "acquisition": {
@@ -180,7 +180,7 @@
       155779,
       161352,
       186731,
-      163412
+      170562
     ],
     "organic": [
       55700,
@@ -191,7 +191,7 @@
       51571,
       53069,
       55566,
-      25891
+      25979
     ],
     "growth": [
       54439,
@@ -202,7 +202,7 @@
       91121,
       114546,
       127683,
-      78726
+      81407
     ],
     "other": [
       8511,
@@ -213,7 +213,7 @@
       6875,
       8939,
       14874,
-      7450
+      7538
     ],
     "direct_daily": [
       4600,
@@ -224,7 +224,7 @@
       5193,
       5205,
       6024,
-      6052
+      6092
     ],
     "organic_daily": [
       1797,
@@ -235,7 +235,7 @@
       1719,
       1712,
       1792,
-      959
+      928
     ],
     "growth_daily": [
       1756,
@@ -246,7 +246,7 @@
       3037,
       3695,
       4119,
-      2916
+      2907
     ],
     "other_daily": [
       275,
@@ -257,7 +257,7 @@
       229,
       288,
       480,
-      276
+      269
     ],
     "growth_pct_total": [
       0.2084,
@@ -268,7 +268,7 @@
       0.2984,
       0.339,
       0.3318,
-      0.2858
+      0.2852
     ]
   },
   "activation": {
@@ -281,7 +281,7 @@
       89572,
       90231,
       110403,
-      65398
+      70281
     ],
     "lead_total": [
       66422,
@@ -292,7 +292,7 @@
       81602,
       84777,
       101658,
-      67554
+      71872
     ],
     "save_total": [
       18009,
@@ -303,7 +303,7 @@
       23344,
       25971,
       36349,
-      22275
+      23011
     ],
     "adview_rate": [
       0.299,
@@ -314,7 +314,7 @@
       0.2933,
       0.267,
       0.2869,
-      0.2374
+      0.2462
     ],
     "lead_rate": [
       0.2543,
@@ -325,7 +325,7 @@
       0.2672,
       0.2509,
       0.2641,
-      0.2452
+      0.2518
     ],
     "save_rate": [
       0.0689,
@@ -336,7 +336,7 @@
       0.0765,
       0.0769,
       0.0944,
-      0.0809
+      0.0806
     ],
     "adview_daily": [
       2520,
@@ -347,7 +347,7 @@
       2986,
       2911,
       3561,
-      2422
+      2510
     ],
     "lead_daily": [
       2143,
@@ -358,7 +358,7 @@
       2720,
       2735,
       3279,
-      2502
+      2567
     ],
     "save_daily": [
       581,
@@ -369,7 +369,7 @@
       778,
       838,
       1173,
-      825
+      822
     ],
     "direct_adview": [
       43962,
@@ -380,7 +380,7 @@
       49679,
       49431,
       62890,
-      43319
+      47009
     ],
     "organic_adview": [
       16446,
@@ -391,7 +391,7 @@
       14910,
       13999,
       15307,
-      6425
+      6494
     ],
     "growth_adview": [
       15369,
@@ -402,7 +402,7 @@
       23476,
       24706,
       28181,
-      13874
+      14950
     ],
     "direct_lead": [
       35891,
@@ -413,7 +413,7 @@
       44439,
       45415,
       55900,
-      42866
+      46032
     ],
     "organic_lead": [
       14556,
@@ -424,7 +424,7 @@
       13679,
       13456,
       14473,
-      6335
+      6411
     ],
     "growth_lead": [
       13406,
@@ -435,7 +435,7 @@
       21896,
       23723,
       27093,
-      16444
+      17475
     ],
     "direct_save": [
       9805,
@@ -446,7 +446,7 @@
       12750,
       14152,
       21447,
-      14601
+      15190
     ],
     "organic_save": [
       3720,
@@ -457,7 +457,7 @@
       3495,
       3639,
       4239,
-      1863
+      1867
     ],
     "growth_save": [
       3626,
@@ -468,7 +468,7 @@
       6526,
       7293,
       8915,
-      4937
+      5066
     ],
     "direct_adview_daily": [
       1418,
@@ -479,7 +479,7 @@
       1656,
       1595,
       2029,
-      1604
+      1679
     ],
     "organic_adview_daily": [
       531,
@@ -490,7 +490,7 @@
       497,
       452,
       494,
-      238
+      232
     ],
     "growth_adview_daily": [
       496,
@@ -501,7 +501,7 @@
       783,
       797,
       909,
-      514
+      534
     ],
     "direct_lead_daily": [
       1158,
@@ -512,7 +512,7 @@
       1481,
       1465,
       1803,
-      1588
+      1644
     ],
     "organic_lead_daily": [
       470,
@@ -523,7 +523,7 @@
       456,
       434,
       467,
-      235
+      229
     ],
     "growth_lead_daily": [
       432,
@@ -534,7 +534,7 @@
       730,
       765,
       874,
-      609
+      624
     ],
     "direct_save_daily": [
       316,
@@ -545,7 +545,7 @@
       425,
       457,
       692,
-      541
+      542
     ],
     "organic_save_daily": [
       120,
@@ -556,7 +556,7 @@
       116,
       117,
       137,
-      69
+      67
     ],
     "growth_save_daily": [
       117,
@@ -567,7 +567,7 @@
       218,
       235,
       288,
-      183
+      181
     ]
   },
   "retention": {
@@ -580,7 +580,7 @@
       0.3995723403435666,
       0.39363992449596674,
       0.3751162610481435,
-      0.3624879057437383
+      0.37713138425625536
     ],
     "total_d7": [
       0.35492271709913975,
@@ -591,7 +591,7 @@
       0.312329584774685,
       0.3110498551626961,
       0.291682206972539,
-      null
+      0.2980109020267867
     ],
     "total_m1": [
       0.6465864595995485,
@@ -600,8 +600,8 @@
       0.6449432298034866,
       0.630739799733289,
       0.5790749388377998,
-      0.5685010823350195,
-      null,
+      0.5700978853058289,
+      0.4568644880184172,
       null
     ],
     "app_d1": [
@@ -613,7 +613,7 @@
       0.5021259763466853,
       0.4973741882692337,
       0.4895218699632736,
-      0.47227349165695426
+      0.4908054674687108
     ],
     "app_d7": [
       0.42813019183649076,
@@ -624,7 +624,7 @@
       0.414847283354071,
       0.4108711772958309,
       0.40035939427325706,
-      null
+      0.4031071314292074
     ],
     "app_m1": [
       0.7696506902527939,
@@ -633,8 +633,8 @@
       0.7653879790368942,
       0.7556673094555686,
       0.7606478959271039,
-      0.7505336472354952,
-      null,
+      0.752382597608191,
+      0.6346879949586668,
       null
     ],
     "web_d1": [
@@ -646,7 +646,7 @@
       0.2352046798602633,
       0.22892199723618611,
       0.20673784816911725,
-      0.19396544137617117
+      0.20201275506128594
     ],
     "web_d7": [
       0.19592032361716033,
@@ -657,7 +657,7 @@
       0.14801952293432574,
       0.15254522342366866,
       0.13173469664176232,
-      null
+      0.1356420823340669
     ],
     "web_m1": [
       0.37929808097308404,
@@ -666,8 +666,8 @@
       0.3895128012934517,
       0.3708773541843978,
       0.2880591998844145,
-      0.27945457355828346,
-      null,
+      0.2806509958265949,
+      0.1982768315534092,
       null
     ],
     "nurr_d1": [
@@ -679,7 +679,7 @@
       0.3593154399339804,
       0.3433692689668234,
       0.33301721338096785,
-      0.33262620058705833
+      0.34473583912593697
     ],
     "nurr_d7": [
       0.15441317177345898,
@@ -690,7 +690,7 @@
       0.14456189989651694,
       0.12737076044850984,
       0.1229775901266645,
-      null
+      0.13327173087655417
     ],
     "nurr_m1": [
       0.32485092963266304,
@@ -712,7 +712,7 @@
       0.36189400309376946,
       0.35629163697208194,
       0.3482232741448369,
-      0.3409534287231117
+      0.35556983325684566
     ],
     "direct_d7": [
       0.14778280225751042,
@@ -723,7 +723,7 @@
       0.1470246538765188,
       0.13422985157871906,
       0.12860646432625786,
-      null
+      0.13723376665478004
     ],
     "direct_m1": [
       0.3377431906614786,
@@ -745,7 +745,7 @@
       0.39547420061662564,
       0.3901147562607172,
       0.37567937227801174,
-      0.37720998759305213
+      0.3794754934147001
     ],
     "organic_d7": [
       0.17707360861759425,
@@ -756,7 +756,7 @@
       0.1650733939617227,
       0.1485047768000151,
       0.14867005003059425,
-      null
+      0.157337128399747
     ],
     "organic_m1": [
       0.3166786355475763,
@@ -778,7 +778,7 @@
       0.33841646134381037,
       0.30504457336918067,
       0.289725395870916,
-      0.29681051164427125
+      0.3078468200553034
     ],
     "growth_d7": [
       0.14888714028776978,
@@ -789,7 +789,7 @@
       0.13155090896983418,
       0.10977960945238432,
       0.10525556223692123,
-      null
+      0.11847520742144117
     ],
     "growth_m1": [
       0.32485092963266304,
@@ -813,7 +813,7 @@
       91121,
       114546,
       127683,
-      78726
+      81407
     ],
     "avg_new_dau": [
       1756,
@@ -824,7 +824,7 @@
       3037,
       3695,
       4119,
-      2916
+      2907
     ],
     "adview_activated": [
       15369,
@@ -835,7 +835,7 @@
       23476,
       24706,
       28181,
-      13874
+      14950
     ],
     "lead_activated": [
       13406,
@@ -846,7 +846,7 @@
       21896,
       23723,
       27093,
-      16444
+      17475
     ],
     "adview_rate": [
       0.2823,
@@ -857,7 +857,7 @@
       0.2576,
       0.2157,
       0.2207,
-      0.1762
+      0.1836
     ],
     "lead_rate": [
       0.2463,
@@ -868,7 +868,7 @@
       0.2403,
       0.2071,
       0.2122,
-      0.2089
+      0.2147
     ],
     "adview_daily": [
       496,
@@ -879,7 +879,7 @@
       783,
       797,
       909,
-      514
+      534
     ],
     "lead_daily": [
       432,
@@ -890,7 +890,7 @@
       730,
       765,
       874,
-      609
+      624
     ],
     "nurr_d1": [
       0.36325314748201437,
@@ -901,7 +901,7 @@
       0.33841646134381037,
       0.30504457336918067,
       0.289725395870916,
-      0.29681051164427125
+      0.3078468200553034
     ],
     "nurr_d7": [
       0.14888714028776978,
@@ -912,7 +912,7 @@
       0.13155090896983418,
       0.10977960945238432,
       0.10525556223692123,
-      null
+      0.11847520742144117
     ],
     "nurr_m1": [
       0.32485092963266304,
@@ -954,7 +954,7 @@
       0.2984,
       0.339,
       0.3318,
-      0.2858
+      0.2852
     ],
     "retained_d1": [
       19775,
@@ -965,7 +965,7 @@
       30837,
       34942,
       36993,
-      23367
+      25061
     ],
     "retained_d7": [
       8105,
@@ -976,7 +976,7 @@
       11987,
       12575,
       13439,
-      0
+      9645
     ],
     "retained_m1": [
       17685,
@@ -1055,7 +1055,7 @@
       29916,
       48513,
       61382,
-      31876
+      32754
     ],
     "job_new_users": [
       2065,
@@ -1066,7 +1066,7 @@
       47066,
       41290,
       46227,
-      43128
+      44787
     ],
     "veh_new_users": [
       266,
@@ -1077,7 +1077,7 @@
       1295,
       3959,
       3432,
-      730
+      746
     ],
     "gds_new_users": [
       1148,
@@ -1088,7 +1088,7 @@
       8838,
       22450,
       20654,
-      3373
+      3421
     ],
     "pty_activated": [
       11681,
@@ -1099,7 +1099,7 @@
       7188,
       9731,
       12108,
-      4870
+      5182
     ],
     "job_activated": [
       836,
@@ -1110,7 +1110,7 @@
       12662,
       10106,
       12273,
-      8007
+      8685
     ],
     "veh_activated": [
       117,
@@ -1121,7 +1121,7 @@
       297,
       966,
       890,
-      144
+      154
     ],
     "gds_activated": [
       381,
@@ -1132,7 +1132,7 @@
       1504,
       3740,
       3375,
-      541
+      562
     ]
   },
   "attribution_assist": {
@@ -1145,7 +1145,7 @@
       0.0554,
       0.0496,
       0.0504,
-      0.0775
+      0.0785
     ],
     "organic_pct": [
       0.2311,
@@ -1156,7 +1156,7 @@
       0.2758,
       0.3022,
       0.3242,
-      0.2595
+      0.2598
     ]
   },
   "campaigns": [
@@ -1403,17 +1403,6 @@
       "month": "Jan 2026"
     },
     {
-      "name": "digital_app_activate_android_veh_mc",
-      "vertical": "veh",
-      "new_users": 165,
-      "activated_adview": 76,
-      "activated_lead": 65,
-      "activation_rate": 0.4606,
-      "nurr_d1": 0.4727,
-      "nurr_d7": 0.1697,
-      "month": "Jan 2026"
-    },
-    {
       "name": "zalo",
       "vertical": "other",
       "new_users": 165,
@@ -1422,6 +1411,17 @@
       "activation_rate": 0.3394,
       "nurr_d1": 0.4121,
       "nurr_d7": 0.1212,
+      "month": "Jan 2026"
+    },
+    {
+      "name": "digital_app_activate_android_veh_mc",
+      "vertical": "veh",
+      "new_users": 165,
+      "activated_adview": 76,
+      "activated_lead": 65,
+      "activation_rate": 0.4606,
+      "nurr_d1": 0.4727,
+      "nurr_d7": 0.1697,
       "month": "Jan 2026"
     },
     {
@@ -2800,14 +2800,14 @@
       "month": "May 2026"
     },
     {
-      "name": "digital_job_appinstall_fb_atc_broad_kiemdinhphim_asset",
-      "vertical": "job",
+      "name": "digital_dau_pty_let_room_hcm_pmax_lead_2025",
+      "vertical": "pty",
       "new_users": 192,
-      "activated_adview": 20,
-      "activated_lead": 24,
-      "activation_rate": 0.1042,
-      "nurr_d1": 0.2292,
-      "nurr_d7": 0.0521,
+      "activated_adview": 105,
+      "activated_lead": 73,
+      "activation_rate": 0.5469,
+      "nurr_d1": 0.3438,
+      "nurr_d7": 0.1562,
       "month": "May 2026"
     },
     {
@@ -10308,7 +10308,7 @@
       "channel": "APPLE",
       "vertical": "gds",
       "phase": "install",
-      "cost": 3993857,
+      "cost": 4590803,
       "install": 0,
       "cpi": null,
       "d0": null,
@@ -10323,13 +10323,13 @@
       "lead_event": null,
       "cpl_event": null,
       "lead_partial": true,
-      "lead_through": "20/09",
+      "lead_through": "21/09",
       "lead_cost": 1499000,
       "dau": null,
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "asa_growth_gds_app_ios_install_search_pro_general_bau_082126",
@@ -10337,28 +10337,28 @@
       "channel": "APPLE",
       "vertical": "gds",
       "phase": "install",
-      "cost": 464075,
-      "install": 371,
-      "cpi": 1251,
-      "d0": 302,
-      "d1": 82,
-      "d7": 12,
-      "d0_d1": 292,
-      "d0_d7": 207,
-      "rr_d1": 0.2808,
-      "rr_d7": 0.058,
-      "lead": 51,
-      "cpl": 5949,
-      "lead_event": 139,
-      "cpl_event": 3339,
+      "cost": 473528,
+      "install": 382,
+      "cpi": 1240,
+      "d0": 310,
+      "d1": 85,
+      "d7": 17,
+      "d0_d1": 302,
+      "d0_d7": 251,
+      "rr_d1": 0.2815,
+      "rr_d7": 0.0677,
+      "lead": 56,
+      "cpl": 6339,
+      "lead_event": 140,
+      "cpl_event": 3382,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 303383,
-      "dau": 300,
-      "save_ad_d0": 24,
-      "save_ad_rate": 0.08,
+      "lead_through": "21/09",
+      "lead_cost": 355004,
+      "dau": 308,
+      "save_ad_d0": 25,
+      "save_ad_rate": 0.0812,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "asa_growth_job_app_ios_install_search_pro_competitor_bau_090726",
@@ -10381,12 +10381,12 @@
       "lead_event": null,
       "cpl_event": null,
       "lead_partial": true,
-      "lead_through": "20/09",
+      "lead_through": "21/09",
       "dau": null,
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "asa_growth_job_app_ios_install_search_pro_competitor_bau_091626_broad",
@@ -10409,13 +10409,13 @@
       "lead_event": null,
       "cpl_event": null,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 2609730,
+      "lead_through": "21/09",
+      "lead_cost": 3773108,
       "dau": null,
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "asa_growth_job_app_ios_install_search_pro_general_bau_090326",
@@ -10438,12 +10438,12 @@
       "lead_event": null,
       "cpl_event": null,
       "lead_partial": true,
-      "lead_through": "20/09",
+      "lead_through": "21/09",
       "dau": null,
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "asa_growth_job_app_ios_install_search_pro_general_bau_091626_broad",
@@ -10466,13 +10466,13 @@
       "lead_event": null,
       "cpl_event": null,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 4078651,
+      "lead_through": "21/09",
+      "lead_cost": 4882467,
       "dau": null,
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "asa_growth_pty_app_ios_install_search_pro_competitor_bau_082126",
@@ -10480,9 +10480,9 @@
       "channel": "APPLE",
       "vertical": "pty",
       "phase": "install",
-      "cost": 399415,
+      "cost": 406599,
       "install": 2,
-      "cpi": 199708,
+      "cpi": 203300,
       "d0": 2,
       "d1": 0,
       "d7": 0,
@@ -10495,13 +10495,13 @@
       "lead_event": 0,
       "cpl_event": null,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 233347,
+      "lead_through": "21/09",
+      "lead_cost": 246174,
       "dau": 2,
       "save_ad_d0": 0,
       "save_ad_rate": 0.0,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "asa_growth_pty_app_ios_install_search_pro_general_bau_082126",
@@ -10524,12 +10524,12 @@
       "lead_event": 67,
       "cpl_event": 0,
       "lead_partial": true,
-      "lead_through": "20/09",
+      "lead_through": "21/09",
       "dau": 38,
       "save_ad_d0": 7,
       "save_ad_rate": 0.1842,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "asa_growth_pty_let_app_ios_install_search_pro_general_bau_082126",
@@ -10537,28 +10537,28 @@
       "channel": "APPLE",
       "vertical": "pty",
       "phase": "install",
-      "cost": 3280611,
-      "install": 542,
-      "cpi": 6053,
-      "d0": 346,
-      "d1": 87,
-      "d7": 17,
-      "d0_d1": 338,
-      "d0_d7": 230,
-      "rr_d1": 0.2574,
-      "rr_d7": 0.0739,
-      "lead": 88,
-      "cpl": 20606,
-      "lead_event": 453,
-      "cpl_event": 7242,
+      "cost": 3432524,
+      "install": 566,
+      "cpi": 6065,
+      "d0": 367,
+      "d1": 94,
+      "d7": 18,
+      "d0_d1": 346,
+      "d0_d7": 268,
+      "rr_d1": 0.2717,
+      "rr_d7": 0.0672,
+      "lead": 91,
+      "cpl": 21819,
+      "lead_event": 491,
+      "cpl_event": 6991,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 1813315,
-      "dau": 343,
-      "save_ad_d0": 83,
-      "save_ad_rate": 0.242,
+      "lead_through": "21/09",
+      "lead_cost": 1985501,
+      "dau": 364,
+      "save_ad_d0": 89,
+      "save_ad_rate": 0.2445,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "asa_growth_pty_sell_app_ios_install_search_pro_general_bau_090726",
@@ -10581,13 +10581,13 @@
       "lead_event": null,
       "cpl_event": null,
       "lead_partial": true,
-      "lead_through": "20/09",
+      "lead_through": "21/09",
       "lead_cost": 10957,
       "dau": null,
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "asa_growth_veh_app_ios_install_search_pro_competitor_bau_090726",
@@ -10595,7 +10595,7 @@
       "channel": "APPLE",
       "vertical": "veh",
       "phase": "install",
-      "cost": 326569,
+      "cost": 331961,
       "install": 0,
       "cpi": null,
       "d0": null,
@@ -10610,13 +10610,13 @@
       "lead_event": null,
       "cpl_event": null,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 205329,
+      "lead_through": "21/09",
+      "lead_cost": 217852,
       "dau": null,
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "asa_growth_veh_app_ios_install_search_pro_general_bau_090726",
@@ -10639,12 +10639,12 @@
       "lead_event": null,
       "cpl_event": null,
       "lead_partial": true,
-      "lead_through": "20/09",
+      "lead_through": "21/09",
       "dau": null,
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "asa_growth_veh_app_ios_install_search_pro_general_bau_091126_broad",
@@ -10667,13 +10667,13 @@
       "lead_event": null,
       "cpl_event": null,
       "lead_partial": true,
-      "lead_through": "20/09",
+      "lead_through": "21/09",
       "lead_cost": 2775033,
       "dau": null,
       "save_ad_d0": null,
       "save_ad_rate": null,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "digital_app_install_android_mobile_hcm_make_lead",
@@ -10681,28 +10681,28 @@
       "channel": "GG",
       "vertical": "gds",
       "phase": "install",
-      "cost": 5895419,
-      "install": 1227,
-      "cpi": 4805,
-      "d0": 1351,
-      "d1": 463,
-      "d7": 124,
-      "d0_d1": 1309,
-      "d0_d7": 908,
-      "rr_d1": 0.3537,
-      "rr_d7": 0.1366,
-      "lead": 238,
-      "cpl": 19435,
-      "lead_event": 469,
-      "cpl_event": 12570,
+      "cost": 5969598,
+      "install": 1249,
+      "cpi": 4780,
+      "d0": 1380,
+      "d1": 492,
+      "d7": 152,
+      "d0_d1": 1351,
+      "d0_d7": 1121,
+      "rr_d1": 0.3642,
+      "rr_d7": 0.1356,
+      "lead": 248,
+      "cpl": 19171,
+      "lead_event": 482,
+      "cpl_event": 12385,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 4625607,
-      "dau": 1349,
-      "save_ad_d0": 91,
+      "lead_through": "21/09",
+      "lead_cost": 4754364,
+      "dau": 1378,
+      "save_ad_d0": 93,
       "save_ad_rate": 0.0675,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "fb_growth_gds_app_android_install_app_pro_trendy_test_082326_creative_testing",
@@ -10725,12 +10725,12 @@
       "lead_event": 45,
       "cpl_event": 104792,
       "lead_partial": true,
-      "lead_through": "20/09",
+      "lead_through": "21/09",
       "dau": 274,
       "save_ad_d0": 14,
       "save_ad_rate": 0.0511,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "fb_growth_gds_app_android_install_app_pro_trendy_test_082826_creative_atc",
@@ -10738,28 +10738,28 @@
       "channel": "FB",
       "vertical": "gds",
       "phase": "install",
-      "cost": 43628788,
-      "install": 2401,
-      "cpi": 18171,
-      "d0": 2316,
-      "d1": 573,
-      "d7": 121,
-      "d0_d1": 2248,
-      "d0_d7": 1548,
-      "rr_d1": 0.2549,
-      "rr_d7": 0.0782,
-      "lead": 353,
-      "cpl": 92173,
-      "lead_event": 1146,
-      "cpl_event": 38070,
+      "cost": 45066385,
+      "install": 2474,
+      "cpi": 18216,
+      "d0": 2387,
+      "d1": 595,
+      "d7": 152,
+      "d0_d1": 2316,
+      "d0_d7": 1893,
+      "rr_d1": 0.2569,
+      "rr_d7": 0.0803,
+      "lead": 376,
+      "cpl": 90481,
+      "lead_event": 1167,
+      "cpl_event": 38617,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 32537180,
-      "dau": 2305,
-      "save_ad_d0": 138,
-      "save_ad_rate": 0.0599,
+      "lead_through": "21/09",
+      "lead_cost": 34020829,
+      "dau": 2376,
+      "save_ad_d0": 139,
+      "save_ad_rate": 0.0585,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "fb_growth_gds_app_android_install_app_pro_voucher_bau_082726",
@@ -10782,12 +10782,12 @@
       "lead_event": 23,
       "cpl_event": 85362,
       "lead_partial": true,
-      "lead_through": "20/09",
+      "lead_through": "21/09",
       "dau": 122,
       "save_ad_d0": 3,
       "save_ad_rate": 0.0246,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "fb_growth_gds_app_android_install_app_pro_voucher_bau_090426_atw",
@@ -10810,12 +10810,12 @@
       "lead_event": 23,
       "cpl_event": 205932,
       "lead_partial": true,
-      "lead_through": "20/09",
+      "lead_through": "21/09",
       "dau": 141,
       "save_ad_d0": 7,
       "save_ad_rate": 0.0496,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "fb_growth_gds_app_android_install_app_pro_voucher_bau_091426_vc",
@@ -10828,23 +10828,23 @@
       "cpi": 16157,
       "d0": 251,
       "d1": 29,
-      "d7": 2,
+      "d7": 4,
       "d0_d1": 251,
-      "d0_d7": 120,
+      "d0_d7": 236,
       "rr_d1": 0.1155,
-      "rr_d7": 0.0167,
-      "lead": 6,
-      "cpl": 555477,
+      "rr_d7": 0.0169,
+      "lead": 8,
+      "cpl": 492028,
       "lead_event": 13,
       "cpl_event": 319402,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 3332862,
+      "lead_through": "21/09",
+      "lead_cost": 3936225,
       "dau": 251,
       "save_ad_d0": 2,
       "save_ad_rate": 0.008,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "fb_growth_gds_app_android_install_app_pro_voucher_bau_092226_atc",
@@ -10852,28 +10852,28 @@
       "channel": "FB",
       "vertical": "gds",
       "phase": "install",
-      "cost": 2939382,
-      "install": 70,
-      "cpi": 41991,
-      "d0": 65,
-      "d1": 6,
+      "cost": 3300870,
+      "install": 87,
+      "cpi": 37941,
+      "d0": 82,
+      "d1": 10,
       "d7": 0,
-      "d0_d1": 50,
+      "d0_d1": 65,
       "d0_d7": 0,
-      "rr_d1": 0.12,
+      "rr_d1": 0.1538,
       "rr_d7": null,
       "lead": 0,
       "cpl": null,
-      "lead_event": 17,
-      "cpl_event": 172905,
+      "lead_event": 20,
+      "cpl_event": 165044,
       "lead_partial": true,
-      "lead_through": "20/09",
+      "lead_through": "21/09",
       "lead_cost": 0,
-      "dau": 65,
-      "save_ad_d0": 2,
-      "save_ad_rate": 0.0308,
+      "dau": 82,
+      "save_ad_d0": 3,
+      "save_ad_rate": 0.0366,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "fb_growth_gds_app_ios_install_app_pro_trendy_test_090426_creative_atc",
@@ -10881,28 +10881,28 @@
       "channel": "FB",
       "vertical": "gds",
       "phase": "install",
-      "cost": 38691641,
-      "install": 1489,
-      "cpi": 25985,
-      "d0": 1113,
-      "d1": 260,
-      "d7": 49,
-      "d0_d1": 1071,
-      "d0_d7": 728,
-      "rr_d1": 0.2428,
-      "rr_d7": 0.0673,
-      "lead": 195,
-      "cpl": 136628,
-      "lead_event": 509,
-      "cpl_event": 76015,
+      "cost": 39523431,
+      "install": 1517,
+      "cpi": 26054,
+      "d0": 1136,
+      "d1": 282,
+      "d7": 61,
+      "d0_d1": 1113,
+      "d0_d7": 893,
+      "rr_d1": 0.2534,
+      "rr_d7": 0.0683,
+      "lead": 202,
+      "cpl": 141752,
+      "lead_event": 533,
+      "cpl_event": 74153,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 26642518,
-      "dau": 1113,
-      "save_ad_d0": 91,
-      "save_ad_rate": 0.0818,
+      "lead_through": "21/09",
+      "lead_cost": 28633962,
+      "dau": 1136,
+      "save_ad_d0": 94,
+      "save_ad_rate": 0.0827,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "fb_growth_gds_app_ios_install_app_pro_trendy_test_091426_creative_vc",
@@ -10913,25 +10913,25 @@
       "cost": 13486927,
       "install": 433,
       "cpi": 31148,
-      "d0": 345,
+      "d0": 348,
       "d1": 72,
-      "d7": 6,
-      "d0_d1": 344,
-      "d0_d7": 106,
-      "rr_d1": 0.2093,
-      "rr_d7": 0.0566,
-      "lead": 45,
-      "cpl": 246969,
+      "d7": 18,
+      "d0_d1": 345,
+      "d0_d7": 301,
+      "rr_d1": 0.2087,
+      "rr_d7": 0.0598,
+      "lead": 53,
+      "cpl": 240187,
       "lead_event": 174,
       "cpl_event": 77511,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 11113617,
-      "dau": 345,
-      "save_ad_d0": 30,
-      "save_ad_rate": 0.087,
+      "lead_through": "21/09",
+      "lead_cost": 12729921,
+      "dau": 346,
+      "save_ad_d0": 31,
+      "save_ad_rate": 0.0896,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "fb_growth_pty_app_android_install_app_pro_b2s_bau_072126_2026theme",
@@ -10939,28 +10939,28 @@
       "channel": "FB",
       "vertical": "pty",
       "phase": "install",
-      "cost": 16539808,
-      "install": 933,
-      "cpi": 17728,
-      "d0": 862,
-      "d1": 241,
-      "d7": 58,
-      "d0_d1": 827,
-      "d0_d7": 554,
-      "rr_d1": 0.2914,
-      "rr_d7": 0.1047,
-      "lead": 172,
-      "cpl": 71721,
-      "lead_event": 557,
-      "cpl_event": 29694,
+      "cost": 17111383,
+      "install": 975,
+      "cpi": 17550,
+      "d0": 901,
+      "d1": 252,
+      "d7": 71,
+      "d0_d1": 862,
+      "d0_d7": 683,
+      "rr_d1": 0.2923,
+      "rr_d7": 0.104,
+      "lead": 182,
+      "cpl": 71033,
+      "lead_event": 580,
+      "cpl_event": 29502,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 12336032,
-      "dau": 855,
-      "save_ad_d0": 90,
-      "save_ad_rate": 0.1053,
+      "lead_through": "21/09",
+      "lead_cost": 12927984,
+      "dau": 894,
+      "save_ad_d0": 93,
+      "save_ad_rate": 0.104,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "fb_growth_pty_app_android_install_app_pro_b2s_bau_072126_2026theme_targeting",
@@ -10968,28 +10968,28 @@
       "channel": "FB",
       "vertical": "pty",
       "phase": "install",
-      "cost": 19342869,
-      "install": 897,
-      "cpi": 21564,
-      "d0": 822,
-      "d1": 222,
-      "d7": 45,
-      "d0_d1": 795,
-      "d0_d7": 497,
-      "rr_d1": 0.2792,
-      "rr_d7": 0.0905,
-      "lead": 124,
-      "cpl": 116768,
-      "lead_event": 488,
-      "cpl_event": 39637,
+      "cost": 19801758,
+      "install": 914,
+      "cpi": 21665,
+      "d0": 837,
+      "d1": 236,
+      "d7": 66,
+      "d0_d1": 822,
+      "d0_d7": 630,
+      "rr_d1": 0.2871,
+      "rr_d7": 0.1048,
+      "lead": 131,
+      "cpl": 115870,
+      "lead_event": 494,
+      "cpl_event": 40085,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 14479287,
-      "dau": 820,
+      "lead_through": "21/09",
+      "lead_cost": 15179033,
+      "dau": 835,
       "save_ad_d0": 70,
-      "save_ad_rate": 0.0854,
+      "save_ad_rate": 0.0838,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "fb_growth_pty_app_android_install_app_pro_b2s_bau_082126_2025theme",
@@ -11012,12 +11012,12 @@
       "lead_event": 66,
       "cpl_event": 21032,
       "lead_partial": true,
-      "lead_through": "20/09",
+      "lead_through": "21/09",
       "dau": 95,
       "save_ad_d0": 6,
       "save_ad_rate": 0.0632,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "fb_growth_pty_app_android_install_app_pro_b2s_bau_082126_hcm_adview",
@@ -11040,12 +11040,12 @@
       "lead_event": 49,
       "cpl_event": 42471,
       "lead_partial": true,
-      "lead_through": "20/09",
+      "lead_through": "21/09",
       "dau": 62,
       "save_ad_d0": 0,
       "save_ad_rate": 0.0,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "fb_growth_pty_app_android_install_app_pro_k\u0111p_bau_090126",
@@ -11058,22 +11058,22 @@
       "cpi": 19614,
       "d0": 419,
       "d1": 71,
-      "d7": 14,
+      "d7": 15,
       "d0_d1": 419,
-      "d0_d7": 418,
+      "d0_d7": 419,
       "rr_d1": 0.1695,
-      "rr_d7": 0.0335,
+      "rr_d7": 0.0358,
       "lead": 27,
       "cpl": 311647,
       "lead_event": 80,
       "cpl_event": 105181,
       "lead_partial": true,
-      "lead_through": "20/09",
+      "lead_through": "21/09",
       "dau": 419,
       "save_ad_d0": 15,
       "save_ad_rate": 0.0358,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "fb_growth_pty_app_android_install_app_pro_k\u0111p_bau_091426_atc",
@@ -11086,22 +11086,22 @@
       "cpi": 44961,
       "d0": 61,
       "d1": 11,
-      "d7": 8,
+      "d7": 9,
       "d0_d1": 61,
-      "d0_d7": 46,
+      "d0_d7": 60,
       "rr_d1": 0.1803,
-      "rr_d7": 0.1739,
+      "rr_d7": 0.15,
       "lead": 11,
       "cpl": 241152,
       "lead_event": 40,
       "cpl_event": 66317,
       "lead_partial": true,
-      "lead_through": "20/09",
+      "lead_through": "21/09",
       "dau": 57,
       "save_ad_d0": 2,
       "save_ad_rate": 0.0351,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "fb_growth_pty_app_android_install_app_pro_thodia_bau_082426_HCM_atc_targeting_promoscheme",
@@ -11124,12 +11124,12 @@
       "lead_event": 24,
       "cpl_event": 108202,
       "lead_partial": true,
-      "lead_through": "20/09",
+      "lead_through": "21/09",
       "dau": 205,
       "save_ad_d0": 5,
       "save_ad_rate": 0.0244,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "fb_growth_pty_app_android_install_app_rtg_thodia_bau_072126_VN_atc",
@@ -11152,12 +11152,12 @@
       "lead_event": 34,
       "cpl_event": 52555,
       "lead_partial": true,
-      "lead_through": "20/09",
+      "lead_through": "21/09",
       "dau": 63,
       "save_ad_d0": 5,
       "save_ad_rate": 0.0794,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "gg_growth_gds_app_android_install_app_maxinstall_reward_bau_082726",
@@ -11168,24 +11168,24 @@
       "cost": 5820857,
       "install": 616,
       "cpi": 9449,
-      "d0": 668,
-      "d1": 155,
-      "d7": 78,
-      "d0_d1": 666,
-      "d0_d7": 660,
-      "rr_d1": 0.2327,
-      "rr_d7": 0.1182,
+      "d0": 669,
+      "d1": 156,
+      "d7": 80,
+      "d0_d1": 668,
+      "d0_d7": 663,
+      "rr_d1": 0.2335,
+      "rr_d7": 0.1207,
       "lead": 124,
       "cpl": 46942,
-      "lead_event": 338,
-      "cpl_event": 17221,
+      "lead_event": 344,
+      "cpl_event": 16921,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "dau": 664,
+      "lead_through": "21/09",
+      "dau": 665,
       "save_ad_d0": 41,
       "save_ad_rate": 0.0617,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "gg_growth_job_app_android_install_app_maxinstall_ngayhoivieclam_bau_210826",
@@ -11193,28 +11193,28 @@
       "channel": "GG",
       "vertical": "job",
       "phase": "install",
-      "cost": 58137220,
-      "install": 9415,
-      "cpi": 6175,
-      "d0": 10415,
-      "d1": 2818,
-      "d7": 772,
-      "d0_d1": 10007,
-      "d0_d7": 6708,
-      "rr_d1": 0.2816,
-      "rr_d7": 0.1151,
-      "lead": 1695,
-      "cpl": 24624,
-      "lead_event": 6330,
-      "cpl_event": 9184,
+      "cost": 60458390,
+      "install": 9766,
+      "cpi": 6191,
+      "d0": 10809,
+      "d1": 3020,
+      "d7": 945,
+      "d0_d1": 10415,
+      "d0_d7": 8131,
+      "rr_d1": 0.29,
+      "rr_d7": 0.1162,
+      "lead": 1785,
+      "cpl": 24466,
+      "lead_event": 6555,
+      "cpl_event": 9223,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 41737150,
-      "dau": 10349,
-      "save_ad_d0": 648,
-      "save_ad_rate": 0.0626,
+      "lead_through": "21/09",
+      "lead_cost": 43672064,
+      "dau": 10741,
+      "save_ad_d0": 663,
+      "save_ad_rate": 0.0617,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "gg_growth_pty_app_android_install_app_maxinstall_b2s_bau_080626_targeting",
@@ -11222,28 +11222,28 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 41586516,
-      "install": 4520,
-      "cpi": 9201,
-      "d0": 4831,
-      "d1": 1138,
-      "d7": 323,
-      "d0_d1": 4653,
-      "d0_d7": 3283,
-      "rr_d1": 0.2446,
-      "rr_d7": 0.0984,
-      "lead": 715,
-      "cpl": 44074,
-      "lead_event": 2307,
-      "cpl_event": 18026,
+      "cost": 42381112,
+      "install": 4653,
+      "cpi": 9108,
+      "d0": 4968,
+      "d1": 1202,
+      "d7": 387,
+      "d0_d1": 4831,
+      "d0_d7": 3953,
+      "rr_d1": 0.2488,
+      "rr_d7": 0.0979,
+      "lead": 741,
+      "cpl": 44468,
+      "lead_event": 2406,
+      "cpl_event": 17615,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 31513138,
-      "dau": 4779,
-      "save_ad_d0": 235,
-      "save_ad_rate": 0.0492,
+      "lead_through": "21/09",
+      "lead_cost": 32950635,
+      "dau": 4915,
+      "save_ad_d0": 239,
+      "save_ad_rate": 0.0486,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "gg_growth_pty_app_android_install_app_maxinstall_b2s_bau_082126_hcm_targeting",
@@ -11254,25 +11254,25 @@
       "cost": 24134896,
       "install": 1612,
       "cpi": 14972,
-      "d0": 1753,
-      "d1": 423,
-      "d7": 130,
-      "d0_d1": 1750,
-      "d0_d7": 1531,
-      "rr_d1": 0.2417,
-      "rr_d7": 0.0849,
-      "lead": 347,
-      "cpl": 60282,
+      "d0": 1757,
+      "d1": 436,
+      "d7": 138,
+      "d0_d1": 1753,
+      "d0_d7": 1591,
+      "rr_d1": 0.2487,
+      "rr_d7": 0.0867,
+      "lead": 355,
+      "cpl": 61828,
       "lead_event": 1272,
       "cpl_event": 18974,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 20917987,
-      "dau": 1743,
+      "lead_through": "21/09",
+      "lead_cost": 21949075,
+      "dau": 1747,
       "save_ad_d0": 104,
-      "save_ad_rate": 0.0597,
+      "save_ad_rate": 0.0595,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "gg_growth_pty_app_android_install_app_maxinstall_k\u0111p_bau_090126_vn",
@@ -11285,22 +11285,22 @@
       "cpi": 6782,
       "d0": 2356,
       "d1": 415,
-      "d7": 156,
-      "d0_d1": 2354,
-      "d0_d7": 2322,
-      "rr_d1": 0.1763,
-      "rr_d7": 0.0672,
+      "d7": 157,
+      "d0_d1": 2356,
+      "d0_d7": 2341,
+      "rr_d1": 0.1761,
+      "rr_d7": 0.0671,
       "lead": 265,
       "cpl": 55712,
       "lead_event": 613,
       "cpl_event": 24084,
       "lead_partial": true,
-      "lead_through": "20/09",
+      "lead_through": "21/09",
       "dau": 2344,
       "save_ad_d0": 101,
       "save_ad_rate": 0.0431,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "job_appinstall_inapp_android_adview_7d",
@@ -11308,28 +11308,28 @@
       "channel": "GG",
       "vertical": "job",
       "phase": "install",
-      "cost": 159112841,
-      "install": 26555,
-      "cpi": 5992,
-      "d0": 30248,
-      "d1": 10025,
-      "d7": 2643,
-      "d0_d1": 29013,
-      "d0_d7": 19165,
-      "rr_d1": 0.3455,
-      "rr_d7": 0.1379,
-      "lead": 5891,
-      "cpl": 18959,
-      "lead_event": 19125,
-      "cpl_event": 8320,
+      "cost": 165867621,
+      "install": 27568,
+      "cpi": 6017,
+      "d0": 31441,
+      "d1": 10904,
+      "d7": 3258,
+      "d0_d1": 30248,
+      "d0_d7": 23475,
+      "rr_d1": 0.3605,
+      "rr_d7": 0.1388,
+      "lead": 6182,
+      "cpl": 18990,
+      "lead_event": 19738,
+      "cpl_event": 8403,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 111690283,
-      "dau": 30074,
-      "save_ad_d0": 2240,
-      "save_ad_rate": 0.0745,
+      "lead_through": "21/09",
+      "lead_cost": 117393627,
+      "dau": 31256,
+      "save_ad_d0": 2307,
+      "save_ad_rate": 0.0738,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "job_appinstall_inapp_android_make_lead_30d",
@@ -11337,28 +11337,28 @@
       "channel": "GG",
       "vertical": "job",
       "phase": "install",
-      "cost": 86378338,
-      "install": 6202,
-      "cpi": 13927,
-      "d0": 7019,
-      "d1": 1929,
-      "d7": 398,
-      "d0_d1": 6772,
-      "d0_d7": 4238,
-      "rr_d1": 0.2848,
-      "rr_d7": 0.0939,
-      "lead": 926,
-      "cpl": 67328,
-      "lead_event": 3293,
-      "cpl_event": 26231,
+      "cost": 89760695,
+      "install": 6481,
+      "cpi": 13850,
+      "d0": 7329,
+      "d1": 2173,
+      "d7": 630,
+      "d0_d1": 7019,
+      "d0_d7": 5334,
+      "rr_d1": 0.3096,
+      "rr_d7": 0.1181,
+      "lead": 1014,
+      "cpl": 64615,
+      "lead_event": 3416,
+      "cpl_event": 26277,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 62345641,
-      "dau": 6980,
-      "save_ad_d0": 382,
-      "save_ad_rate": 0.0547,
+      "lead_through": "21/09",
+      "lead_cost": 65519989,
+      "dau": 7287,
+      "save_ad_d0": 393,
+      "save_ad_rate": 0.0539,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "job_appinstall_mass_android",
@@ -11369,24 +11369,24 @@
       "cost": 1630227,
       "install": 356,
       "cpi": 4579,
-      "d0": 687,
-      "d1": 140,
+      "d0": 695,
+      "d1": 143,
       "d7": 46,
-      "d0_d1": 678,
-      "d0_d7": 613,
-      "rr_d1": 0.2065,
-      "rr_d7": 0.075,
+      "d0_d1": 687,
+      "d0_d7": 643,
+      "rr_d1": 0.2082,
+      "rr_d7": 0.0715,
       "lead": 66,
       "cpl": 24700,
       "lead_event": 148,
       "cpl_event": 11015,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "dau": 687,
+      "lead_through": "21/09",
+      "dau": 695,
       "save_ad_d0": 33,
-      "save_ad_rate": 0.048,
+      "save_ad_rate": 0.0475,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "pty_appinstall_inapp_action_user_android_make_lead_30d",
@@ -11394,28 +11394,28 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 18716014,
-      "install": 1246,
-      "cpi": 15021,
-      "d0": 1469,
-      "d1": 592,
-      "d7": 111,
-      "d0_d1": 1417,
-      "d0_d7": 636,
-      "rr_d1": 0.4178,
-      "rr_d7": 0.1745,
-      "lead": 203,
-      "cpl": 17510,
-      "lead_event": 512,
-      "cpl_event": 36555,
+      "cost": 21480894,
+      "install": 1301,
+      "cpi": 16511,
+      "d0": 1525,
+      "d1": 633,
+      "d7": 163,
+      "d0_d1": 1469,
+      "d0_d7": 954,
+      "rr_d1": 0.4309,
+      "rr_d7": 0.1709,
+      "lead": 254,
+      "cpl": 16261,
+      "lead_event": 520,
+      "cpl_event": 41309,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 3554452,
-      "dau": 1461,
-      "save_ad_d0": 71,
-      "save_ad_rate": 0.0486,
+      "lead_through": "21/09",
+      "lead_cost": 4130239,
+      "dau": 1515,
+      "save_ad_d0": 73,
+      "save_ad_rate": 0.0482,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "pty_appinstall_inapp_action_user_android_view_item_list",
@@ -11423,28 +11423,28 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 69787080,
-      "install": 7283,
-      "cpi": 9582,
-      "d0": 8024,
-      "d1": 3815,
-      "d7": 1381,
-      "d0_d1": 7846,
-      "d0_d7": 5889,
-      "rr_d1": 0.4862,
-      "rr_d7": 0.2345,
-      "lead": 2023,
-      "cpl": 28123,
-      "lead_event": 3217,
-      "cpl_event": 21693,
+      "cost": 70773960,
+      "install": 7427,
+      "cpi": 9529,
+      "d0": 8206,
+      "d1": 3987,
+      "d7": 1634,
+      "d0_d1": 8024,
+      "d0_d7": 6935,
+      "rr_d1": 0.4969,
+      "rr_d7": 0.2356,
+      "lead": 2096,
+      "cpl": 28406,
+      "lead_event": 3282,
+      "cpl_event": 21564,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 56892548,
-      "dau": 7970,
-      "save_ad_d0": 424,
-      "save_ad_rate": 0.0532,
+      "lead_through": "21/09",
+      "lead_cost": 59539670,
+      "dau": 8152,
+      "save_ad_d0": 429,
+      "save_ad_rate": 0.0526,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "pty_appinstall_mass_android",
@@ -11452,28 +11452,28 @@
       "channel": "GG",
       "vertical": "pty",
       "phase": "install",
-      "cost": 83134099,
-      "install": 11838,
-      "cpi": 7023,
-      "d0": 13594,
-      "d1": 2616,
-      "d7": 547,
-      "d0_d1": 13007,
-      "d0_d7": 8567,
-      "rr_d1": 0.2011,
-      "rr_d7": 0.0638,
-      "lead": 1303,
-      "cpl": 47934,
-      "lead_event": 3422,
-      "cpl_event": 24294,
+      "cost": 85993988,
+      "install": 12315,
+      "cpi": 6983,
+      "d0": 14120,
+      "d1": 2793,
+      "d7": 701,
+      "d0_d1": 13594,
+      "d0_d7": 10654,
+      "rr_d1": 0.2055,
+      "rr_d7": 0.0658,
+      "lead": 1365,
+      "cpl": 47960,
+      "lead_event": 3525,
+      "cpl_event": 24395,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "lead_cost": 62458099,
-      "dau": 13496,
-      "save_ad_d0": 452,
-      "save_ad_rate": 0.0335,
+      "lead_through": "21/09",
+      "lead_cost": 65465147,
+      "dau": 14019,
+      "save_ad_d0": 465,
+      "save_ad_rate": 0.0332,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     },
     {
       "name": "pty_appinstall_mass_android_b2s_0726",
@@ -11484,24 +11484,24 @@
       "cost": 5738491,
       "install": 608,
       "cpi": 9438,
-      "d0": 905,
-      "d1": 160,
-      "d7": 63,
-      "d0_d1": 902,
-      "d0_d7": 865,
-      "rr_d1": 0.1774,
-      "rr_d7": 0.0728,
+      "d0": 907,
+      "d1": 162,
+      "d7": 65,
+      "d0_d1": 905,
+      "d0_d7": 883,
+      "rr_d1": 0.179,
+      "rr_d7": 0.0736,
       "lead": 76,
       "cpl": 75506,
       "lead_event": 210,
       "cpl_event": 27326,
       "lead_partial": true,
-      "lead_through": "20/09",
-      "dau": 899,
+      "lead_through": "21/09",
+      "dau": 901,
       "save_ad_d0": 42,
-      "save_ad_rate": 0.0467,
+      "save_ad_rate": 0.0466,
       "save_partial": true,
-      "save_through": "27/09"
+      "save_through": "28/09"
     }
   ],
   "camp_daily": [
@@ -28874,7 +28874,7 @@
       "d0": 13,
       "d1": 7,
       "d0_d1": 13,
-      "lead": null,
+      "lead": 5,
       "dau": 13,
       "save_ad_d0": 1,
       "lead_event": 9
@@ -28902,7 +28902,7 @@
       "d0": 8,
       "d1": 3,
       "d0_d1": 8,
-      "lead": null,
+      "lead": 3,
       "dau": 8,
       "save_ad_d0": 2,
       "lead_event": 4
@@ -28930,7 +28930,7 @@
       "d0": 190,
       "d1": 42,
       "d0_d1": 190,
-      "lead": null,
+      "lead": 40,
       "dau": 190,
       "save_ad_d0": 12,
       "lead_event": 71
@@ -28944,7 +28944,7 @@
       "d0": 79,
       "d1": 25,
       "d0_d1": 79,
-      "lead": null,
+      "lead": 17,
       "dau": 79,
       "save_ad_d0": 7,
       "lead_event": 37
@@ -28958,7 +28958,7 @@
       "d0": 43,
       "d1": 16,
       "d0_d1": 43,
-      "lead": null,
+      "lead": 10,
       "dau": 41,
       "save_ad_d0": 4,
       "lead_event": 5
@@ -28972,7 +28972,7 @@
       "d0": 1782,
       "d1": 601,
       "d0_d1": 1782,
-      "lead": null,
+      "lead": 469,
       "dau": 1774,
       "save_ad_d0": 83,
       "lead_event": 985
@@ -28986,7 +28986,7 @@
       "d0": 1120,
       "d1": 355,
       "d0_d1": 1120,
-      "lead": null,
+      "lead": 220,
       "dau": 1113,
       "save_ad_d0": 37,
       "lead_event": 302
@@ -29250,7 +29250,7 @@
       "cost": 328186,
       "install": 11,
       "d0": 9,
-      "d1": 0,
+      "d1": 1,
       "d0_d1": 9,
       "lead": null,
       "dau": 9,
@@ -29278,7 +29278,7 @@
       "cost": 286295,
       "install": 17,
       "d0": 13,
-      "d1": 0,
+      "d1": 4,
       "d0_d1": 13,
       "lead": null,
       "dau": 13,
@@ -29306,7 +29306,7 @@
       "cost": 3290886,
       "install": 128,
       "d0": 109,
-      "d1": 0,
+      "d1": 20,
       "d0_d1": 109,
       "lead": null,
       "dau": 109,
@@ -29320,7 +29320,7 @@
       "cost": 1327969,
       "install": 71,
       "d0": 63,
-      "d1": 0,
+      "d1": 15,
       "d0_d1": 63,
       "lead": null,
       "dau": 63,
@@ -29334,7 +29334,7 @@
       "cost": 130943,
       "install": 29,
       "d0": 36,
-      "d1": 0,
+      "d1": 12,
       "d0_d1": 36,
       "lead": null,
       "dau": 36,
@@ -29348,7 +29348,7 @@
       "cost": 12120631,
       "install": 1429,
       "d0": 1773,
-      "d1": 0,
+      "d1": 636,
       "d0_d1": 1773,
       "lead": null,
       "dau": 1765,
@@ -29362,7 +29362,7 @@
       "cost": 8339755,
       "install": 735,
       "d0": 858,
-      "d1": 0,
+      "d1": 230,
       "d0_d1": 858,
       "lead": null,
       "dau": 858,
@@ -29628,8 +29628,8 @@
       "cost": 454570,
       "install": 12,
       "d0": 10,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 2,
+      "d0_d1": 10,
       "lead": null,
       "dau": 10,
       "save_ad_d0": 2,
@@ -29656,8 +29656,8 @@
       "cost": 116580,
       "install": 13,
       "d0": 8,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 3,
+      "d0_d1": 8,
       "lead": null,
       "dau": 8,
       "save_ad_d0": 3,
@@ -29681,11 +29681,11 @@
       "date": "2026-09-27",
       "channel": "FB",
       "vertical": "gds",
-      "cost": 4718090,
+      "cost": 4725834,
       "install": 145,
       "d0": 126,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 28,
+      "d0_d1": 126,
       "lead": null,
       "dau": 126,
       "save_ad_d0": 4,
@@ -29695,11 +29695,11 @@
       "date": "2026-09-27",
       "channel": "FB",
       "vertical": "pty",
-      "cost": 1315743,
+      "cost": 1318799,
       "install": 66,
       "d0": 62,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 10,
+      "d0_d1": 62,
       "lead": null,
       "dau": 62,
       "save_ad_d0": 1,
@@ -29712,8 +29712,8 @@
       "cost": 160270,
       "install": 33,
       "d0": 44,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 18,
+      "d0_d1": 44,
       "lead": null,
       "dau": 44,
       "save_ad_d0": 3,
@@ -29724,10 +29724,10 @@
       "channel": "GG",
       "vertical": "job",
       "cost": 12628519,
-      "install": 1636,
+      "install": 1637,
       "d0": 1899,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 692,
+      "d0_d1": 1899,
       "lead": null,
       "dau": 1892,
       "save_ad_d0": 97,
@@ -29740,12 +29740,138 @@
       "cost": 8771537,
       "install": 873,
       "d0": 1003,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 239,
+      "d0_d1": 1003,
       "lead": null,
       "dau": 1002,
       "save_ad_d0": 31,
       "lead_event": 261
+    },
+    {
+      "date": "2026-09-28",
+      "channel": "APPLE",
+      "vertical": "gds",
+      "cost": 606399,
+      "install": 11,
+      "d0": 8,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 8,
+      "save_ad_d0": 1,
+      "lead_event": 1
+    },
+    {
+      "date": "2026-09-28",
+      "channel": "APPLE",
+      "vertical": "job",
+      "cost": 0,
+      "install": 0,
+      "d0": null,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": null,
+      "save_ad_d0": null,
+      "lead_event": null
+    },
+    {
+      "date": "2026-09-28",
+      "channel": "APPLE",
+      "vertical": "pty",
+      "cost": 159097,
+      "install": 24,
+      "d0": 21,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 21,
+      "save_ad_d0": 6,
+      "lead_event": 38
+    },
+    {
+      "date": "2026-09-28",
+      "channel": "APPLE",
+      "vertical": "veh",
+      "cost": 5392,
+      "install": 0,
+      "d0": null,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": null,
+      "save_ad_d0": null,
+      "lead_event": null
+    },
+    {
+      "date": "2026-09-28",
+      "channel": "FB",
+      "vertical": "gds",
+      "cost": 2623131,
+      "install": 118,
+      "d0": 114,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 112,
+      "save_ad_d0": 6,
+      "lead_event": 48
+    },
+    {
+      "date": "2026-09-28",
+      "channel": "FB",
+      "vertical": "pty",
+      "cost": 1027408,
+      "install": 59,
+      "d0": 54,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 54,
+      "save_ad_d0": 3,
+      "lead_event": 29
+    },
+    {
+      "date": "2026-09-28",
+      "channel": "GG",
+      "vertical": "gds",
+      "cost": 74179,
+      "install": 22,
+      "d0": 30,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 30,
+      "save_ad_d0": 2,
+      "lead_event": 19
+    },
+    {
+      "date": "2026-09-28",
+      "channel": "GG",
+      "vertical": "job",
+      "cost": 12458307,
+      "install": 1642,
+      "d0": 1905,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 1889,
+      "save_ad_d0": 93,
+      "lead_event": 961
+    },
+    {
+      "date": "2026-09-28",
+      "channel": "GG",
+      "vertical": "pty",
+      "cost": 7406245,
+      "install": 809,
+      "d0": 907,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 901,
+      "save_ad_d0": 24,
+      "lead_event": 275
     }
   ],
   "camp_daily_by_name": [
@@ -105389,7 +105515,7 @@
       "d0": 13,
       "d1": 7,
       "d0_d1": 13,
-      "lead": null,
+      "lead": 5,
       "dau": 13,
       "save_ad_d0": 1,
       "lead_event": 9
@@ -105464,7 +105590,7 @@
       "d0": 8,
       "d1": 3,
       "d0_d1": 8,
-      "lead": null,
+      "lead": 3,
       "dau": 8,
       "save_ad_d0": 2,
       "lead_event": 4
@@ -105524,7 +105650,7 @@
       "d0": 43,
       "d1": 16,
       "d0_d1": 43,
-      "lead": null,
+      "lead": 10,
       "dau": 41,
       "save_ad_d0": 4,
       "lead_event": 5
@@ -105539,7 +105665,7 @@
       "d0": 81,
       "d1": 21,
       "d0_d1": 81,
-      "lead": null,
+      "lead": 23,
       "dau": 81,
       "save_ad_d0": 5,
       "lead_event": 48
@@ -105554,7 +105680,7 @@
       "d0": 22,
       "d1": 2,
       "d0_d1": 22,
-      "lead": null,
+      "lead": 2,
       "dau": 22,
       "save_ad_d0": 0,
       "lead_event": 3
@@ -105569,7 +105695,7 @@
       "d0": 29,
       "d1": 5,
       "d0_d1": 29,
-      "lead": null,
+      "lead": 7,
       "dau": 29,
       "save_ad_d0": 4,
       "lead_event": 12
@@ -105584,7 +105710,7 @@
       "d0": 58,
       "d1": 14,
       "d0_d1": 58,
-      "lead": null,
+      "lead": 8,
       "dau": 58,
       "save_ad_d0": 3,
       "lead_event": 8
@@ -105599,7 +105725,7 @@
       "d0": 39,
       "d1": 12,
       "d0_d1": 39,
-      "lead": null,
+      "lead": 10,
       "dau": 39,
       "save_ad_d0": 5,
       "lead_event": 28
@@ -105614,7 +105740,7 @@
       "d0": 40,
       "d1": 13,
       "d0_d1": 40,
-      "lead": null,
+      "lead": 7,
       "dau": 40,
       "save_ad_d0": 2,
       "lead_event": 9
@@ -105629,7 +105755,7 @@
       "d0": 368,
       "d1": 96,
       "d0_d1": 368,
-      "lead": null,
+      "lead": 90,
       "dau": 368,
       "save_ad_d0": 16,
       "lead_event": 239
@@ -105644,7 +105770,7 @@
       "d0": 151,
       "d1": 35,
       "d0_d1": 151,
-      "lead": null,
+      "lead": 26,
       "dau": 150,
       "save_ad_d0": 5,
       "lead_event": 37
@@ -105659,7 +105785,7 @@
       "d0": 23,
       "d1": 10,
       "d0_d1": 23,
-      "lead": null,
+      "lead": 8,
       "dau": 23,
       "save_ad_d0": 4,
       "lead_event": 15
@@ -105674,7 +105800,7 @@
       "d0": 3,
       "d1": 0,
       "d0_d1": 3,
-      "lead": null,
+      "lead": 0,
       "dau": 3,
       "save_ad_d0": 0,
       "lead_event": 0
@@ -105689,7 +105815,7 @@
       "d0": 1138,
       "d1": 396,
       "d0_d1": 1138,
-      "lead": null,
+      "lead": 291,
       "dau": 1131,
       "save_ad_d0": 50,
       "lead_event": 536
@@ -105704,7 +105830,7 @@
       "d0": 271,
       "d1": 109,
       "d0_d1": 271,
-      "lead": null,
+      "lead": 88,
       "dau": 270,
       "save_ad_d0": 17,
       "lead_event": 210
@@ -105719,7 +105845,7 @@
       "d0": 5,
       "d1": 0,
       "d0_d1": 5,
-      "lead": null,
+      "lead": 0,
       "dau": 5,
       "save_ad_d0": 0,
       "lead_event": 0
@@ -105734,7 +105860,7 @@
       "d0": 148,
       "d1": 77,
       "d0_d1": 148,
-      "lead": null,
+      "lead": 51,
       "dau": 148,
       "save_ad_d0": 4,
       "lead_event": 56
@@ -105749,7 +105875,7 @@
       "d0": 289,
       "d1": 134,
       "d0_d1": 289,
-      "lead": null,
+      "lead": 73,
       "dau": 283,
       "save_ad_d0": 7,
       "lead_event": 75
@@ -105764,7 +105890,7 @@
       "d0": 501,
       "d1": 97,
       "d0_d1": 501,
-      "lead": null,
+      "lead": 62,
       "dau": 501,
       "save_ad_d0": 17,
       "lead_event": 119
@@ -105779,7 +105905,7 @@
       "d0": 5,
       "d1": 2,
       "d0_d1": 5,
-      "lead": null,
+      "lead": 0,
       "dau": 5,
       "save_ad_d0": 0,
       "lead_event": 0
@@ -106722,7 +106848,7 @@
       "cost": 9392,
       "install": 11,
       "d0": 9,
-      "d1": 0,
+      "d1": 1,
       "d0_d1": 9,
       "lead": null,
       "dau": 9,
@@ -106812,7 +106938,7 @@
       "cost": 225093,
       "install": 17,
       "d0": 13,
-      "d1": 0,
+      "d1": 4,
       "d0_d1": 13,
       "lead": null,
       "dau": 13,
@@ -106872,7 +106998,7 @@
       "cost": 130943,
       "install": 29,
       "d0": 36,
-      "d1": 0,
+      "d1": 12,
       "d0_d1": 36,
       "lead": null,
       "dau": 36,
@@ -106887,7 +107013,7 @@
       "cost": 1352218,
       "install": 61,
       "d0": 55,
-      "d1": 0,
+      "d1": 8,
       "d0_d1": 55,
       "lead": null,
       "dau": 55,
@@ -106917,7 +107043,7 @@
       "cost": 262252,
       "install": 5,
       "d0": 4,
-      "d1": 0,
+      "d1": 2,
       "d0_d1": 4,
       "lead": null,
       "dau": 4,
@@ -106932,7 +107058,7 @@
       "cost": 1676416,
       "install": 62,
       "d0": 48,
-      "d1": 0,
+      "d1": 10,
       "d0_d1": 48,
       "lead": null,
       "dau": 48,
@@ -106962,7 +107088,7 @@
       "cost": 597454,
       "install": 31,
       "d0": 28,
-      "d1": 0,
+      "d1": 7,
       "d0_d1": 28,
       "lead": null,
       "dau": 28,
@@ -106977,7 +107103,7 @@
       "cost": 730515,
       "install": 40,
       "d0": 35,
-      "d1": 0,
+      "d1": 8,
       "d0_d1": 35,
       "lead": null,
       "dau": 35,
@@ -106992,7 +107118,7 @@
       "cost": 2095800,
       "install": 323,
       "d0": 378,
-      "d1": 0,
+      "d1": 97,
       "d0_d1": 378,
       "lead": null,
       "dau": 372,
@@ -107007,7 +107133,7 @@
       "cost": 1406529,
       "install": 134,
       "d0": 138,
-      "d1": 0,
+      "d1": 27,
       "d0_d1": 138,
       "lead": null,
       "dau": 138,
@@ -107022,7 +107148,7 @@
       "cost": 272613,
       "install": 23,
       "d0": 29,
-      "d1": 0,
+      "d1": 13,
       "d0_d1": 29,
       "lead": null,
       "dau": 29,
@@ -107052,7 +107178,7 @@
       "cost": 6963466,
       "install": 865,
       "d0": 1094,
-      "d1": 0,
+      "d1": 407,
       "d0_d1": 1094,
       "lead": null,
       "dau": 1093,
@@ -107067,7 +107193,7 @@
       "cost": 3061365,
       "install": 241,
       "d0": 294,
-      "d1": 0,
+      "d1": 132,
       "d0_d1": 294,
       "lead": null,
       "dau": 293,
@@ -107097,7 +107223,7 @@
       "cost": 2057788,
       "install": 88,
       "d0": 85,
-      "d1": 0,
+      "d1": 34,
       "d0_d1": 85,
       "lead": null,
       "dau": 85,
@@ -107112,7 +107238,7 @@
       "cost": 1656342,
       "install": 154,
       "d0": 176,
-      "d1": 0,
+      "d1": 80,
       "d0_d1": 176,
       "lead": null,
       "dau": 176,
@@ -107127,7 +107253,7 @@
       "cost": 2946483,
       "install": 336,
       "d0": 423,
-      "d1": 0,
+      "d1": 75,
       "d0_d1": 423,
       "lead": null,
       "dau": 423,
@@ -107142,7 +107268,7 @@
       "cost": 0,
       "install": null,
       "d0": 3,
-      "d1": 0,
+      "d1": 1,
       "d0_d1": 3,
       "lead": null,
       "dau": 3,
@@ -108012,8 +108138,8 @@
       "cost": 27412,
       "install": 12,
       "d0": 10,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 2,
+      "d0_d1": 10,
       "lead": null,
       "dau": 10,
       "save_ad_d0": 2,
@@ -108057,8 +108183,8 @@
       "cost": 93807,
       "install": 13,
       "d0": 8,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 3,
+      "d0_d1": 8,
       "lead": null,
       "dau": 8,
       "save_ad_d0": 3,
@@ -108117,8 +108243,8 @@
       "cost": 160270,
       "install": 33,
       "d0": 42,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 17,
+      "d0_d1": 42,
       "lead": null,
       "dau": 42,
       "save_ad_d0": 3,
@@ -108129,11 +108255,11 @@
       "name": "fb_growth_gds_app_android_install_app_pro_trendy_test_082826_creative_atc",
       "channel": "FB",
       "vertical": "gds",
-      "cost": 1620175,
+      "cost": 1624454,
       "install": 71,
       "d0": 68,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 14,
+      "d0_d1": 68,
       "lead": null,
       "dau": 68,
       "save_ad_d0": 3,
@@ -108144,11 +108270,11 @@
       "name": "fb_growth_gds_app_android_install_app_pro_voucher_bau_092226_atc",
       "channel": "FB",
       "vertical": "gds",
-      "cost": 665513,
+      "cost": 667347,
       "install": 16,
       "d0": 15,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 2,
+      "d0_d1": 15,
       "lead": null,
       "dau": 15,
       "save_ad_d0": 1,
@@ -108159,11 +108285,11 @@
       "name": "fb_growth_gds_app_ios_install_app_pro_trendy_test_090426_creative_atc",
       "channel": "FB",
       "vertical": "gds",
-      "cost": 2432402,
+      "cost": 2434033,
       "install": 58,
       "d0": 42,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 12,
+      "d0_d1": 42,
       "lead": null,
       "dau": 42,
       "save_ad_d0": 0,
@@ -108177,8 +108303,8 @@
       "cost": 0,
       "install": null,
       "d0": 1,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 0,
+      "d0_d1": 1,
       "lead": null,
       "dau": 1,
       "save_ad_d0": 0,
@@ -108189,11 +108315,11 @@
       "name": "fb_growth_pty_app_android_install_app_pro_b2s_bau_072126_2026theme",
       "channel": "FB",
       "vertical": "pty",
-      "cost": 610291,
+      "cost": 611310,
       "install": 36,
       "d0": 35,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 4,
+      "d0_d1": 35,
       "lead": null,
       "dau": 35,
       "save_ad_d0": 1,
@@ -108204,11 +108330,11 @@
       "name": "fb_growth_pty_app_android_install_app_pro_b2s_bau_072126_2026theme_targeting",
       "channel": "FB",
       "vertical": "pty",
-      "cost": 705452,
+      "cost": 707489,
       "install": 30,
       "d0": 27,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 6,
+      "d0_d1": 27,
       "lead": null,
       "dau": 27,
       "save_ad_d0": 0,
@@ -108222,8 +108348,8 @@
       "cost": 0,
       "install": null,
       "d0": 2,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 1,
+      "d0_d1": 2,
       "lead": null,
       "dau": 2,
       "save_ad_d0": 0,
@@ -108237,8 +108363,8 @@
       "cost": 2374604,
       "install": 350,
       "d0": 408,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 105,
+      "d0_d1": 408,
       "lead": null,
       "dau": 407,
       "save_ad_d0": 16,
@@ -108252,8 +108378,8 @@
       "cost": 1449085,
       "install": 161,
       "d0": 178,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 37,
+      "d0_d1": 178,
       "lead": null,
       "dau": 178,
       "save_ad_d0": 5,
@@ -108267,8 +108393,8 @@
       "cost": 0,
       "install": null,
       "d0": 3,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 0,
+      "d0_d1": 3,
       "lead": null,
       "dau": 3,
       "save_ad_d0": 0,
@@ -108282,8 +108408,8 @@
       "cost": 0,
       "install": null,
       "d0": 2,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 0,
+      "d0_d1": 2,
       "lead": null,
       "dau": 2,
       "save_ad_d0": 0,
@@ -108295,10 +108421,10 @@
       "channel": "GG",
       "vertical": "job",
       "cost": 6978731,
-      "install": 1060,
+      "install": 1061,
       "d0": 1235,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 472,
+      "d0_d1": 1235,
       "lead": null,
       "dau": 1233,
       "save_ad_d0": 67,
@@ -108312,8 +108438,8 @@
       "cost": 3275184,
       "install": 226,
       "d0": 247,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 112,
+      "d0_d1": 247,
       "lead": null,
       "dau": 243,
       "save_ad_d0": 13,
@@ -108327,8 +108453,8 @@
       "cost": 0,
       "install": null,
       "d0": 9,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 3,
+      "d0_d1": 9,
       "lead": null,
       "dau": 9,
       "save_ad_d0": 1,
@@ -108342,8 +108468,8 @@
       "cost": 3148175,
       "install": 47,
       "d0": 52,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 7,
+      "d0_d1": 52,
       "lead": null,
       "dau": 52,
       "save_ad_d0": 2,
@@ -108357,8 +108483,8 @@
       "cost": 1289540,
       "install": 159,
       "d0": 178,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 92,
+      "d0_d1": 178,
       "lead": null,
       "dau": 177,
       "save_ad_d0": 7,
@@ -108372,8 +108498,8 @@
       "cost": 2884737,
       "install": 506,
       "d0": 587,
-      "d1": null,
-      "d0_d1": null,
+      "d1": 102,
+      "d0_d1": 587,
       "lead": null,
       "dau": 587,
       "save_ad_d0": 17,
@@ -108387,10 +108513,400 @@
       "cost": 0,
       "install": null,
       "d0": 3,
+      "d1": 1,
+      "d0_d1": 3,
+      "lead": null,
+      "dau": 3,
+      "save_ad_d0": 0,
+      "lead_event": 0
+    },
+    {
+      "date": "2026-09-28",
+      "name": "asa_growth_gds_app_ios_install_search_pro_competitor_bau_090726",
+      "channel": "APPLE",
+      "vertical": "gds",
+      "cost": 596946,
+      "install": 0,
+      "d0": null,
       "d1": null,
       "d0_d1": null,
       "lead": null,
-      "dau": 3,
+      "dau": null,
+      "save_ad_d0": null,
+      "lead_event": null
+    },
+    {
+      "date": "2026-09-28",
+      "name": "asa_growth_gds_app_ios_install_search_pro_general_bau_082126",
+      "channel": "APPLE",
+      "vertical": "gds",
+      "cost": 9453,
+      "install": 11,
+      "d0": 8,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 8,
+      "save_ad_d0": 1,
+      "lead_event": 1
+    },
+    {
+      "date": "2026-09-28",
+      "name": "asa_growth_job_app_ios_install_search_pro_competitor_bau_090726",
+      "channel": "APPLE",
+      "vertical": "job",
+      "cost": 0,
+      "install": 0,
+      "d0": null,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": null,
+      "save_ad_d0": null,
+      "lead_event": null
+    },
+    {
+      "date": "2026-09-28",
+      "name": "asa_growth_pty_app_ios_install_search_pro_competitor_bau_082126",
+      "channel": "APPLE",
+      "vertical": "pty",
+      "cost": 7184,
+      "install": 0,
+      "d0": null,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": null,
+      "save_ad_d0": null,
+      "lead_event": null
+    },
+    {
+      "date": "2026-09-28",
+      "name": "asa_growth_pty_let_app_ios_install_search_pro_general_bau_082126",
+      "channel": "APPLE",
+      "vertical": "pty",
+      "cost": 151913,
+      "install": 24,
+      "d0": 21,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 21,
+      "save_ad_d0": 6,
+      "lead_event": 38
+    },
+    {
+      "date": "2026-09-28",
+      "name": "asa_growth_pty_sell_app_ios_install_search_pro_general_bau_090726",
+      "channel": "APPLE",
+      "vertical": "pty",
+      "cost": 0,
+      "install": 0,
+      "d0": null,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": null,
+      "save_ad_d0": null,
+      "lead_event": null
+    },
+    {
+      "date": "2026-09-28",
+      "name": "asa_growth_veh_app_ios_install_search_pro_competitor_bau_090726",
+      "channel": "APPLE",
+      "vertical": "veh",
+      "cost": 5392,
+      "install": 0,
+      "d0": null,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": null,
+      "save_ad_d0": null,
+      "lead_event": null
+    },
+    {
+      "date": "2026-09-28",
+      "name": "asa_growth_veh_app_ios_install_search_pro_general_bau_090726",
+      "channel": "APPLE",
+      "vertical": "veh",
+      "cost": 0,
+      "install": 0,
+      "d0": null,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": null,
+      "save_ad_d0": null,
+      "lead_event": null
+    },
+    {
+      "date": "2026-09-28",
+      "name": "digital_app_install_android_mobile_hcm_make_lead",
+      "channel": "GG",
+      "vertical": "gds",
+      "cost": 74179,
+      "install": 22,
+      "d0": 29,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 29,
+      "save_ad_d0": 2,
+      "lead_event": 13
+    },
+    {
+      "date": "2026-09-28",
+      "name": "fb_growth_gds_app_android_install_app_pro_trendy_test_082826_creative_atc",
+      "channel": "FB",
+      "vertical": "gds",
+      "cost": 1433318,
+      "install": 73,
+      "d0": 71,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 71,
+      "save_ad_d0": 1,
+      "lead_event": 21
+    },
+    {
+      "date": "2026-09-28",
+      "name": "fb_growth_gds_app_android_install_app_pro_voucher_bau_092226_atc",
+      "channel": "FB",
+      "vertical": "gds",
+      "cost": 359654,
+      "install": 17,
+      "d0": 17,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 17,
+      "save_ad_d0": 1,
+      "lead_event": 3
+    },
+    {
+      "date": "2026-09-28",
+      "name": "fb_growth_gds_app_ios_install_app_pro_trendy_test_090426_creative_atc",
+      "channel": "FB",
+      "vertical": "gds",
+      "cost": 830159,
+      "install": 28,
+      "d0": 23,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 23,
+      "save_ad_d0": 3,
+      "lead_event": 24
+    },
+    {
+      "date": "2026-09-28",
+      "name": "fb_growth_gds_app_ios_install_app_pro_trendy_test_091426_creative_vc",
+      "channel": "FB",
+      "vertical": "gds",
+      "cost": 0,
+      "install": null,
+      "d0": 3,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 1,
+      "save_ad_d0": 1,
+      "lead_event": 0
+    },
+    {
+      "date": "2026-09-28",
+      "name": "fb_growth_pty_app_android_install_app_pro_b2s_bau_072126_2026theme",
+      "channel": "FB",
+      "vertical": "pty",
+      "cost": 570556,
+      "install": 42,
+      "d0": 39,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 39,
+      "save_ad_d0": 3,
+      "lead_event": 23
+    },
+    {
+      "date": "2026-09-28",
+      "name": "fb_growth_pty_app_android_install_app_pro_b2s_bau_072126_2026theme_targeting",
+      "channel": "FB",
+      "vertical": "pty",
+      "cost": 456852,
+      "install": 17,
+      "d0": 15,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 15,
+      "save_ad_d0": 0,
+      "lead_event": 6
+    },
+    {
+      "date": "2026-09-28",
+      "name": "gg_growth_gds_app_android_install_app_maxinstall_reward_bau_082726",
+      "channel": "GG",
+      "vertical": "gds",
+      "cost": 0,
+      "install": null,
+      "d0": 1,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 1,
+      "save_ad_d0": 0,
+      "lead_event": 6
+    },
+    {
+      "date": "2026-09-28",
+      "name": "gg_growth_job_app_android_install_app_maxinstall_ngayhoivieclam_bau_210826",
+      "channel": "GG",
+      "vertical": "job",
+      "cost": 2321170,
+      "install": 351,
+      "d0": 394,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 392,
+      "save_ad_d0": 15,
+      "lead_event": 225
+    },
+    {
+      "date": "2026-09-28",
+      "name": "gg_growth_pty_app_android_install_app_maxinstall_b2s_bau_080626_targeting",
+      "channel": "GG",
+      "vertical": "pty",
+      "cost": 794596,
+      "install": 133,
+      "d0": 137,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 136,
+      "save_ad_d0": 4,
+      "lead_event": 99
+    },
+    {
+      "date": "2026-09-28",
+      "name": "gg_growth_pty_app_android_install_app_maxinstall_b2s_bau_082126_hcm_targeting",
+      "channel": "GG",
+      "vertical": "pty",
+      "cost": 0,
+      "install": null,
+      "d0": 4,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 4,
+      "save_ad_d0": 0,
+      "lead_event": 0
+    },
+    {
+      "date": "2026-09-28",
+      "name": "job_appinstall_inapp_android_adview_7d",
+      "channel": "GG",
+      "vertical": "job",
+      "cost": 6754780,
+      "install": 1012,
+      "d0": 1193,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 1182,
+      "save_ad_d0": 67,
+      "lead_event": 613
+    },
+    {
+      "date": "2026-09-28",
+      "name": "job_appinstall_inapp_android_make_lead_30d",
+      "channel": "GG",
+      "vertical": "job",
+      "cost": 3382357,
+      "install": 279,
+      "d0": 310,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 307,
+      "save_ad_d0": 11,
+      "lead_event": 123
+    },
+    {
+      "date": "2026-09-28",
+      "name": "job_appinstall_mass_android",
+      "channel": "GG",
+      "vertical": "job",
+      "cost": 0,
+      "install": null,
+      "d0": 8,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 8,
+      "save_ad_d0": 0,
+      "lead_event": 0
+    },
+    {
+      "date": "2026-09-28",
+      "name": "pty_appinstall_inapp_action_user_android_make_lead_30d",
+      "channel": "GG",
+      "vertical": "pty",
+      "cost": 2764880,
+      "install": 55,
+      "d0": 56,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 54,
+      "save_ad_d0": 2,
+      "lead_event": 8
+    },
+    {
+      "date": "2026-09-28",
+      "name": "pty_appinstall_inapp_action_user_android_view_item_list",
+      "channel": "GG",
+      "vertical": "pty",
+      "cost": 986880,
+      "install": 144,
+      "d0": 182,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 182,
+      "save_ad_d0": 5,
+      "lead_event": 65
+    },
+    {
+      "date": "2026-09-28",
+      "name": "pty_appinstall_mass_android",
+      "channel": "GG",
+      "vertical": "pty",
+      "cost": 2859889,
+      "install": 477,
+      "d0": 526,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 523,
+      "save_ad_d0": 13,
+      "lead_event": 103
+    },
+    {
+      "date": "2026-09-28",
+      "name": "pty_appinstall_mass_android_b2s_0726",
+      "channel": "GG",
+      "vertical": "pty",
+      "cost": 0,
+      "install": null,
+      "d0": 2,
+      "d1": null,
+      "d0_d1": null,
+      "lead": null,
+      "dau": 2,
       "save_ad_d0": 0,
       "lead_event": 0
     }
@@ -108766,49 +109282,49 @@
       "month": "Sep 2026",
       "channel": "FB",
       "vertical": "gds",
-      "install": 1390
+      "install": 1433
     },
     {
       "month": "Sep 2026",
       "channel": "FB",
       "vertical": "job",
-      "install": 805
+      "install": 870
     },
     {
       "month": "Sep 2026",
       "channel": "FB",
       "vertical": "pty",
-      "install": 357
+      "install": 374
     },
     {
       "month": "Sep 2026",
       "channel": "FB",
       "vertical": "veh",
-      "install": 1120
+      "install": 1151
     },
     {
       "month": "Sep 2026",
       "channel": "GG",
       "vertical": "gds",
-      "install": 1280
+      "install": 1321
     },
     {
       "month": "Sep 2026",
       "channel": "GG",
       "vertical": "job",
-      "install": 1042
+      "install": 1091
     },
     {
       "month": "Sep 2026",
       "channel": "GG",
       "vertical": "pty",
-      "install": 21632
+      "install": 22349
     },
     {
       "month": "Sep 2026",
       "channel": "GG",
       "vertical": "veh",
-      "install": 336
+      "install": 342
     }
   ],
   "demand_install_from": "2026-01-01",
@@ -108965,33 +109481,249 @@
     }
   ],
   "camp_status": {
-    "gg_growth_pty_app_android_install_app_maxinstall_thodia_bau_072126_HCM": {
+    "digital_pty_appinstall_fb_addtocart_forsales": {
       "active": false,
-      "last_cost_day": "2026-08-31"
+      "last_cost_day": "2026-05-18"
     },
-    "digital_app_install_ios_hcm_mobile_testing_latency": {
+    "gds_appinstall_android_make_lead_30d_test_sgtt_asset": {
       "active": false,
-      "last_cost_day": "2026-05-05"
+      "last_cost_day": "2026-06-28"
     },
-    "digital_gds_appinstall_fb_test_retar_live_shortcut21": {
-      "active": false,
-      "last_cost_day": "2026-06-27"
-    },
-    "digital_gds_appinstall_fb_test_retar_live_shortcut11_060626": {
-      "active": false,
-      "last_cost_day": "2026-06-10"
-    },
-    "digital_gds_appinstall_fb_test_retar_live_shortcut13_110626": {
+    "digital_gds_appinstall_fb_test_retar_live_shortcut12_110626": {
       "active": false,
       "last_cost_day": "2026-06-18"
     },
-    "fb_growth_pty_app_android_install_app_pro_b2s_bau_082126_2025theme": {
+    "fb_growth_pty_app_android_install_app_pro_thodia_bau_072126_HCM_atc": {
       "active": false,
-      "last_cost_day": "2026-09-03"
+      "last_cost_day": "2026-08-31"
+    },
+    "fb_growth_gds_app_android_install_app_pro_trendy_test_082826_creative_atc": {
+      "active": false,
+      "last_cost_day": "2026-09-27"
+    },
+    "fb_growth_gds_app_android_install_app_pro_voucher_bau_090426_atw": {
+      "active": false,
+      "last_cost_day": "2026-09-13"
+    },
+    "fb_growth_gds_app_android_install_app_pro_voucher_bau_091426_vc": {
+      "active": false,
+      "last_cost_day": "2026-09-21"
+    },
+    "digital_pty_appinstall_fb_viewcontent_forrent_angle_nguthem": {
+      "active": false,
+      "last_cost_day": "2026-05-20"
     },
     "digital_pty_appinstall_fb_addtocart_kiemdinhphim_asset_broad": {
       "active": false,
       "last_cost_day": "2026-06-04"
+    },
+    "digital_gds_appinstall_fb_test_retar_live10s_shortcut17": {
+      "active": false,
+      "last_cost_day": "2026-06-27"
+    },
+    "veh_appinstall_inapp_action_user_android_make_lead_30d": {
+      "active": false,
+      "last_cost_day": "2026-08-17"
+    },
+    "fb_growth_pty_app_android_install_app_pro_b2s_bau_082126_hcmtargeting": {
+      "active": false,
+      "last_cost_day": "2026-08-25"
+    },
+    "fb_growth_pty_app_android_install_app_pro_b2s_bau_082126_hcm_adview": {
+      "active": false,
+      "last_cost_day": "2026-09-03"
+    },
+    "gg_growth_gds_app_android_install_app_maxinstall_reward_bau_082726": {
+      "active": false,
+      "last_cost_day": "2026-09-11"
+    },
+    "pty_appinstall_inapp_action_user_android_view_item_list": {
+      "active": true,
+      "last_cost_day": "2026-09-28"
+    },
+    "digital_pty_appinstall_fb_viewcontent_forrent_angle_tretiethoc": {
+      "active": false,
+      "last_cost_day": "2026-05-20"
+    },
+    "digital_job_appinstall_fb_addtocart_kiemdinhphim_asset": {
+      "active": false,
+      "last_cost_day": "2026-05-24"
+    },
+    "digital_pty_appinstall_fb_viewcontent_forrent_broad": {
+      "active": false,
+      "last_cost_day": "2026-05-20"
+    },
+    "digital_job_appinstall_fb_atc_livestream_shortcut2_broad": {
+      "active": false,
+      "last_cost_day": "2026-06-05"
+    },
+    "digital_job_appinstall_fb_atc_worldcup_asset_broad": {
+      "active": false,
+      "last_cost_day": "2026-06-03"
+    },
+    "asa_growth_pty_app_ios_install_search_pro_competitor_bau_082126": {
+      "active": true,
+      "last_cost_day": "2026-09-28"
+    },
+    "gg_growth_gds_app_android_install_app_maxinstall_b2s_bau_073126": {
+      "active": false,
+      "last_cost_day": "2026-08-13"
+    },
+    "digital_job_appinstall_fb_atc_broad_040626": {
+      "active": false,
+      "last_cost_day": "2026-06-05"
+    },
+    "fb_growth_pty_app_android_install_app_pro_thodia_bau_082426_HCM_atc_targeting_promoscheme": {
+      "active": false,
+      "last_cost_day": "2026-09-03"
+    },
+    "fb_growth_gds_app_android_install_app_pro_voucher_bau_092226_atc": {
+      "active": false,
+      "last_cost_day": "2026-09-27"
+    },
+    "digital_job_appinstall_fb_atc_livestream_shortcut6_broad": {
+      "active": false,
+      "last_cost_day": "2026-06-03"
+    },
+    "digital_gds_appinstall_fb_test_retar_live_shortcut15_110626": {
+      "active": false,
+      "last_cost_day": "2026-06-18"
+    },
+    "digital_gds_appinstall_fb_test_retar_live_shortcut22": {
+      "active": false,
+      "last_cost_day": "2026-06-29"
+    },
+    "digital_gds_appinstall_fb_test_retar_live_shortcut25": {
+      "active": false,
+      "last_cost_day": "2026-07-03"
+    },
+    "gg_growth_pty_app_android_install_app_maxinstall_thodia_bau_072126_VN": {
+      "active": false,
+      "last_cost_day": "2026-08-13"
+    },
+    "fb_growth_pty_app_android_install_app_pro_b2s_bau_072126_2026theme_targeting": {
+      "active": true,
+      "last_cost_day": "2026-09-28"
+    },
+    "asa_growth_pty_let_app_ios_install_search_pro_general_bau_082126": {
+      "active": true,
+      "last_cost_day": "2026-09-28"
+    },
+    "fb_growth_gds_app_ios_install_app_pro_trendy_test_090426_creative_atc": {
+      "active": true,
+      "last_cost_day": "2026-09-28"
+    },
+    "fb_growth_pty_app_android_install_app_pro_thodia_bau_080526_HCM_atc_targeting": {
+      "active": false,
+      "last_cost_day": "2026-08-13"
+    },
+    "fb_growth_gds_app_android_install_app_pro_trendy_test_082326_creative_testing": {
+      "active": false,
+      "last_cost_day": "2026-09-02"
+    },
+    "digital_app_activate_android_gds_mobile": {
+      "active": false,
+      "last_cost_day": "2026-06-02"
+    },
+    "digital_pty_appinstall_fb_addtocart": {
+      "active": false,
+      "last_cost_day": "2026-05-20"
+    },
+    "digital_pty_appinstall_fb_atc_web_visitor90d_kiemdinhphim_asset": {
+      "active": false,
+      "last_cost_day": "2026-06-04"
+    },
+    "digital_pty_appinstall_fb_atc_broad_040626": {
+      "active": false,
+      "last_cost_day": "2026-07-13"
+    },
+    "gds_appinstall_inapp_android_adview_7d": {
+      "active": false,
+      "last_cost_day": "2026-08-21"
+    },
+    "digital_gds_appinstall_fb_test_retar_live_shortcut10_060626": {
+      "active": false,
+      "last_cost_day": "2026-06-10"
+    },
+    "digital_gds_appinstall_fb_test_retar_live10s_shortcut21": {
+      "active": false,
+      "last_cost_day": "2026-06-27"
+    },
+    "digital_gds_appinstall_fb_test_retar_live_shortcut20": {
+      "active": false,
+      "last_cost_day": "2026-06-27"
+    },
+    "veh_appinstall_inapp_action_user_android_adview_7d": {
+      "active": false,
+      "last_cost_day": "2026-08-13"
+    },
+    "veh_appinstall_mass_android": {
+      "active": false,
+      "last_cost_day": "2026-08-13"
+    },
+    "gg_growth_pty_app_android_install_app_maxinstall_b2s_bau_080626_targeting": {
+      "active": true,
+      "last_cost_day": "2026-09-28"
+    },
+    "asa_growth_gds_app_ios_install_search_pro_competitor_bau_090726": {
+      "active": true,
+      "last_cost_day": "2026-09-28"
+    },
+    "digital_activate_install7d_app": {
+      "active": false,
+      "last_cost_day": "2026-06-01"
+    },
+    "job_appinstall_inapp_android_adview_7d": {
+      "active": true,
+      "last_cost_day": "2026-09-28"
+    },
+    "job_appinstall_mass_android": {
+      "active": false,
+      "last_cost_day": "2026-09-03"
+    },
+    "digital_gds_appinstall_fb_test_retar_live_shortcut18": {
+      "active": false,
+      "last_cost_day": "2026-06-27"
+    },
+    "fb_growth_pty_app_android_install_app_pro_thodia_bau_072126_VN_atc": {
+      "active": false,
+      "last_cost_day": "2026-08-31"
+    },
+    "fb_growth_pty_app_android_install_app_rtg_thodia_bau_072126_VN_atc": {
+      "active": false,
+      "last_cost_day": "2026-09-03"
+    },
+    "gg_growth_job_app_android_install_app_maxinstall_ngayhoivieclam_bau_210826": {
+      "active": true,
+      "last_cost_day": "2026-09-28"
+    },
+    "digital_job_appinstall_fb_atc_web_visitor_l180d_040626": {
+      "active": false,
+      "last_cost_day": "2026-06-05"
+    },
+    "asa_growth_pty_sell_app_ios_install_search_pro_general_bau_090726": {
+      "active": false,
+      "last_cost_day": "2026-09-26"
+    },
+    "digital_app_activate_android_veh_mc": {
+      "active": false,
+      "last_cost_day": "2026-06-02"
+    },
+    "pty_appinstall_mass_android": {
+      "active": true,
+      "last_cost_day": "2026-09-28"
+    },
+    "digital_job_appinstall_fb_atc_livestream_shortcut5_broad": {
+      "active": false,
+      "last_cost_day": "2026-06-05"
+    },
+    "digital_pty_appinstall_fb_atc_web_visitor_l180d_040626": {
+      "active": false,
+      "last_cost_day": "2026-07-13"
+    },
+    "digital_pty_appinstall_fb_test_retar_live_shortcut8_060626": {
+      "active": false,
+      "last_cost_day": "2026-06-16"
     },
     "digital_gds_appinstall_fb_test_retar_live10s_shortcut18": {
       "active": false,
@@ -109001,9 +109733,17 @@
       "active": false,
       "last_cost_day": "2026-06-27"
     },
+    "digital_gds_appinstall_fb_test_retar_live_shortcut19": {
+      "active": false,
+      "last_cost_day": "2026-06-27"
+    },
     "digital_gds_appinstall_fb_test_retar_live_shortcut23": {
       "active": false,
       "last_cost_day": "2026-06-29"
+    },
+    "gg_growth_pty_app_android_install_app_maxinstall_b2s_bau_072226_2026theme": {
+      "active": false,
+      "last_cost_day": "2026-08-26"
     },
     "fb_growth_pty_app_android_install_app_pro_k\u0111p_bau_090126": {
       "active": false,
@@ -109013,43 +109753,91 @@
       "active": false,
       "last_cost_day": "2026-09-25"
     },
-    "digital_activate_install7d_web_reach": {
+    "fb_growth_pty_app_android_install_app_pro_k\u0111p_bau_091426_atc": {
       "active": false,
-      "last_cost_day": "2026-06-01"
+      "last_cost_day": "2026-09-18"
     },
-    "digital_pty_appinstall_fb_viewcontent_forsales": {
+    "digital_app_install_android_mobile_hcm_make_lead": {
+      "active": true,
+      "last_cost_day": "2026-09-28"
+    },
+    "job_appinstall_inapp_android_make_lead_30d": {
+      "active": true,
+      "last_cost_day": "2026-09-28"
+    },
+    "pty_appinstall_inapp_action_user_android_adview_7d": {
       "active": false,
-      "last_cost_day": "2026-05-20"
+      "last_cost_day": "2026-05-25"
     },
-    "digital_job_appinstall_fb_addtocart_kiemdinhphim_asset": {
+    "job_appinstall_mass_android_kiemdinhphim_asset": {
       "active": false,
-      "last_cost_day": "2026-05-24"
+      "last_cost_day": "2026-05-31"
     },
-    "digital_pty_appinstall_fb_atc_web_visitor180d_kiemdinhphim_asset": {
+    "pty_appinstall_mass_android_kiemdinhphim_asset": {
       "active": false,
-      "last_cost_day": "2026-06-04"
+      "last_cost_day": "2026-05-31"
     },
-    "digital_job_appinstall_fb_atc_broad_040626": {
+    "digital_job_appinstall_fb_atc_livestream_shortcut1_broad": {
       "active": false,
       "last_cost_day": "2026-06-05"
     },
-    "job_appinstall_inapp_android_adview_7d": {
-      "active": true,
-      "last_cost_day": "2026-09-27"
+    "gds_appinstall_android_make_lead_30d_test_live_shortcut_asset": {
+      "active": false,
+      "last_cost_day": "2026-06-28"
+    },
+    "job_appinstall_inapp_android_adview_7d_test_sgtt_asset": {
+      "active": false,
+      "last_cost_day": "2026-06-23"
+    },
+    "digital_gds_appinstall_fb_test_retar_live_shortcut11_060626": {
+      "active": false,
+      "last_cost_day": "2026-06-10"
+    },
+    "digital_gds_appinstall_fb_test_retar_live_shortcut16_110626": {
+      "active": false,
+      "last_cost_day": "2026-06-15"
+    },
+    "digital_gds_appinstall_fb_test_retar_live_shortcut21": {
+      "active": false,
+      "last_cost_day": "2026-06-27"
+    },
+    "digital_gds_appinstall_fb_test_retar_live_shortcut24": {
+      "active": false,
+      "last_cost_day": "2026-07-03"
+    },
+    "job_appinstall_inapp_android_adview_7d_test_AWO": {
+      "active": false,
+      "last_cost_day": "2026-07-10"
+    },
+    "fb_growth_pty_app_android_install_app_pro_b2s_bau_082126_2025theme": {
+      "active": false,
+      "last_cost_day": "2026-09-03"
+    },
+    "digital_app_install_ios_hcm_mobile_testing_latency": {
+      "active": false,
+      "last_cost_day": "2026-05-05"
     },
     "digital_pty_appinstall_fb_viewcontent_forrent": {
       "active": false,
       "last_cost_day": "2026-05-20"
     },
+    "digital_gds_appinstall_fb_atc_broad_040626": {
+      "active": false,
+      "last_cost_day": "2026-07-12"
+    },
+    "digital_gds_appinstall_fb_atc_web_visitor_l180d_040626": {
+      "active": false,
+      "last_cost_day": "2026-07-12"
+    },
+    "digital_pty_appinstall_fb_test_retar_live_shortcut9_060626": {
+      "active": false,
+      "last_cost_day": "2026-06-16"
+    },
+    "digital_pty_appinstall_fb_atc_b2s_0726": {
+      "active": false,
+      "last_cost_day": "2026-08-05"
+    },
     "pty_appinstall_mass_android_b2s_0726": {
-      "active": false,
-      "last_cost_day": "2026-09-03"
-    },
-    "fb_growth_pty_app_android_install_app_pro_thodia_bau_072126_VN_atc": {
-      "active": false,
-      "last_cost_day": "2026-08-31"
-    },
-    "fb_growth_pty_app_android_install_app_rtg_thodia_bau_072126_VN_atc": {
       "active": false,
       "last_cost_day": "2026-09-03"
     },
@@ -109061,165 +109849,37 @@
       "active": false,
       "last_cost_day": "2026-09-03"
     },
-    "digital_pty_appinstall_fb_addtocart_forsales": {
-      "active": false,
-      "last_cost_day": "2026-05-18"
-    },
-    "gg_growth_pty_app_android_install_app_maxinstall_thodia_bau_072126_VN": {
-      "active": false,
-      "last_cost_day": "2026-08-13"
-    },
-    "gds_appinstall_android_make_lead_30d_test_sgtt_asset": {
-      "active": false,
-      "last_cost_day": "2026-06-28"
-    },
-    "digital_gds_appinstall_fb_test_retar_live_shortcut25": {
-      "active": false,
-      "last_cost_day": "2026-07-03"
-    },
-    "digital_gds_appinstall_fb_test_retar_live_shortcut12_110626": {
-      "active": false,
-      "last_cost_day": "2026-06-18"
-    },
-    "digital_gds_appinstall_fb_test_retar_live_shortcut15_110626": {
-      "active": false,
-      "last_cost_day": "2026-06-18"
-    },
-    "fb_growth_pty_app_android_install_app_pro_thodia_bau_080526_HCM_atc_targeting": {
-      "active": false,
-      "last_cost_day": "2026-08-13"
-    },
-    "digital_pty_appinstall_fb_viewcontent_forrent_angle_nguthem": {
-      "active": false,
-      "last_cost_day": "2026-05-20"
-    },
-    "gg_growth_pty_app_android_install_app_maxinstall_b2s_bau_072226_2026theme": {
-      "active": false,
-      "last_cost_day": "2026-08-26"
-    },
-    "digital_gds_appinstall_fb_test_retar_live10s_shortcut17": {
-      "active": false,
-      "last_cost_day": "2026-06-27"
-    },
-    "digital_pty_appinstall_fb_test_retar_live_shortcut8_060626": {
-      "active": false,
-      "last_cost_day": "2026-06-16"
-    },
-    "fb_growth_pty_app_android_install_app_pro_b2s_bau_082126_hcmtargeting": {
-      "active": false,
-      "last_cost_day": "2026-08-25"
-    },
-    "fb_growth_pty_app_android_install_app_pro_k\u0111p_bau_091426_atc": {
-      "active": false,
-      "last_cost_day": "2026-09-18"
-    },
-    "digital_app_activate_android_veh_mc": {
-      "active": false,
-      "last_cost_day": "2026-06-02"
-    },
-    "pty_appinstall_mass_android": {
-      "active": true,
-      "last_cost_day": "2026-09-27"
-    },
-    "veh_appinstall_inapp_action_user_android_make_lead_30d": {
-      "active": false,
-      "last_cost_day": "2026-08-17"
-    },
-    "digital_job_appinstall_fb_atc_livestream_shortcut5_broad": {
-      "active": false,
-      "last_cost_day": "2026-06-05"
-    },
-    "digital_pty_appinstall_fb_atc_web_visitor_l180d_040626": {
-      "active": false,
-      "last_cost_day": "2026-07-13"
-    },
-    "digital_gds_appinstall_fb_test_retar_live_shortcut19": {
-      "active": false,
-      "last_cost_day": "2026-06-27"
-    },
-    "gg_growth_gds_app_android_install_app_maxinstall_reward_bau_082726": {
-      "active": false,
-      "last_cost_day": "2026-09-11"
-    },
-    "fb_growth_pty_app_android_install_app_pro_b2s_bau_082126_hcm_adview": {
-      "active": false,
-      "last_cost_day": "2026-09-03"
-    },
-    "digital_app_install_android_mobile_hcm_make_lead": {
-      "active": true,
-      "last_cost_day": "2026-09-27"
-    },
-    "pty_appinstall_inapp_action_user_android_adview_7d": {
-      "active": false,
-      "last_cost_day": "2026-05-25"
-    },
-    "digital_pty_appinstall_fb_addtocart_kiemdinhphim_asset": {
-      "active": false,
-      "last_cost_day": "2026-06-04"
-    },
-    "pty_appinstall_mass_android_kiemdinhphim_asset": {
-      "active": false,
-      "last_cost_day": "2026-05-31"
-    },
-    "job_appinstall_inapp_android_adview_7d_test_AWO": {
-      "active": false,
-      "last_cost_day": "2026-07-10"
-    },
-    "gds_appinstall_android_make_lead_30d_test_live_shortcut_asset": {
-      "active": false,
-      "last_cost_day": "2026-06-28"
-    },
-    "digital_gds_appinstall_fb_test_retar_live_shortcut24": {
-      "active": false,
-      "last_cost_day": "2026-07-03"
-    },
-    "digital_gds_appinstall_fb_test_retar_live_shortcut16_110626": {
-      "active": false,
-      "last_cost_day": "2026-06-15"
-    },
-    "digital_activate_install7d_web": {
+    "digital_activate_install7d_app_reach": {
       "active": false,
       "last_cost_day": "2026-06-01"
-    },
-    "job_appinstall_inapp_android_make_lead_30d": {
-      "active": true,
-      "last_cost_day": "2026-09-27"
-    },
-    "job_appinstall_mass_android_kiemdinhphim_asset": {
-      "active": false,
-      "last_cost_day": "2026-05-31"
-    },
-    "digital_job_appinstall_fb_atc_livestream_shortcut1_broad": {
-      "active": false,
-      "last_cost_day": "2026-06-05"
-    },
-    "digital_gds_appinstall_fb_test_retar_live10s_shortcut19": {
-      "active": false,
-      "last_cost_day": "2026-06-27"
-    },
-    "job_appinstall_inapp_android_adview_7d_test_sgtt_asset": {
-      "active": false,
-      "last_cost_day": "2026-06-23"
-    },
-    "digital_app_activate_android_gds_mobile": {
-      "active": false,
-      "last_cost_day": "2026-06-02"
     },
     "pty_appinstall_inapp_action_user_android": {
       "active": false,
       "last_cost_day": "2026-04-22"
     },
+    "pty_appinstall_inapp_action_user_android_make_lead_30d": {
+      "active": true,
+      "last_cost_day": "2026-09-28"
+    },
     "digital_pty_appinstall_fb_viewcontent": {
       "active": false,
       "last_cost_day": "2026-05-18"
     },
-    "gds_appinstall_inapp_android_adview_7d": {
-      "active": false,
-      "last_cost_day": "2026-08-21"
-    },
     "gds_appinstall_mass_android": {
       "active": false,
       "last_cost_day": "2026-08-17"
+    },
+    "digital_gds_appinstall_fb_test_retar_live_shortcut17": {
+      "active": false,
+      "last_cost_day": "2026-06-27"
+    },
+    "fb_growth_pty_app_android_install_app_pro_b2s_bau_072126_2026theme": {
+      "active": true,
+      "last_cost_day": "2026-09-28"
+    },
+    "asa_growth_gds_app_ios_install_search_pro_general_bau_082126": {
+      "active": true,
+      "last_cost_day": "2026-09-28"
     },
     "asa_growth_veh_app_ios_install_search_pro_general_bau_091126_broad": {
       "active": false,
@@ -109229,62 +109889,6 @@
       "active": false,
       "last_cost_day": "2026-09-21"
     },
-    "digital_activate_install7d_app": {
-      "active": false,
-      "last_cost_day": "2026-06-01"
-    },
-    "job_appinstall_mass_android": {
-      "active": false,
-      "last_cost_day": "2026-09-03"
-    },
-    "digital_gds_appinstall_fb_atc_broad_040626": {
-      "active": false,
-      "last_cost_day": "2026-07-12"
-    },
-    "digital_gds_appinstall_fb_atc_web_visitor_l180d_040626": {
-      "active": false,
-      "last_cost_day": "2026-07-12"
-    },
-    "asa_growth_pty_sell_app_ios_install_search_pro_general_bau_090726": {
-      "active": false,
-      "last_cost_day": "2026-09-26"
-    },
-    "digital_activate_install7d_app_reach": {
-      "active": false,
-      "last_cost_day": "2026-06-01"
-    },
-    "pty_appinstall_inapp_action_user_android_make_lead_30d": {
-      "active": true,
-      "last_cost_day": "2026-09-27"
-    },
-    "digital_pty_appinstall_fb_addtocart": {
-      "active": false,
-      "last_cost_day": "2026-05-20"
-    },
-    "veh_appinstall_mass_android": {
-      "active": false,
-      "last_cost_day": "2026-08-13"
-    },
-    "digital_pty_appinstall_fb_atc_web_visitor90d_kiemdinhphim_asset": {
-      "active": false,
-      "last_cost_day": "2026-06-04"
-    },
-    "digital_pty_appinstall_fb_atc_broad_040626": {
-      "active": false,
-      "last_cost_day": "2026-07-13"
-    },
-    "fb_growth_pty_app_android_install_app_pro_b2s_bau_072126_2026theme": {
-      "active": true,
-      "last_cost_day": "2026-09-27"
-    },
-    "digital_gds_appinstall_fb_test_retar_live10s_shortcut21": {
-      "active": false,
-      "last_cost_day": "2026-06-27"
-    },
-    "gg_growth_pty_app_android_install_app_maxinstall_b2s_bau_080626_targeting": {
-      "active": true,
-      "last_cost_day": "2026-09-27"
-    },
     "gg_growth_pty_app_android_install_app_maxinstall_b2s_bau_082126_hcm_targeting": {
       "active": false,
       "last_cost_day": "2026-09-24"
@@ -109293,148 +109897,60 @@
       "active": false,
       "last_cost_day": "2026-09-15"
     },
-    "gg_growth_veh_all_N/A_install_app_maxconv_b2s_bau_80626_targeting": {
-      "active": false,
-      "last_cost_day": "2026-08-13"
-    },
-    "asa_growth_gds_app_ios_install_search_pro_general_bau_082126": {
-      "active": true,
-      "last_cost_day": "2026-09-27"
-    },
-    "fb_growth_pty_app_android_install_app_pro_thodia_bau_072126_HCM_atc": {
-      "active": false,
-      "last_cost_day": "2026-08-31"
-    },
-    "digital_job_appinstall_fb_atc_livestream_shortcut6_broad": {
-      "active": false,
-      "last_cost_day": "2026-06-03"
-    },
-    "fb_growth_gds_app_ios_install_app_pro_trendy_test_090426_creative_atc": {
-      "active": true,
-      "last_cost_day": "2026-09-27"
-    },
-    "fb_growth_gds_app_android_install_app_pro_trendy_test_082326_creative_testing": {
-      "active": false,
-      "last_cost_day": "2026-09-02"
-    },
-    "pty_appinstall_inapp_action_user_android_view_item_list": {
-      "active": true,
-      "last_cost_day": "2026-09-27"
-    },
-    "digital_pty_appinstall_fb_viewcontent_forrent_broad": {
-      "active": false,
-      "last_cost_day": "2026-05-20"
-    },
-    "gg_growth_gds_app_android_install_app_maxinstall_b2s_bau_073126": {
-      "active": false,
-      "last_cost_day": "2026-08-13"
-    },
-    "fb_growth_pty_app_android_install_app_pro_thodia_bau_082426_HCM_atc_targeting_promoscheme": {
-      "active": false,
-      "last_cost_day": "2026-09-03"
-    },
-    "asa_growth_job_app_ios_install_search_pro_competitor_bau_090726": {
-      "active": false,
-      "last_cost_day": "2026-09-17"
-    },
-    "digital_pty_appinstall_fb_atc_b2s_0726": {
-      "active": false,
-      "last_cost_day": "2026-08-05"
-    },
-    "digital_gds_appinstall_fb_test_retar_live_shortcut18": {
-      "active": false,
-      "last_cost_day": "2026-06-27"
-    },
-    "digital_pty_appinstall_fb_test_retar_live_shortcut9_060626": {
-      "active": false,
-      "last_cost_day": "2026-06-16"
-    },
-    "digital_job_appinstall_fb_atc_web_visitor_l180d_040626": {
-      "active": false,
-      "last_cost_day": "2026-06-05"
-    },
-    "gg_growth_job_app_android_install_app_maxinstall_ngayhoivieclam_bau_210826": {
-      "active": true,
-      "last_cost_day": "2026-09-27"
-    },
-    "digital_gds_appinstall_fb_test_retar_live_shortcut22": {
-      "active": false,
-      "last_cost_day": "2026-06-29"
-    },
-    "fb_growth_pty_app_android_install_app_pro_b2s_bau_072126_2026theme_targeting": {
-      "active": true,
-      "last_cost_day": "2026-09-27"
-    },
-    "fb_growth_gds_app_android_install_app_pro_trendy_test_082826_creative_atc": {
-      "active": true,
-      "last_cost_day": "2026-09-27"
-    },
-    "fb_growth_gds_app_android_install_app_pro_voucher_bau_090426_atw": {
-      "active": false,
-      "last_cost_day": "2026-09-13"
-    },
-    "asa_growth_pty_let_app_ios_install_search_pro_general_bau_082126": {
-      "active": true,
-      "last_cost_day": "2026-09-27"
-    },
-    "fb_growth_gds_app_android_install_app_pro_voucher_bau_091426_vc": {
-      "active": false,
-      "last_cost_day": "2026-09-21"
-    },
-    "veh_appinstall_inapp_action_user_android_adview_7d": {
-      "active": false,
-      "last_cost_day": "2026-08-13"
-    },
-    "digital_gds_appinstall_fb_test_retar_live_shortcut17": {
-      "active": false,
-      "last_cost_day": "2026-06-27"
-    },
-    "digital_gds_appinstall_fb_test_retar_live_shortcut20": {
-      "active": false,
-      "last_cost_day": "2026-06-27"
-    },
-    "digital_gds_appinstall_fb_test_retar_live_shortcut10_060626": {
-      "active": false,
-      "last_cost_day": "2026-06-10"
-    },
-    "asa_growth_gds_app_ios_install_search_pro_competitor_bau_090726": {
-      "active": true,
-      "last_cost_day": "2026-09-27"
-    },
     "asa_growth_job_app_ios_install_search_pro_general_bau_091626_broad": {
       "active": false,
       "last_cost_day": "2026-09-25"
     },
-    "digital_pty_appinstall_fb_viewcontent_forrent_angle_tretiethoc": {
+    "gg_growth_veh_all_N/A_install_app_maxconv_b2s_bau_80626_targeting": {
+      "active": false,
+      "last_cost_day": "2026-08-13"
+    },
+    "digital_activate_install7d_web": {
+      "active": false,
+      "last_cost_day": "2026-06-01"
+    },
+    "digital_pty_appinstall_fb_addtocart_kiemdinhphim_asset": {
+      "active": false,
+      "last_cost_day": "2026-06-04"
+    },
+    "digital_gds_appinstall_fb_test_retar_live_shortcut13_110626": {
+      "active": false,
+      "last_cost_day": "2026-06-18"
+    },
+    "digital_gds_appinstall_fb_test_retar_live10s_shortcut19": {
+      "active": false,
+      "last_cost_day": "2026-06-27"
+    },
+    "gg_growth_pty_app_android_install_app_maxinstall_thodia_bau_072126_HCM": {
+      "active": false,
+      "last_cost_day": "2026-08-31"
+    },
+    "digital_activate_install7d_web_reach": {
+      "active": false,
+      "last_cost_day": "2026-06-01"
+    },
+    "digital_pty_appinstall_fb_viewcontent_forsales": {
       "active": false,
       "last_cost_day": "2026-05-20"
-    },
-    "digital_job_appinstall_fb_atc_livestream_shortcut2_broad": {
-      "active": false,
-      "last_cost_day": "2026-06-05"
     },
     "digital_job_appinstall_fb_atc_livestream_shortcut3_broad": {
       "active": false,
       "last_cost_day": "2026-06-03"
     },
-    "digital_job_appinstall_fb_atc_worldcup_asset_broad": {
+    "digital_pty_appinstall_fb_atc_web_visitor180d_kiemdinhphim_asset": {
       "active": false,
-      "last_cost_day": "2026-06-03"
-    },
-    "asa_growth_pty_app_ios_install_search_pro_competitor_bau_082126": {
-      "active": true,
-      "last_cost_day": "2026-09-27"
+      "last_cost_day": "2026-06-04"
     },
     "asa_growth_veh_app_ios_install_search_pro_competitor_bau_090726": {
       "active": true,
-      "last_cost_day": "2026-09-27"
+      "last_cost_day": "2026-09-28"
     },
-    "fb_growth_gds_app_android_install_app_pro_voucher_bau_092226_atc": {
-      "active": true,
-      "last_cost_day": "2026-09-27"
+    "asa_growth_job_app_ios_install_search_pro_competitor_bau_090726": {
+      "active": false,
+      "last_cost_day": "2026-09-17"
     }
   },
-  "camp_status_asof": "2026-09-27",
+  "camp_status_asof": "2026-09-28",
   "month_cover": {
     "Jan 2026": {
       "through": "2026-01-31",
@@ -109485,30 +110001,28 @@
       "elapsed": 1.0
     },
     "Sep 2026": {
-      "through": "2026-09-27",
-      "days": 27,
+      "through": "2026-09-28",
+      "days": 28,
       "days_in_month": 30,
-      "elapsed": 0.9
+      "elapsed": 0.9333
     }
   },
   "maturity": {
     "act.d1": {
-      "through": "2026-09-26",
+      "through": "2026-09-27",
       "stale": false,
-      "gaps": [
-        "2026-09-24"
-      ]
+      "gaps": []
     },
     "act.d7": {
-      "through": "2026-09-17",
-      "stale": true,
+      "through": "2026-09-21",
+      "stale": false,
       "gaps": [
         "2026-07-07",
         "2026-07-08"
       ]
     },
     "act.lead7": {
-      "through": "2026-09-20",
+      "through": "2026-09-21",
       "stale": false,
       "gaps": []
     },
@@ -109554,56 +110068,22 @@
       ]
     },
     "ret90.d1": {
-      "through": "2026-09-26",
+      "through": "2026-09-27",
       "stale": false,
-      "gaps": [
-        "2026-09-24"
-      ]
+      "gaps": []
     },
     "ret90.d7": {
-      "through": "2026-09-17",
-      "stale": true,
+      "through": "2026-09-21",
+      "stale": false,
       "gaps": []
     },
     "ret90.m1": {
-      "through": "2026-08-24",
-      "stale": true,
+      "through": "2026-08-28",
+      "stale": false,
       "gaps": []
     }
   },
   "daily_activation": [
-    {
-      "date": "2026-06-30",
-      "channel": "Direct",
-      "new_users": 5471,
-      "adview_activated": 1729,
-      "lead_activated": 1577,
-      "save_activated": 454
-    },
-    {
-      "date": "2026-06-30",
-      "channel": "Growth",
-      "new_users": 3718,
-      "adview_activated": 850,
-      "lead_activated": 814,
-      "save_activated": 267
-    },
-    {
-      "date": "2026-06-30",
-      "channel": "Organic Search",
-      "new_users": 1680,
-      "adview_activated": 468,
-      "lead_activated": 460,
-      "save_activated": 117
-    },
-    {
-      "date": "2026-06-30",
-      "channel": "Total",
-      "new_users": 11284,
-      "adview_activated": 3122,
-      "lead_activated": 2928,
-      "save_activated": 854
-    },
     {
       "date": "2026-07-01",
       "channel": "Direct",
@@ -112232,151 +112712,151 @@
       "date": "2026-09-21",
       "channel": "Direct",
       "new_users": 7520,
-      "adview_activated": 1952,
-      "lead_activated": 1946,
+      "adview_activated": 2213,
+      "lead_activated": 2125,
       "save_activated": 637
     },
     {
       "date": "2026-09-21",
       "channel": "Growth",
       "new_users": 2699,
-      "adview_activated": 364,
-      "lead_activated": 570,
+      "adview_activated": 448,
+      "lead_activated": 625,
       "save_activated": 129
     },
     {
       "date": "2026-09-21",
       "channel": "Organic Search",
       "new_users": 108,
-      "adview_activated": 31,
-      "lead_activated": 29,
+      "adview_activated": 38,
+      "lead_activated": 33,
       "save_activated": 7
     },
     {
       "date": "2026-09-21",
       "channel": "Total",
       "new_users": 10421,
-      "adview_activated": 2387,
-      "lead_activated": 2586,
+      "adview_activated": 2741,
+      "lead_activated": 2825,
       "save_activated": 787
     },
     {
       "date": "2026-09-22",
       "channel": "Direct",
       "new_users": 7027,
-      "adview_activated": 1572,
-      "lead_activated": 1728,
+      "adview_activated": 1950,
+      "lead_activated": 1980,
       "save_activated": 585
     },
     {
       "date": "2026-09-22",
       "channel": "Growth",
       "new_users": 2721,
-      "adview_activated": 331,
-      "lead_activated": 573,
+      "adview_activated": 471,
+      "lead_activated": 664,
       "save_activated": 125
     },
     {
       "date": "2026-09-22",
       "channel": "Organic Search",
       "new_users": 108,
-      "adview_activated": 22,
-      "lead_activated": 20,
+      "adview_activated": 24,
+      "lead_activated": 25,
       "save_activated": 4
     },
     {
       "date": "2026-09-22",
       "channel": "Total",
       "new_users": 9937,
-      "adview_activated": 1956,
-      "lead_activated": 2351,
+      "adview_activated": 2478,
+      "lead_activated": 2700,
       "save_activated": 732
     },
     {
       "date": "2026-09-23",
       "channel": "Direct",
       "new_users": 6872,
-      "adview_activated": 1345,
-      "lead_activated": 1527,
+      "adview_activated": 1891,
+      "lead_activated": 1849,
       "save_activated": 563
     },
     {
       "date": "2026-09-23",
       "channel": "Growth",
       "new_users": 2685,
-      "adview_activated": 249,
-      "lead_activated": 507,
+      "adview_activated": 437,
+      "lead_activated": 623,
       "save_activated": 136
     },
     {
       "date": "2026-09-23",
       "channel": "Organic Search",
       "new_users": 90,
-      "adview_activated": 12,
-      "lead_activated": 13,
+      "adview_activated": 24,
+      "lead_activated": 24,
       "save_activated": 4
     },
     {
       "date": "2026-09-23",
       "channel": "Total",
       "new_users": 9738,
-      "adview_activated": 1633,
-      "lead_activated": 2089,
+      "adview_activated": 2383,
+      "lead_activated": 2538,
       "save_activated": 720
     },
     {
       "date": "2026-09-24",
       "channel": "Direct",
       "new_users": 6395,
-      "adview_activated": 832,
-      "lead_activated": 1158,
+      "adview_activated": 1603,
+      "lead_activated": 1673,
       "save_activated": 508
     },
     {
       "date": "2026-09-24",
       "channel": "Growth",
       "new_users": 2551,
-      "adview_activated": 102,
-      "lead_activated": 340,
+      "adview_activated": 400,
+      "lead_activated": 556,
       "save_activated": 136
     },
     {
       "date": "2026-09-24",
       "channel": "Organic Search",
       "new_users": 99,
-      "adview_activated": 11,
-      "lead_activated": 10,
+      "adview_activated": 36,
+      "lead_activated": 33,
       "save_activated": 3
     },
     {
       "date": "2026-09-24",
       "channel": "Total",
       "new_users": 9131,
-      "adview_activated": 974,
-      "lead_activated": 1537,
+      "adview_activated": 2076,
+      "lead_activated": 2299,
       "save_activated": 664
     },
     {
       "date": "2026-09-25",
       "channel": "Direct",
       "new_users": 6125,
-      "adview_activated": 1307,
-      "lead_activated": 1424,
+      "adview_activated": 1462,
+      "lead_activated": 1517,
       "save_activated": 474
     },
     {
       "date": "2026-09-25",
       "channel": "Growth",
       "new_users": 2408,
-      "adview_activated": 285,
-      "lead_activated": 468,
+      "adview_activated": 333,
+      "lead_activated": 489,
       "save_activated": 105
     },
     {
       "date": "2026-09-25",
       "channel": "Organic Search",
       "new_users": 101,
-      "adview_activated": 16,
+      "adview_activated": 21,
       "lead_activated": 21,
       "save_activated": 5
     },
@@ -112384,73 +112864,105 @@
       "date": "2026-09-25",
       "channel": "Total",
       "new_users": 8704,
-      "adview_activated": 1634,
-      "lead_activated": 1937,
+      "adview_activated": 1842,
+      "lead_activated": 2052,
       "save_activated": 595
     },
     {
       "date": "2026-09-26",
       "channel": "Direct",
       "new_users": 6534,
-      "adview_activated": 1213,
-      "lead_activated": 1428,
+      "adview_activated": 1407,
+      "lead_activated": 1562,
       "save_activated": 483
     },
     {
       "date": "2026-09-26",
       "channel": "Growth",
       "new_users": 2569,
-      "adview_activated": 233,
-      "lead_activated": 460,
+      "adview_activated": 298,
+      "lead_activated": 502,
       "save_activated": 114
     },
     {
       "date": "2026-09-26",
       "channel": "Organic Search",
       "new_users": 98,
-      "adview_activated": 21,
-      "lead_activated": 19,
+      "adview_activated": 25,
+      "lead_activated": 25,
       "save_activated": 6
     },
     {
       "date": "2026-09-26",
       "channel": "Total",
       "new_users": 9275,
-      "adview_activated": 1496,
-      "lead_activated": 1932,
+      "adview_activated": 1760,
+      "lead_activated": 2115,
       "save_activated": 614
     },
     {
       "date": "2026-09-27",
       "channel": "Direct",
       "new_users": 7084,
-      "adview_activated": 1013,
-      "lead_activated": 1310,
+      "adview_activated": 1417,
+      "lead_activated": 1621,
       "save_activated": 612
     },
     {
       "date": "2026-09-27",
       "channel": "Growth",
       "new_users": 2830,
-      "adview_activated": 108,
-      "lead_activated": 386,
+      "adview_activated": 244,
+      "lead_activated": 501,
       "save_activated": 142
     },
     {
       "date": "2026-09-27",
       "channel": "Organic Search",
       "new_users": 99,
-      "adview_activated": 5,
-      "lead_activated": 8,
+      "adview_activated": 12,
+      "lead_activated": 20,
       "save_activated": 2
     },
     {
       "date": "2026-09-27",
       "channel": "Total",
       "new_users": 10104,
-      "adview_activated": 1163,
-      "lead_activated": 1749,
+      "adview_activated": 1718,
+      "lead_activated": 2189,
       "save_activated": 780
+    },
+    {
+      "date": "2026-09-28",
+      "channel": "Direct",
+      "new_users": 7150,
+      "adview_activated": 981,
+      "lead_activated": 1360,
+      "save_activated": 589
+    },
+    {
+      "date": "2026-09-28",
+      "channel": "Growth",
+      "new_users": 2681,
+      "adview_activated": 117,
+      "lead_activated": 375,
+      "save_activated": 129
+    },
+    {
+      "date": "2026-09-28",
+      "channel": "Organic Search",
+      "new_users": 88,
+      "adview_activated": 7,
+      "lead_activated": 15,
+      "save_activated": 4
+    },
+    {
+      "date": "2026-09-28",
+      "channel": "Total",
+      "new_users": 10007,
+      "adview_activated": 1128,
+      "lead_activated": 1781,
+      "save_activated": 736
     }
   ]
 }
