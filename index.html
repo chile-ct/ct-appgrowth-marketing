@@ -663,6 +663,192 @@ canvas { max-height: 500px; }
 
 </div><!-- /container -->
 
+<style>
+#tkBar { position:fixed; right:16px; bottom:16px; z-index:1000; display:flex; gap:6px; align-items:center; flex-wrap:wrap; max-width:calc(100vw - 32px); background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:6px 8px; box-shadow:0 4px 16px rgba(0,0,0,.12); font-size:12px; color:#374151; }
+#tkBar button { border:1px solid #d1d5db; background:#f9fafb; border-radius:6px; padding:5px 10px; font-size:12px; font-weight:600; color:#374151; cursor:pointer; }
+#tkBar button[data-a="save"] { background:#4361ee; border-color:#4361ee; color:#fff; }
+#tkBar .tk-status { color:#6b7280; max-width:360px; }
+#tkBar .tk-status.err { color:#dc2626; }
+.tk-edit { outline:1.5px dashed #f59e0b; outline-offset:2px; border-radius:2px; cursor:text; }
+.tk-edit:focus { outline-style:solid; background:rgba(245,158,11,.10); }
+</style>
+<script>
+// Static-text editor. Runs here, after the static markup and before the main
+// script, so it records each element's original HTML before any JS rewrites it.
+// Edits are committed to text_overrides.json (via the GitHub API, with the
+// editor's own token) and every viewer applies that file on load. Keys are a
+// hash of the original text plus its occurrence number, so an override quietly
+// stops applying if that text is later changed in index.html.
+(function() {
+  const REPO = 'chile-ct/ct-appgrowth-marketing', FILE = 'text_overrides.json', BRANCH = 'main';
+  const TOKEN_KEY = 'ctDashGhToken';
+  const SKIP = 'script,style,button,input,select,textarea,option,canvas,table,svg';
+  const ls = {
+    get: k => { try { return localStorage.getItem(k); } catch(e) { return null; } },
+    set: (k, v) => { try { localStorage.setItem(k, v); } catch(e) {} },
+    del: k => { try { localStorage.removeItem(k); } catch(e) {} },
+  };
+  const norm = s => s.replace(/\s+/g, ' ').trim();
+  const hash = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
+  const hasOwnText = el => [...el.childNodes].some(n => n.nodeType === 3 && n.nodeValue.trim());
+  // Value slots and bare numbers are data even when the HTML ships a placeholder.
+  const VALUE = '.kpi-value,.kpi-sub,.kpi-delta';
+  const isNumberish = s => /^[\d\s.,%MKB₫đ+\-−▲▼*()]+$/.test(s);
+
+  function clean(html) {
+    const t = document.createElement('template');
+    t.innerHTML = html;
+    t.content.querySelectorAll('script,style,iframe,object,embed,link,meta,form,input,button,textarea,select').forEach(n => n.remove());
+    t.content.querySelectorAll('*').forEach(n => [...n.attributes].forEach(a => {
+      if (/^on/i.test(a.name) || (/^(href|src|xlink:href|action|formaction)$/i.test(a.name) && /^\s*javascript:/i.test(a.value))) n.removeAttribute(a.name);
+    }));
+    return t.innerHTML;
+  }
+  const b64enc = s => { let bin = ''; new TextEncoder().encode(s).forEach(x => bin += String.fromCharCode(x)); return btoa(bin); };
+  const b64dec = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g, '')), c => c.charCodeAt(0)));
+
+  // item: {el, key, orig, expected} — expected is what the element should hold
+  // if nothing else has touched it (the original, or the applied override).
+  const items = [], seen = {};
+  document.body.querySelectorAll('*').forEach(el => {
+    // JS targets elements by id, so an id'd element (or one wrapping an id'd
+    // child) is filled at runtime. Anything JS rewrites without an id is caught
+    // later: enter() skips elements that no longer hold their recorded HTML.
+    if (!hasOwnText(el) || el.id || el.closest(SKIP + ',[onclick],' + VALUE)) return;
+    if (el.querySelector(SKIP + ',[id],[onclick],' + VALUE) || isNumberish(norm(el.textContent))) return;
+    if (items.some(it => it.el.contains(el))) return;  // document order: an editable ancestor already covers it
+    const h = hash(norm(el.textContent));
+    seen[h] = (seen[h] || 0) + 1;
+    items.push({el, key: h + '_' + seen[h], orig: el.innerHTML, expected: el.innerHTML});
+  });
+
+  fetch(FILE + '?v=' + Date.now(), {cache: 'no-store'})
+    .then(r => r.ok ? r.json() : {})
+    .then(o => items.forEach(it => {
+      const v = o && o[it.key];
+      if (v == null || it.el.innerHTML !== it.expected) return;
+      it.el.innerHTML = clean(v);
+      it.expected = it.el.innerHTML;
+    }))
+    .catch(() => {});
+
+  let editing = false, live = [];
+  const changed = () => live.filter(it => it.el.innerHTML !== it.before);
+
+  const bar = document.createElement('div');
+  bar.id = 'tkBar';
+  const ctrls = document.createElement('span');
+  ctrls.style.cssText = 'display:flex;gap:6px;align-items:center';
+  const statusEl = document.createElement('span');
+  statusEl.className = 'tk-status';
+  bar.append(ctrls, statusEl);
+  document.body.appendChild(bar);
+
+  let statusTimer;
+  function status(msg, isErr, ms) {
+    clearTimeout(statusTimer);
+    statusEl.textContent = msg || '';
+    statusEl.classList.toggle('err', !!isErr);
+    if (ms) statusTimer = setTimeout(() => { statusEl.textContent = ''; }, ms);
+  }
+  function paint() {
+    ctrls.innerHTML = editing
+      ? `<span class="tk-n">${changed().length} thay đổi</span><button data-a="save">💾 Lưu</button><button data-a="cancel">Huỷ</button>`
+      : `<button data-a="edit">✏️ Sửa text</button>`
+        + (ls.get(TOKEN_KEY) ? `<button data-a="forget" title="Xoá GitHub token đã lưu trên trình duyệt này">🔑 Xoá token</button>` : '');
+  }
+
+  function enter() {
+    // Only elements still showing what we expect: JS-rewritten ones are data.
+    live = items.filter(it => it.el.isConnected && it.el.innerHTML === it.expected);
+    live.forEach(it => { it.before = it.el.innerHTML; it.el.contentEditable = 'true'; it.el.classList.add('tk-edit'); });
+    editing = true;
+    status('Bấm vào chữ có viền cam để sửa, xong bấm Lưu.', false, 5000);
+    paint();
+  }
+  function exit(revert) {
+    live.forEach(it => {
+      if (revert) it.el.innerHTML = it.before;
+      it.el.removeAttribute('contenteditable');
+      it.el.classList.remove('tk-edit');
+    });
+    live = [];
+    editing = false;
+    paint();
+  }
+
+  async function save() {
+    const ch = changed();
+    if (!ch.length) { exit(false); return; }
+    let token = ls.get(TOKEN_KEY);
+    if (!token) {
+      token = (prompt('Dán GitHub token để lưu cho mọi người.\n\nTạo fine-grained token tại github.com/settings/personal-access-tokens: chọn repo chile-ct/ct-appgrowth-marketing, quyền Contents: Read and write.\n\nToken chỉ lưu trên trình duyệt này.') || '').trim();
+      if (!token) return;
+    }
+    status('Đang lưu…');
+    const api = `https://api.github.com/repos/${REPO}/contents/${FILE}`;
+    const H = {Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json'};
+    try {
+      for (let attempt = 0; ; attempt++) {
+        // Re-read the file each attempt and merge only this session's edits, so
+        // two people saving at once don't drop each other's changes.
+        const g = await fetch(`${api}?ref=${BRANCH}`, {headers: H, cache: 'no-store'});
+        if (g.status === 401) throw new Error('auth');
+        let sha, data = {};
+        if (g.ok) { const j = await g.json(); sha = j.sha; data = JSON.parse(b64dec(j.content) || '{}'); }
+        else if (g.status !== 404) throw new Error('HTTP ' + g.status);
+        ch.forEach(it => {
+          const v = clean(it.el.innerHTML);
+          if (v === it.orig) delete data[it.key]; else data[it.key] = v;
+        });
+        const body = {message: `text: edit ${ch.length} dashboard text${ch.length > 1 ? 's' : ''}`,
+                      content: b64enc(JSON.stringify(data, null, 1) + '\n'), branch: BRANCH};
+        if (sha) body.sha = sha;
+        const p = await fetch(api, {method: 'PUT', headers: H, body: JSON.stringify(body)});
+        if (p.ok) break;
+        if ((p.status === 409 || p.status === 422) && attempt < 2) continue;
+        if (p.status === 401) throw new Error('auth');
+        if (p.status === 403 || p.status === 404) throw new Error('perm');
+        throw new Error('HTTP ' + p.status);
+      }
+      ls.set(TOKEN_KEY, token);
+      ch.forEach(it => { it.el.innerHTML = clean(it.el.innerHTML); it.expected = it.el.innerHTML; });
+      exit(false);
+      status('✓ Đã lưu. Người khác thấy sau khoảng 1–2 phút, khi GitHub Pages cập nhật.', false, 8000);
+    } catch (e) {
+      if (e.message === 'auth' || e.message === 'perm') ls.del(TOKEN_KEY);
+      status(e.message === 'auth' ? 'Token không hợp lệ hoặc đã hết hạn. Bấm Lưu để nhập token mới.'
+           : e.message === 'perm' ? 'Token không có quyền ghi vào repo này (cần Contents: Read and write). Bấm Lưu để nhập token khác.'
+           : 'Lưu thất bại (' + e.message + '). Thay đổi vẫn còn, thử bấm Lưu lại.', true);
+    }
+  }
+
+  ctrls.addEventListener('click', e => {
+    const a = e.target.closest('button')?.dataset.a;
+    if (a === 'edit') enter();
+    else if (a === 'cancel') { exit(true); status(''); }
+    else if (a === 'save') save();
+    else if (a === 'forget') { ls.del(TOKEN_KEY); paint(); status('Đã xoá token khỏi trình duyệt này.', false, 4000); }
+  });
+  document.addEventListener('input', e => {
+    if (!editing || !e.target.closest?.('.tk-edit')) return;
+    const n = ctrls.querySelector('.tk-n');
+    if (n) n.textContent = changed().length + ' thay đổi';
+  });
+  // Paste as plain text so formatting from other apps doesn't come along.
+  document.addEventListener('paste', e => {
+    if (!editing || !e.target.closest?.('.tk-edit')) return;
+    e.preventDefault();
+    document.execCommand('insertText', false, e.clipboardData.getData('text/plain'));
+  }, true);
+  document.addEventListener('click', e => {
+    if (editing && e.target.closest?.('.tk-edit') && e.target.closest('a')) e.preventDefault();
+  }, true);
+  window.addEventListener('beforeunload', e => { if (editing && changed().length) { e.preventDefault(); e.returnValue = ''; } });
+
+  paint();
+})();
+</script>
 <script>
 // ============================================================
 // COMMENTARY DATA

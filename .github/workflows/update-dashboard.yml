@@ -45,6 +45,8 @@ jobs:
             echo "No changes"
           else
             git commit -m "data: auto-update $(date -u '+%Y-%m-%d')"
+            # Text edits from the dashboard can land on main while this job runs.
+            git pull --rebase origin main
             git push
           fi
 
