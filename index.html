@@ -2131,7 +2131,7 @@ window.cdSearchWiden = function() {
 //  1. Rates are re-derived after summing, never averaged. RR D1 for a day is
 //     Σd1 / Σd0_d1 across the visible channels/verticals, not the mean of each
 //     cell's rate — a day with one big low-RR cell and one tiny high-RR cell
-//     must read as the big one. Same for % Save, CPI and the cost-per metrics.
+//     must read as the big one. Same for CPI and the cost-per metrics.
 //  2. Immature days carry null, not zero. The pipeline already blanks d1/d0_d1
 //     (and the 7-day lead) for days whose window has not closed, so those
 //     points are gaps; spanGaps:false keeps the line honest by stopping rather
@@ -2197,7 +2197,7 @@ function renderCampDaily() {
       + _cdDailyChips('Vertical:', 'vertical', ['all', ...dVerts], {all: 'All'})
       + `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">`
       +   `<span style="font-size:10px;color:#9ca3af;min-width:60px">Nhóm chỉ số</span>`
-      +   btn('volume', 'Số lượng + Tỉ lệ') + btn('cost', 'Chi phí')
+      +   btn('volume', 'New user perf') + btn('cost', 'Cost Efficiency')
       + `</div>`
       + `</div>`;
   }
@@ -2217,8 +2217,7 @@ function renderCampDaily() {
   // Sum numerators and denominators per day; rates are derived afterwards.
   const days = [...new Set(rows.map(r => r.date))].sort();
   const acc = {};
-  days.forEach(d => acc[d] = {cost:0, install:null, d0:null, d1:null, d0_d1:null,
-                             lead:null, dau:null, save:null, lead_event:null});
+  days.forEach(d => acc[d] = {cost:0, install:null, d0:null, d1:null, d0_d1:null, lead:null});
   const add = (o, k, v) => { if (v != null) o[k] = (o[k] || 0) + v; };
   rows.forEach(r => {
     const o = acc[r.date];
@@ -2228,9 +2227,6 @@ function renderCampDaily() {
     add(o, 'd1', r.d1);
     add(o, 'd0_d1', r.d0_d1);
     add(o, 'lead', r.lead);
-    add(o, 'dau', r.dau);
-    add(o, 'save', r.save_ad_d0);
-    add(o, 'lead_event', r.lead_event);
   });
   const labels = days.map(d => d.slice(5).split('-').reverse().join('/'));  // dd/mm
   const col = acc; // alias
@@ -2248,23 +2244,23 @@ function renderCampDaily() {
   if (_cdDaily.mode === 'cost') {
     datasets = [
       bar('Cost (₫)', arr(o=>o.cost), C.blue, 'yMoney'),
+      line('Install', arr(o=>o.install), C.teal, 'yCount'),
+      line('New user (D0)', arr(o=>o.d0), C.green, 'yCount'),
       line('CPI (₫)', arr(o=>rate(o.cost, o.install)), C.orange, 'yPer'),
       line('Cost/User (₫)', arr(o=>rate(o.cost, o.lead)), C.purple, 'yPer'),
-      line('Cost/Lead event (₫)', arr(o=>rate(o.cost, o.lead_event)), C.red, 'yPer'),
     ];
     scales = {
       x:{grid:{display:false}, ticks:{font:{size:9}, maxRotation:0, autoSkip:true, maxTicksLimit:16}},
       yMoney:{position:'left', beginAtZero:true, grid:{color:'#f3f4f6'}, title:{display:true, text:'Cost', font:{size:10}}, ticks:{font:{size:9}, callback:v=>fmtVnd(v)+'₫'}},
+      yCount:{position:'left', display:false, beginAtZero:true},
       yPer:{position:'right', beginAtZero:true, grid:{display:false}, title:{display:true, text:'Chi phí / đơn vị', font:{size:10}}, ticks:{font:{size:9}, callback:v=>fmtVnd(v)+'₫'}},
     };
   } else {
     datasets = [
       bar('Install', arr(o=>o.install), C.blue, 'yCount'),
-      bar('D0 (new users)', arr(o=>o.d0), C.teal, 'yCount'),
+      bar('New user (D0)', arr(o=>o.d0), C.teal, 'yCount'),
       line('Lead 7d (user)', arr(o=>o.lead), C.green, 'yCount'),
-      line('Lead event', arr(o=>o.lead_event), C.orange, 'yCount', true),
       line('RR D1', arr(o=>rate(o.d1, o.d0_d1)), C.purple, 'yPct'),
-      line('% Save ad', arr(o=>rate(o.save, o.dau)), C.pink, 'yPct'),
     ];
     scales = {
       x:{grid:{display:false}, ticks:{font:{size:9}, maxRotation:0, autoSkip:true, maxTicksLimit:16}},
@@ -2284,7 +2280,7 @@ function renderCampDaily() {
           const v = c.parsed.y;
           if (v == null) return null;
           const lbl = c.dataset.label;
-          if (lbl === 'RR D1' || lbl === '% Save ad') return ` ${lbl}: ${(v*100).toFixed(1)}%`;
+          if (lbl === 'RR D1') return ` ${lbl}: ${(v*100).toFixed(1)}%`;
           if (lbl.includes('₫')) return ` ${lbl}: ${Math.round(v).toLocaleString('en')} ₫`;
           return ` ${lbl}: ${Math.round(v).toLocaleString('en')}`;
         }}}
@@ -2310,8 +2306,8 @@ function renderCampDaily() {
 // campaign at a time, read from D.camp_daily_by_name (day × campaign). A
 // campaign maps to a single channel/vertical, so there is exactly one source row
 // per day and no cross-cell summing is needed — but rates are still re-derived
-// from the numerator/denominator pair (RR D1 = d1/d0_d1, % Save = save/dau, the
-// cost-per metrics = cost/x) rather than stored, and immature days carry null so
+// from the numerator/denominator pair (RR D1 = d1/d0_d1, the cost-per metrics =
+// cost/x) rather than stored, and immature days carry null so
 // the line stops instead of diving. Picked from a dropdown, or from clicking a
 // campaign name in the table above (cdNameFocus).
 const _cdName = { campaign: null, mode: 'volume', query: '', _touched: false };
@@ -2490,7 +2486,7 @@ function renderCampByNameDaily() {
     const modeRow = document.getElementById('cdNameModeRow');
     if (modeRow) modeRow.innerHTML =
         `<span style="font-size:10px;color:#9ca3af;min-width:60px">Nhóm chỉ số</span>`
-      + btn('volume', 'Số lượng + Tỉ lệ') + btn('cost', 'Chi phí');
+      + btn('volume', 'New user perf') + btn('cost', 'Cost Efficiency');
     // Keep the box showing the current selection unless the user is typing in it
     // (e.g. after a table-name click loaded a different campaign).
     const inp2 = document.getElementById('cdNameSearchInput');
@@ -2519,23 +2515,23 @@ function renderCampByNameDaily() {
   if (_cdName.mode === 'cost') {
     datasets = [
       bar('Cost (₫)', arr(o=>o.cost), C.blue, 'yMoney'),
+      line('Install', arr(o=>o.install), C.teal, 'yCount'),
+      line('New user (D0)', arr(o=>o.d0), C.green, 'yCount'),
       line('CPI (₫)', arr(o=>rate(o.cost, o.install)), C.orange, 'yPer'),
       line('Cost/User (₫)', arr(o=>rate(o.cost, o.lead)), C.purple, 'yPer'),
-      line('Cost/Lead event (₫)', arr(o=>rate(o.cost, o.lead_event)), C.red, 'yPer'),
     ];
     scales = {
       x:{grid:{display:false}, ticks:{font:{size:9}, maxRotation:0, autoSkip:true, maxTicksLimit:16}},
       yMoney:{position:'left', beginAtZero:true, grid:{color:'#f3f4f6'}, title:{display:true, text:'Cost', font:{size:10}}, ticks:{font:{size:9}, callback:v=>fmtVnd(v)+'₫'}},
+      yCount:{position:'left', display:false, beginAtZero:true},
       yPer:{position:'right', beginAtZero:true, grid:{display:false}, title:{display:true, text:'Chi phí / đơn vị', font:{size:10}}, ticks:{font:{size:9}, callback:v=>fmtVnd(v)+'₫'}},
     };
   } else {
     datasets = [
       bar('Install', arr(o=>o.install), C.blue, 'yCount'),
-      bar('D0 (new users)', arr(o=>o.d0), C.teal, 'yCount'),
+      bar('New user (D0)', arr(o=>o.d0), C.teal, 'yCount'),
       line('Lead 7d (user)', arr(o=>o.lead), C.green, 'yCount'),
-      line('Lead event', arr(o=>o.lead_event), C.orange, 'yCount', true),
       line('RR D1', arr(o=>rate(o.d1, o.d0_d1)), C.purple, 'yPct'),
-      line('% Save ad', arr(o=>rate(o.save_ad_d0, o.dau)), C.pink, 'yPct'),
     ];
     scales = {
       x:{grid:{display:false}, ticks:{font:{size:9}, maxRotation:0, autoSkip:true, maxTicksLimit:16}},
@@ -2555,7 +2551,7 @@ function renderCampByNameDaily() {
           const v = c.parsed.y;
           if (v == null) return null;
           const lbl = c.dataset.label;
-          if (lbl === 'RR D1' || lbl === '% Save ad') return ` ${lbl}: ${(v*100).toFixed(1)}%`;
+          if (lbl === 'RR D1') return ` ${lbl}: ${(v*100).toFixed(1)}%`;
           if (lbl.includes('₫')) return ` ${lbl}: ${Math.round(v).toLocaleString('en')} ₫`;
           return ` ${lbl}: ${Math.round(v).toLocaleString('en')}`;
         }}}
