@@ -1707,21 +1707,23 @@ function renderAllCharts() {
     })();
     (function(){
       const ctx=document.getElementById('chartG5CostVsUsers'); if(!ctx)return;
-      const allFcLabels=['Jun 2026*','Jul 2026*','Aug 2026*','Sep 2026*','Oct 2026*','Nov 2026*','Dec 2026*'];
-      const forecastLabels=allFcLabels.filter(l=>!MONTHS.includes(l));
+      // cost_forecast is indexed by calendar month; months after the last data
+      // month are appended as forecast-only labels through December.
+      const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const fcFor=lbl=>{const mi=MN.findIndex(x=>lbl.startsWith(x));return mi>=0?(gc.cost_forecast||[])[mi]||null:null;};
+      const lastLbl=MONTHS[MONTHS.length-1]||'';
+      const lastMi=MN.findIndex(x=>lastLbl.startsWith(x));
+      const yr=(lastLbl.match(/\d{4}/)||[''])[0];
+      const forecastLabels=MN.slice(lastMi+1).map(x=>`${x} ${yr}*`);
       const allLabels=[...MONTHS,...forecastLabels];
       const costData=[], bgColors=[], borderColors=[];
       MONTHS.forEach((m,i)=>{
         const actual=gc.cost[i];
         if(actual!=null){costData.push(actual);bgColors.push(C.purple+'cc');borderColors.push(C.purple);}
-        else{
-          const fi=allFcLabels.indexOf(m);
-          const fcVal=fi>=0&&gc.cost_forecast[fi]?gc.cost_forecast[fi]:null;
-          costData.push(fcVal);bgColors.push(C.purple+'44');borderColors.push(C.purple+'88');
-        }
+        else{costData.push(fcFor(m));bgColors.push(C.purple+'44');borderColors.push(C.purple+'88');}
       });
-      forecastLabels.forEach((m,fi)=>{
-        costData.push(gc.cost_forecast[fi]||null);
+      forecastLabels.forEach(m=>{
+        costData.push(fcFor(m));
         bgColors.push(C.purple+'44');borderColors.push(C.purple+'88');
       });
       const usersData=[...gc.new_users,...Array(forecastLabels.length).fill(null)];
@@ -3826,39 +3828,43 @@ function renderRetentionTable() {
   el.innerHTML = `<thead>${thead}</thead><tbody>${tbody}</tbody>`;
 }
 
+// Growth cost comes from the budget table (saved copy, else its defaults) —
+// data.json's own cost is a stale snapshot the pipeline never recomputes.
+// Months before the current one are actual; the current month onward is
+// forecast, matching the table's own actual/forecast columns.
+// gc.cost_forecast is indexed by calendar month (0 = Jan), null for actual months.
+function applyBudgetToGrowth(budget) {
+  if (!budget || !D) return;
+  const MALL = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const ACT = new Date().getMonth();
+  const totals = MALL.map((_,i) => ['gds','veh','job','pty'].reduce((s,v)=>s+(budget[v]?.[i]||0),0));
+  const gc = D.growth_channel;
+  gc.cost = D.months.map(lbl => {
+    const mi = MALL.findIndex(m => lbl.startsWith(m));
+    return (mi >= 0 && mi < ACT && totals[mi]) ? totals[mi] : null;
+  });
+  gc.cost_forecast = totals.map((v,i) => (i >= ACT && v > 0) ? v : null);
+  gc.cpa = gc.new_users.map((u,i)=>u&&gc.cost[i]?Math.round(gc.cost[i]/u):null);
+  gc.caa = gc.adview_activated.map((a,i)=>a&&gc.cost[i]?Math.round(gc.cost[i]/a):null);
+  gc.crr_d1 = (gc.retained_d1||[]).map((r,i)=>r&&gc.cost[i]?Math.round(gc.cost[i]/r):null);
+  gc.crr_d7 = (gc.retained_d7||[]).map((r,i)=>r&&gc.cost[i]?Math.round(gc.cost[i]/r):null);
+  // CRR M1: growth_m1 retention rate × new_users; fall back to nurr_m1 (total channel)
+  const growthM1 = (D.retention.growth_m1||[]);
+  const nurrM1   = (D.retention.nurr_m1||[]);
+  gc.retained_m1 = gc.new_users.map((u,i)=>{
+    const rate = growthM1[i] ?? nurrM1[i];
+    return u && rate ? Math.round(u * rate) : null;
+  });
+  gc.crr_m1 = gc.retained_m1.map((r,i)=>r&&gc.cost[i]?Math.round(gc.cost[i]/r):null);
+}
+
 async function initDashboard() {
   await loadDashboardData();
   if (!D) { console.error('Dashboard data unavailable'); return; }
 
-  // Apply budget from localStorage if available
-  try {
-    const saved = JSON.parse(localStorage.getItem('budgetData2026'));
-    if (saved) {
-      const MALL = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      const ACT = new Date().getMonth(); // months before current = actual
-      const totals = MALL.map((_,i) => ['gds','veh','job','pty','parent'].reduce((s,v)=>s+(saved[v]?.[i]||0),0));
-      const gc = D.growth_channel;
-      // Include current partial month (ACT = index 5 = Jun) in cost
-      gc.cost = D.months.map((lbl,i) => {
-        const mi = MALL.findIndex(m => lbl.startsWith(m));
-        if (mi < 0 || mi > ACT) return null;
-        return totals[mi] || null;
-      });
-      gc.cost_forecast = totals.slice(ACT + 1).map(v=>v>0?v:null);
-      gc.cpa = gc.new_users.map((u,i)=>u&&gc.cost[i]?Math.round(gc.cost[i]/u):null);
-      gc.caa = gc.adview_activated.map((a,i)=>a&&gc.cost[i]?Math.round(gc.cost[i]/a):null);
-      gc.crr_d1 = (gc.retained_d1||[]).map((r,i)=>r&&gc.cost[i]?Math.round(gc.cost[i]/r):null);
-      gc.crr_d7 = (gc.retained_d7||[]).map((r,i)=>r&&gc.cost[i]?Math.round(gc.cost[i]/r):null);
-      // CRR M1: compute from growth_m1 retention rate × new_users; fall back to nurr_m1 (total channel)
-      const growthM1 = (D.retention.growth_m1||[]);
-      const nurrM1   = (D.retention.nurr_m1||[]);
-      gc.retained_m1 = gc.new_users.map((u,i)=>{
-        const rate = growthM1[i] ?? nurrM1[i];
-        return u && rate ? Math.round(u * rate) : null;
-      });
-      gc.crr_m1 = gc.retained_m1.map((r,i)=>r&&gc.cost[i]?Math.round(gc.cost[i]/r):null);
-    }
-  } catch(e) {}
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem('budgetData2026')); } catch(e) {}
+  applyBudgetToGrowth(saved || window._budgetDefaults);
 
 
   renderAllCharts();
@@ -3913,22 +3919,21 @@ document.addEventListener('DOMContentLoaded', initDashboard);
     { key:'veh',    label:'VEH' },
     { key:'job',    label:'JOB' },
     { key:'pty',    label:'PTY' },
-    { key:'parent', label:'PARENT' },
   ];
   const MONTHS_ALL = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   // Months before the current month are actual (e.g. in July → Jan–Jun = 6 actual)
   const ACTUAL_COUNT = new Date().getMonth();
-  const ROW_COLORS = { gds:'#eff6ff', veh:'#f0fdf4', job:'#fdf4ff', pty:'#fff7ed', parent:'#f0f9ff' };
+  const ROW_COLORS = { gds:'#eff6ff', veh:'#f0fdf4', job:'#fdf4ff', pty:'#fff7ed' };
 
-  // gds/veh/job/pty Jan–Sep: actual cost from "CT App Growth - performance tracking 2026 - FC".
-  // That sheet has no PARENT row, so parent is still the older sheet's numbers.
+  // Jan–Sep: actual cost from "CT App Growth - performance tracking 2026 - FC".
   const DEFAULTS = {
     gds:    [60979375,82516853,91576486,93120006,102920929, 174505578,180210527,180248914,132296570, 150000000,120000000,1000000000],
     veh:    [0,0,0,0,0, 0,22407837,10613916,6658306, 200000000,200000000,150000000],
     job:    [0,0,73203722,137488964,143582737, 275235965,292639382,297379982,336597584, 250000000,250000000,240000000],
     pty:    [106367623,54460995,171059472,130418524,209191287, 248784311,415764753,562313243,331682301, 300000000,200000000,150000000],
-    parent: [371221843,238873058,137113093,158093925,171261076, 250000000,300000000,400000000,400000000,400000000,400000000,200000000],
   };
+
+  window._budgetDefaults = DEFAULTS;
 
   function loadData() {
     try { return JSON.parse(localStorage.getItem('budgetData2026')) || DEFAULTS; }
@@ -4091,49 +4096,28 @@ document.addEventListener('DOMContentLoaded', initDashboard);
     VERTS.forEach(v => {
       newData[v.key] = MONTHS_ALL.map((m,i) => parseNum(document.getElementById(`b-${v.key}-${i}`)?.value || '0'));
     });
-    localStorage.setItem('budgetData2026', JSON.stringify(newData));
-
-    // Compute totals and update D.growth_channel
-    const totals = MONTHS_ALL.map((m,i) => VERTS.reduce((s,v) => s + (newData[v.key][i]||0), 0));
-    const gc = D.growth_channel;
-    const n = D.months.length;
-
-    // cost: actual months (0..ACTUAL_COUNT-1) + current partial month (ACTUAL_COUNT)
-    gc.cost = D.months.map((lbl,i) => {
-      const mi = MONTHS_ALL.findIndex(m => lbl.startsWith(m));
-      if (mi < 0 || mi > ACTUAL_COUNT) return null;  // include current month (ACTUAL_COUNT = Jun index 5)
-      return totals[mi] || null;
-    });
-
-    // forecast cost: Jul–Dec (indices ACTUAL_COUNT+1..11)
-    gc.cost_forecast = totals.slice(ACTUAL_COUNT + 1).map(v => v > 0 ? v : null);
-
-    // Recalculate CPA/CAA/CRR for all months including Jun
-    gc.cpa = gc.new_users.map((u,i) => u && gc.cost[i] ? Math.round(gc.cost[i]/u) : null);
-    gc.caa = gc.adview_activated.map((a,i) => a && gc.cost[i] ? Math.round(gc.cost[i]/a) : null);
-    gc.crr_d1 = gc.retained_d1.map((r,i) => r && gc.cost[i] ? Math.round(gc.cost[i]/r) : null);
-    gc.crr_d7 = gc.retained_d7.map((r,i) => r && gc.cost[i] ? Math.round(gc.cost[i]/r) : null);
-    const gm1 = (D.retention.growth_m1||[]), nm1 = (D.retention.nurr_m1||[]);
-    gc.retained_m1 = gc.new_users.map((u,i)=>{ const rate=gm1[i]??nm1[i]; return u&&rate?Math.round(u*rate):null; });
-    gc.crr_m1 = gc.retained_m1.map((r,i) => r && gc.cost[i] ? Math.round(gc.cost[i]/r) : null);
-
-    // Re-render cost charts by destroying and reinitializing
-    ['chartG5Cost','chartG5CostVsUsers'].forEach(id => {
-      const inst = Object.values(Chart.instances||{}).find(c=>c.canvas?.id===id);
-      if (inst) inst.destroy();
-    });
-    // Re-run the Growth chart section
-    if (typeof initGrowthCharts === 'function') initGrowthCharts();
-    else location.reload(); // fallback
+    try { localStorage.setItem('budgetData2026', JSON.stringify(newData)); } catch(e) {}
+    redrawCostCharts(newData);
 
     const msg = document.getElementById('budgetSaveMsg');
     if (msg) { msg.textContent = '✓ Đã lưu — charts đang cập nhật...'; setTimeout(()=>msg.textContent='',3000); }
   };
 
+  function redrawCostCharts(budget) {
+    applyBudgetToGrowth(budget);
+    ['chartG5Cost','chartG5CostVsUsers'].forEach(id => {
+      const inst = Object.values(Chart.instances||{}).find(c=>c.canvas?.id===id);
+      if (inst) inst.destroy();
+    });
+    if (typeof initGrowthCharts === 'function') initGrowthCharts();
+    else location.reload();
+  }
+
   window.resetBudget = function() {
     if (!confirm('Reset về default data từ Google Sheet?')) return;
-    localStorage.removeItem('budgetData2026');
+    try { localStorage.removeItem('budgetData2026'); } catch(e) {}
     buildTable();
+    redrawCostCharts(DEFAULTS);
   };
 
   document.addEventListener('DOMContentLoaded', buildTable);
