@@ -2236,7 +2236,7 @@ function renderCampDaily() {
   // Dataset builders. Volume/count series are bars on the left axis; rates are
   // lines on the right (%) axis. Cost mode swaps the left axis to money.
   const bar = (label, data, color, axis) => ({type:'bar', label, data, backgroundColor:color+'cc', borderColor:color, borderWidth:1, borderRadius:3, yAxisID:axis, order:2});
-  const line = (label, data, color, axis, hidden) => ({type:'line', label, data, borderColor:color, backgroundColor:color+'22', borderWidth:2, tension:0.35, pointRadius:2, pointHoverRadius:4, spanGaps:false, yAxisID:axis, order:1, hidden:!!hidden});
+  const line = (label, data, color, axis, hidden) => ({type:'line', label, data, borderColor:color, backgroundColor:color+'22', borderWidth:2, tension:0.35, cubicInterpolationMode:'monotone', pointRadius:2, pointHoverRadius:4, spanGaps:false, yAxisID:axis, order:1, hidden:!!hidden});
 
   let datasets, scales, C = {blue:'#4361ee', green:'#22c55e', orange:'#f59e0b', purple:'#a855f7', red:'#ef4444', teal:'#14b8a6', pink:'#ec4899'};
   const fmtVnd = v => v>=1e9?(v/1e9).toFixed(2)+'B':v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':Math.round(v);
@@ -2507,7 +2507,7 @@ function renderCampByNameDaily() {
   const rate = (num, den) => (num == null || !den) ? null : num / den;
 
   const bar = (label, data, color, axis) => ({type:'bar', label, data, backgroundColor:color+'cc', borderColor:color, borderWidth:1, borderRadius:3, yAxisID:axis, order:2});
-  const line = (label, data, color, axis, hidden) => ({type:'line', label, data, borderColor:color, backgroundColor:color+'22', borderWidth:2, tension:0.35, pointRadius:2, pointHoverRadius:4, spanGaps:false, yAxisID:axis, order:1, hidden:!!hidden});
+  const line = (label, data, color, axis, hidden) => ({type:'line', label, data, borderColor:color, backgroundColor:color+'22', borderWidth:2, tension:0.35, cubicInterpolationMode:'monotone', pointRadius:2, pointHoverRadius:4, spanGaps:false, yAxisID:axis, order:1, hidden:!!hidden});
 
   let datasets, scales, C = {blue:'#4361ee', green:'#22c55e', orange:'#f59e0b', purple:'#a855f7', red:'#ef4444', teal:'#14b8a6', pink:'#ec4899'};
   const fmtVnd = v => v>=1e9?(v/1e9).toFixed(2)+'B':v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':Math.round(v);
