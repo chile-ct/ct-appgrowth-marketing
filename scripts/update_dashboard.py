@@ -1282,6 +1282,97 @@ try:
         1 for (camp, d) in ab_daily
         if d not in sheet_daily_cost.get((d.replace(day=1), camp), {}))
 
+    # New user + cost per new user, asked for 2026-10-27. Install stays; these
+    # sit beside it because on iOS install alone is not a usable denominator.
+    #
+    # The reason, from Airbridge's own explanation (Hằng, Slack 2026-10-26) and
+    # confirmed against Google Ads the same day: after ATT, Google only claims an
+    # iOS install back to the MMP when the user consented to tracking. Roughly
+    # 40% of iOS users do, and Google's iOS inventory is mostly YouTube, which
+    # carries almost no IDFA. The rest Google counts via *modeled* conversions —
+    # an aggregate estimate with no device attached, so it can never be sent to
+    # an MMP. Airbridge files those installs under Organic instead.
+    #
+    # That leaves three numbers for the same campaign, and the honest reading is
+    # a range, not a figure (gg_..._makelead30d, 01-26/10):
+    #     Airbridge install          363   floor: ATT-consenting only, deduped
+    #     new_user_first_date        589   measured users who opened the app
+    #     Google Ads first_open    3,114   ceiling: modeled, 30d, not deduped
+    # Across the five Google iOS campaigns Airbridge sees ~15% of what Google
+    # reports. CPI on the Airbridge floor therefore reads ~143k ₫ against ~21k ₫
+    # for the same spend on Android — an artefact of measurement, not of the
+    # campaigns, and the one number on this page most likely to get a campaign
+    # killed for the wrong reason.
+    #
+    # new_user_first_date is the defensible middle: every row is a real client
+    # that opened the app (no modelling), attributed by Airbridge where Airbridge
+    # has it and falling back to GA otherwise. GA is Google's own SDK, so it
+    # still sees the non-consenting users Airbridge pushed to Organic. It does
+    # not rescue Facebook the same way — GA catches ~1% of FB users, so FB keeps
+    # Airbridge's number — which is why this column reads as "the best each
+    # channel can measure", not as one common yardstick. Both channels land
+    # closer to truth here than either does under install alone.
+    #
+    # Caveat worth knowing before anyone calls this "acquisition": the table
+    # keys on clientId, and on iOS a reinstall gets a fresh Firebase instance id,
+    # so someone who deleted the app and came back counts as new. Measured on the
+    # seven iOS campaigns that is ~29% of Google's new users and ~9% of
+    # Facebook's. There is no is_returning flag to filter on yet.
+    #
+    # Day grain, folded over the same per-campaign cost window as install, so
+    # cost / new_user divides one span of spend by the same span of users. One
+    # row per clientId is guaranteed by the table (its description: "Mỗi clientId
+    # chỉ có đúng 1 dòng") and first_date is that client's only date, so summing
+    # the daily counts cannot double-count anyone.
+    #
+    # Not the same thing as the DAU column, which comes from the adopt table and
+    # is a different build of the same cohort: the two agree exactly from Mar to
+    # Aug (job_..._adview_7d Jul: 23,903 both sides) but drift on recent months
+    # (Sep: adopt 31,871 vs 28,299 here). Keep them on separate sources rather
+    # than deriving one from the other, so a divergence stays visible.
+    nu_rows = run(f"""
+    SELECT
+      campaign,
+      first_date,
+      COUNT(DISTINCT clientId) as new_user
+    FROM ct_product_analytics.new_user_first_date
+    WHERE first_date BETWEEN DATE '{min(sheet_last_day).replace(day=1)}'
+                         AND DATE '{max(sheet_last_day.values())}'
+      AND campaign IN ({in_list})
+    GROUP BY 1, 2
+    """)
+    nu_daily = {}
+    for r in nu_rows:
+        v = r['new_user']
+        if v is None:
+            continue
+        nu_daily[(str(r['campaign']), to_date(r['first_date']))] = int(v)
+    # nu_ prefix for the same module-scope reason as ab_ above: this block is
+    # only visually nested, so every name it binds is a module-level global.
+    new_user = {}
+    for (m_date, camp), nu_cd in sheet_daily_cost.items():
+        nu_total, nu_hit = 0, False
+        for d in nu_cd:
+            v = nu_daily.get((camp, d))
+            if v is not None:
+                nu_total += v
+                nu_hit = True
+        if nu_hit:
+            new_user[(m_date, camp)] = nu_total
+    # Cost is folded over the sheet's full day window whether or not the new-user
+    # table reaches that far, exactly as install already is. Today the table runs
+    # ahead of the sheet (26/10 vs 25/10) so the two cover the same span, but if
+    # it ever falls behind, Cost/New user silently divides a full month of spend
+    # by a short month of users and reads too high. Per-campaign day gaps are not
+    # a usable signal — a campaign with no installs on a day legitimately has no
+    # row — so compare the table's last day against the sheet's and say so.
+    nu_max = max(d for (_c, d) in nu_daily) if nu_daily else None
+    nu_lag = (max(sheet_last_day.values()) - nu_max).days if nu_max else None
+    if nu_lag and nu_lag > 0:
+        print(f"  ! New user table only reaches {nu_max} but cost runs to "
+              f"{max(sheet_last_day.values())} ({nu_lag}d behind) — Cost/New user "
+              f"divides full spend by a short window and reads HIGH this run")
+
     # Campaign status (running / paused), asked for 2026-08-27 to replace the Ch
     # column: "để biết campaign đó đang active hay off".
     #
@@ -1382,6 +1473,7 @@ try:
         # The sheet still anchors the row, so its cost is published either way.
         cost = round(s['cost'])
         install = ab_install.get((m_date, name))
+        nu = new_user.get((m_date, name))
         sheet_install = int(s['install'])
         e = ab_recon.setdefault(m_date, [0, 0, 0, 0])
         e[0] += sheet_install
@@ -1433,6 +1525,13 @@ try:
             'cost': cost,
             'install': install,
             'cpi': round(cost / install) if install else None,
+            # Sits next to install on purpose. On Google iOS the two differ by
+            # ~7x and the gap is measurement, not performance — see the long
+            # note at the nu_rows query. None (renders "—") when the new-user
+            # table has no row for this campaign-month at all, which must stay
+            # distinguishable from a real zero.
+            'new_user': nu,
+            'cpnu': round(cost / nu) if nu else None,
             'd0': d0,
             'd1': d1,
             'd7': d7,
@@ -1799,6 +1898,37 @@ try:
               f"(sheet said {s_i:,} installs on {c:,.0f} ₫)")
     if len(ab_missing) > 10:
         print(f"    ... and {len(ab_missing) - 10} more with no Airbridge row")
+    # Install vs new user per channel. The point of printing it is the spread:
+    # Facebook and Android Google should sit near 1.0 (GA adds nothing there),
+    # while Google iOS runs well above 1 because the new-user table recovers the
+    # non-consenting users Airbridge booked as Organic. If Google iOS ever falls
+    # back to ~1.0, the GA fallback has stopped working — that is the regression
+    # this line exists to catch, and it would otherwise look like a quiet win.
+    # Split by channel AND OS, not channel alone: GG blended would average the
+    # broken iOS rows against the healthy Android ones and land somewhere
+    # unremarkable, which is exactly the signal being looked for. OS comes from
+    # the campaign name because camp_detail carries no OS field — naming is a
+    # team convention, so a campaign that omits _ios_ lands in "other" rather
+    # than being silently counted as Android.
+    nu_matched = sum(1 for r in camp_detail if r['new_user'] is not None)
+    nu_by_ch = {}
+    for r in camp_detail:
+        if r['new_user'] is None or not r['install']:
+            continue
+        # Padded so the match is on a whole underscore-delimited token: plain
+        # substring would call every campaign with "android" inside a longer
+        # word a match, and `re` is not imported in this script.
+        nu_n = '_' + r['name'].lower() + '_'
+        nu_os = ('ios' if '_ios_' in nu_n
+                 else 'android' if '_android_' in nu_n
+                 else 'other')
+        e = nu_by_ch.setdefault(f"{r['channel']} {nu_os}", [0, 0])
+        e[0] += r['install']
+        e[1] += r['new_user']
+    print(f"  New user: {nu_matched}/{len(camp_detail)} rows matched "
+          f"(source new_user_first_date, same day window as install); "
+          + "; ".join(f"{k} install {i:,} -> new user {u:,} ({u / i:.2f}x)"
+                      for k, (i, u) in sorted(nu_by_ch.items())))
     cd_lead_partial = sum(1 for r in camp_detail if r.get('lead_partial'))
     print(f"  Lead: {cd_lead_matched}/{len(camp_detail)} rows have a lead count, "
           f"{cd_lead_total:,} users contacting within 7 days "
