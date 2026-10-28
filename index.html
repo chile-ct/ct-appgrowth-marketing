@@ -98,9 +98,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
    at that width the cards are too thin to read a 9-digit cost. 6+6 keeps
    Install, CPI, New user and Cost/New user on the same row at every breakpoint,
    which is the side-by-side comparison those two cards exist to make. */
-.kpi-grid.kpi-12 { grid-template-columns: repeat(6, 1fr); }
-@media (max-width: 1200px) { .kpi-grid.kpi-12 { grid-template-columns: repeat(4, 1fr); } }
-@media (max-width: 760px)  { .kpi-grid.kpi-12 { grid-template-columns: repeat(2, 1fr); } }
+.kpi-grid.kpi-11 { grid-template-columns: repeat(6, 1fr); }
+@media (max-width: 1200px) { .kpi-grid.kpi-11 { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 760px)  { .kpi-grid.kpi-11 { grid-template-columns: repeat(2, 1fr); } }
 .up { color: #10b981; } .down { color: #ef4444; }
 
 /* CARDS & TABLES */
@@ -112,6 +112,25 @@ th:first-child, th.left { text-align: left; }
 td { padding: 9px 14px; text-align: right; border-bottom: 1px solid #f3f4f6; color: #374151; }
 td:first-child, td.left { text-align: left; font-weight: 500; color: #1a1a2e; }
 tr:hover td { background: #f9fafb; }
+/* Campaign Detail: freeze #, Campaign and Status so the metrics stay readable
+   when the table is scrolled right. border-collapse drops the border on sticky
+   cells, so the right edge of the frozen block is drawn with a shadow. The
+   `left` offsets are set from measured column widths after each render: auto
+   table layout treats a CSS width as a hint, so hard-coding them here leaves
+   the columns overlapping by a few pixels. */
+#campDetailTable th.cd-fz, #campDetailTable td.cd-fz { position: sticky; background: white; z-index: 2; }
+#campDetailTable th.cd-fz { background: #f8fafc; z-index: 4; }
+#campDetailTable tr:hover td.cd-fz { background: #f9fafb; }
+#campDetailTable .cd-fz2 { width: 240px; min-width: 240px; max-width: 240px; }
+#campDetailTable .cd-fz3 { width: 104px; min-width: 104px; box-shadow: 1px 0 0 #e5e7eb, 7px 0 9px -7px rgba(0,0,0,0.18); }
+/* Campaign names run long; show two lines and let the mouse wheel reach the
+   rest inside the cell rather than growing the row. */
+#campDetailTable .cd-name { max-height: 2.7em; overflow-y: auto; line-height: 1.35; overscroll-behavior: contain; scrollbar-width: thin; }
+@media (max-width: 760px) {
+  #campDetailTable th.cd-fz, #campDetailTable td.cd-fz { position: static; }
+  #campDetailTable .cd-fz2 { width: auto; min-width: 0; max-width: 200px; }
+  #campDetailTable .cd-fz3 { box-shadow: none; }
+}
 tr.total-row td { font-weight: 700; background: #f0f4ff; }
 tr.combined-row td { font-style: italic; color: #6b7280; font-size: 12px; }
 .tag { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-left: 4px; }
@@ -566,21 +585,15 @@ canvas { max-height: 500px; }
   <div class="section-title">6. Detail Camp Performance — Growth Team (App)</div>
   <div class="section-subtitle">
     Performance từng campaign của <strong>8 ad account team Growth, phase App</strong> (FB: Chotot_growth_sgd, Chotot_pty_app, Chotot_job_app, Chotot_veh_app · GG: Chotot_app_pty, Chotot_app_veh, Chotot_app_job, Chotot_Growth_New) + <strong>Apple Ads</strong> (channel <code>apple.searchads</code>, cost/install lấy thẳng từ Airbridge — không qua sheet raw_total vì kênh này không có ai nhập tay)<br>
-    <span style="color:#9ca3af">Cost lấy từ sheet <em>raw_total</em> (phase install + activate) · <strong>Install lấy từ Airbridge</strong> (<em>airbridge_attributed_impression_raw</em>) · <strong>New user</strong> từ <em>ct_product_analytics.new_user_first_date</em> · D0/D1/D7 &amp; Lead 7d (user) từ <em>retention_mapping_activation_by_source_campaign</em> · <strong>Lead event</strong> (lượt) từ <em>retention_activation_core_event_by_source_channel</em> (<code>SUM(total_lead)</code>) · DAU &amp; Save ad in D0 từ <em>new_user_adopt_activate</em> (<code>save_ad_d0_users</code>) · cộng theo campaign name qua mọi channel, join bằng campaign name</span><br>
-    <span style="color:#9ca3af;font-size:11px"><em>Đổi từ 27/10/2026:</em> thêm hai cột <strong>New user</strong> và <strong>Cost/New user</strong> cạnh Install và CPI — <strong>Install giữ nguyên</strong>, không đổi cách tính. Lý do: từ 10/2026 các campaign <strong>iOS × Google</strong> có Install <strong>thấp hơn số user mới đếm được</strong>, và đó là vấn đề <em>đo đạc</em> chứ không phải performance. Mức chênh tuỳ cách so: so với số user mới thật sự mở app thì Install thiếu khoảng <strong>1,4 – 1,8 lần</strong> (10/2026, 4 campaign iOS × GG); so với con số Google Ads tự báo thì lệch tới <strong>7 – 9 lần</strong> — nhưng số của Google là số model hoá, <em>đừng</em> lấy làm chuẩn. Sau ATT, Google không gửi postback mức device cho user iOS không đồng ý tracking (inventory iOS của Google chủ yếu là YouTube, gần như không có IDFA), nên Airbridge xếp những user đó vào <em>Organic</em>: bảng <em>airbridge_attributed_impression_raw</em> lấy cost/impression/click từ nền tảng nhưng install thì chỉ lấy từ attribution riêng của Airbridge → cost đủ mà install thiếu → CPI bị thổi lên (~143k ₫ so với ~21k ₫ cho cùng mức chi trên Android). Android, Apple Ads và Facebook <em>không</em> bị ảnh hưởng.</span><br>
-    <span style="color:#9ca3af;font-size:11px">Có <strong>ba tầng số</strong> cho cùng một campaign iOS, cả ba đều đúng theo định nghĩa của nó — ví dụ một campaign job iOS tháng 10: <strong>sàn</strong> Install (Airbridge, chỉ user đồng ý ATT, đã dedupe) <strong>363</strong> · <strong>giữa</strong> New user (mở app thật) <strong>589</strong> · <strong>trần</strong> conversion của Google Ads (số model hoá, cửa sổ 30 ngày, không dedupe) <strong>3.114</strong>. Cột mới chọn tầng <strong>giữa</strong> vì đó là số <em>đếm được</em>: nguồn <code>new_user_first_date</code> đếm distinct <code>clientId</code> theo <code>first_date</code>, lấy attribution của Airbridge và fallback sang GA khi Airbridge không nhận diện được, nên vớt lại được phần user iOS mà Install bỏ sót. Cộng <strong>đúng những ngày campaign có cost trong sheet</strong> y hệt quy tắc của Install, để Cost/New user và CPI luôn cùng một khoảng thời gian.</span><br>
-    <span style="color:#9ca3af;font-size:11px">Một điểm cần nói rõ: con số tầng giữa này <strong>vốn đã có sẵn trên bảng</strong>, nằm ở cột <strong>New user (D0)</strong> bên phải — trước 27/10 cột đó chỉ ghi "D0" nên không ai đọc ra. Hai cột đi từ hai bảng nguồn khác nhau (<code>new_user_first_date</code> và <code>retention_mapping_activation_by_source_campaign</code>) nhưng <strong>gần như trùng khít</strong>: đối chiếu toàn bộ <strong>26 campaign</strong> có data tháng 10/2026 (01–25/10) cho <strong>trung vị lệch 0,00%</strong>, <strong>23/26 campaign lệch dưới ±3%</strong>, tổng hai bên 44.718 vs 43.621 (−2,45%). Lệch tập trung ở <strong>Android</strong> (trung vị −2,6%, xa nhất −7,9%); <strong>các dòng iOS gần như khớp tuyệt đối</strong> (trung vị 0,00%, dao động −3,1% đến +1,5%) — mà iOS mới chính là lý do làm cái này. Chính việc hai nguồn độc lập cùng ra một con số là bằng chứng phần user iOS vớt lại được là <strong>thật</strong>, không phải artefact của một bảng. Vậy nên thứ <em>thực sự mới</em> ở đây là <strong>Cost/New user</strong> — trước giờ không có ở đâu trên dashboard — chứ không phải bản thân số new user.</span><br>
-    <span style="color:#9ca3af;font-size:11px">Giữ <strong>cả hai cột</strong> thay vì gộp, vì chúng phục vụ hai việc khác nhau: <strong>New user (D0) là mẫu số của RR D1 / RR D7</strong> nên phải cắt theo cohort đủ tuổi (bỏ những ngày chưa đủ 1/7 ngày để quan sát), còn <strong>New user cộng đúng những ngày có cost</strong> nên mới chia ra được Cost/New user cùng kỳ với CPI. Dùng cột D0 làm mẫu số cho cost sẽ lệch kỳ, và dùng cột New user làm mẫu số cho retention sẽ kéo tỉ lệ xuống vì gồm cả cohort chưa đủ tuổi. Vì hai số gần như trùng nhau, <em>đọc cột nào cũng được</em> khi chỉ cần biết "có bao nhiêu user mới"; chỉ khi ghép với cost hoặc với retention mới phải lấy đúng cột. Nếu sau này muốn gọn bảng thì bỏ bớt một cột được, nhưng phải đổi luôn công thức RR theo.</span><br>
-    <span style="color:#9ca3af;font-size:11px">Ba lưu ý khi đọc. (1) <strong>Không cộng Install với New user</strong> — chúng là hai cách đếm <em>cùng</em> một nhóm người, không phải hai nhóm; cột <strong>New user (D0)</strong> bên phải cũng là nhóm người đó, đếm từ bảng thứ ba, nên cũng không cộng vào. (2) New user key theo <code>clientId</code>, mà trên iOS user cài lại máy sẽ có Firebase instance id mới nên user quay lại bị tính là mới — đo trên 7 campaign iOS: khoảng <strong>29%</strong> với GG và <strong>9%</strong> với FB; bảng nguồn chưa có cờ <code>is_returning</code> để trừ ra. (3) GA chỉ vớt được Google, <strong>không</strong> vớt được Facebook (coverage ~1%), nên ở dòng FB hai cột gần bằng nhau — bình thường, không phải lỗi. Tỉ lệ New user / Install nằm ở tooltip từng ô: gần <strong>1,0x</strong> = hai nguồn khớp; cao hơn nhiều = Install đang thiếu user. Muốn biết <em>incrementality</em> thật thì chỉ holdout test mới trả lời được.</span>
+    <span style="color:#9ca3af">Cost lấy từ sheet <em>raw_total</em> (phase install + activate) · <strong>Install lấy từ Airbridge</strong> (<em>airbridge_attributed_impression_raw</em>) · <strong>New user</strong>, D1/D7 &amp; Lead 7d (user) từ <em>retention_mapping_activation_by_source_campaign</em> (<code>d0</code>, cộng đúng những ngày campaign có cost) · <strong>Lead event</strong> (lượt) từ <em>retention_activation_core_event_by_source_channel</em> (<code>SUM(total_lead)</code>) · DAU &amp; Save ad in D0 từ <em>new_user_adopt_activate</em> (<code>save_ad_d0_users</code>) · cộng theo campaign name qua mọi channel, join bằng campaign name</span>
   </div>
 
-  <div class="kpi-grid kpi-12" id="cd-kpis">
+  <div class="kpi-grid kpi-11" id="cd-kpis">
     <div class="kpi-card"><div class="kpi-label">Cost</div><div class="kpi-value" id="kpi-cd-cost">—</div><div class="kpi-sub" id="kpi-cd-cost-sub">—</div></div>
     <div class="kpi-card"><div class="kpi-label">Install</div><div class="kpi-value" id="kpi-cd-install">—</div><div class="kpi-sub">Từ Airbridge</div></div>
     <div class="kpi-card"><div class="kpi-label">CPI (blended)</div><div class="kpi-value" id="kpi-cd-cpi">—</div><div class="kpi-sub">Cost / Install</div></div>
     <div class="kpi-card"><div class="kpi-label">New user</div><div class="kpi-value" id="kpi-cd-nu">—</div><div class="kpi-sub" id="kpi-cd-nu-sub">Mở app thật</div></div>
     <div class="kpi-card"><div class="kpi-label">Cost/New user (blended)</div><div class="kpi-value" id="kpi-cd-cpnu">—</div><div class="kpi-sub">Cost / New user</div></div>
-    <div class="kpi-card"><div class="kpi-label">New user (D0)</div><div class="kpi-value" id="kpi-cd-d0">—</div><div class="kpi-sub">Cùng chỉ số với New user, bảng nguồn khác</div></div>
     <div class="kpi-card"><div class="kpi-label">RR D1</div><div class="kpi-value" id="kpi-cd-rr1">—</div><div class="kpi-sub" id="kpi-cd-rr1-sub">D1 / D0</div></div>
     <div class="kpi-card"><div class="kpi-label">% Save ad</div><div class="kpi-value" id="kpi-cd-save">—</div><div class="kpi-sub" id="kpi-cd-save-sub">Save ad in D0 / DAU</div></div>
     <div class="kpi-card"><div class="kpi-label">Lead 7d (user)</div><div class="kpi-value" id="kpi-cd-lead">—</div><div class="kpi-sub" id="kpi-cd-lead-sub">—</div></div>
@@ -605,17 +618,6 @@ canvas { max-height: 500px; }
 
   <div class="card" style="margin-bottom:16px">
     <div class="card-title">Xu hướng theo ngày</div>
-    <div class="section-subtitle" style="margin:-4px 0 10px">
-      Các chỉ số trong scorecard ở trên, vẽ theo <strong>từng ngày</strong>. Chip
-      <strong>Tháng / Channel / Vertical</strong> bên dưới dùng chung với scorecard ở trên và
-      bảng Campaign Detail bên dưới — đổi ở đây thì cả ba cùng đổi theo.
-      Chọn tháng cụ thể để xem ngày trong tháng đó, hoặc <em>All Months</em> để xem toàn bộ.
-      Bấm vào tên chỉ số ở chú thích để bật/tắt từng đường.
-      <em>Từ 27/10/2026:</em> nhóm <strong>Cost Efficiency</strong> có thêm đường
-      <strong>Cost/New user</strong> (cost ÷ New user D0) chạy song song với CPI —
-      trên các campaign <strong>iOS × Google</strong>, CPI bị ATT thổi lên nên đường này
-      mới là mức chi phí thật; chi tiết ở phần mô tả đầu mục 6.
-    </div>
     <div id="cdDailyControls" style="margin-bottom:10px"></div>
     <div style="position:relative;height:320px"><canvas id="chartCampDaily"></canvas></div>
     <div id="cdDailyNote" style="font-size:10px;color:#9ca3af;margin-top:8px"></div>
@@ -636,16 +638,6 @@ canvas { max-height: 500px; }
 
   <div class="card">
     <div class="card-title">Xu hướng theo ngày — theo campaign</div>
-    <div class="section-subtitle" style="margin:-4px 0 10px">
-      <strong>Gõ để lọc</strong> rồi chọn <strong>một campaign</strong> để xem các chỉ số của riêng nó
-      tăng/giảm <strong>theo từng ngày</strong> — cùng bộ chỉ số với scorecard &amp; bảng ở trên,
-      nhưng ở <strong>mức campaign</strong>. Cũng có thể bấm thẳng vào tên campaign trong
-      bảng <em>Campaign Detail</em> phía trên để nạp campaign đó vào chart này.
-      Bấm tên chỉ số ở chú thích để bật/tắt từng đường.
-      <em>Từ 27/10/2026:</em> nhóm <strong>Cost Efficiency</strong> có thêm đường
-      <strong>Cost/New user</strong> (cost ÷ New user D0) — so với CPI ngay trên cùng
-      một trục để thấy khoảng chênh do ATT trên campaign iOS × Google.
-    </div>
     <div id="cdNameControls" style="margin-bottom:10px"></div>
     <div style="position:relative;height:320px"><canvas id="chartCampByName"></canvas></div>
     <div id="cdNameNote" style="font-size:10px;color:#9ca3af;margin-top:8px"></div>
@@ -2454,12 +2446,11 @@ function renderCampDaily() {
     datasets = [
       bar('Cost (₫)', arr(o=>o.cost), C.blue, 'yMoney'),
       line('Install', arr(o=>o.install), C.teal, 'yCount'),
-      line('New user (D0)', arr(o=>o.d0), C.green, 'yCount'),
+      line('New user', arr(o=>o.d0), C.green, 'yCount'),
       line('CPI (₫)', arr(o=>rate(o.cost, o.install)), C.orange, 'yPer'),
-      // Cost / New user, the one metric in this block that exists nowhere else.
-      // Divides by o.d0 rather than the table's new_user column because this
-      // chart is already keyed on the retention table and the two agree within
-      // 1-5%; both are same-day counts, so the ratio stays within one period.
+      // Same d0 the New user column is built from, and at day grain cost and
+      // d0 land on the same day by construction, so no cost-day fold is needed
+      // here — the ratio is already within one period.
       line('Cost/New user (₫)', arr(o=>rate(o.cost, o.d0)), C.pink, 'yPer'),
       line('Cost/User (₫)', arr(o=>rate(o.cost, o.lead)), C.purple, 'yPer'),
     ];
@@ -2472,7 +2463,7 @@ function renderCampDaily() {
   } else {
     datasets = [
       bar('Install', arr(o=>o.install), C.blue, 'yCount'),
-      bar('New user (D0)', arr(o=>o.d0), C.teal, 'yCount'),
+      bar('New user', arr(o=>o.d0), C.teal, 'yCount'),
       line('Lead 7d (user)', arr(o=>o.lead), C.green, 'yCount'),
       line('RR D1', arr(o=>rate(o.d1, o.d0_d1)), C.purple, 'yPct'),
     ];
@@ -2730,12 +2721,11 @@ function renderCampByNameDaily() {
     datasets = [
       bar('Cost (₫)', arr(o=>o.cost), C.blue, 'yMoney'),
       line('Install', arr(o=>o.install), C.teal, 'yCount'),
-      line('New user (D0)', arr(o=>o.d0), C.green, 'yCount'),
+      line('New user', arr(o=>o.d0), C.green, 'yCount'),
       line('CPI (₫)', arr(o=>rate(o.cost, o.install)), C.orange, 'yPer'),
-      // Cost / New user, the one metric in this block that exists nowhere else.
-      // Divides by o.d0 rather than the table's new_user column because this
-      // chart is already keyed on the retention table and the two agree within
-      // 1-5%; both are same-day counts, so the ratio stays within one period.
+      // Same d0 the New user column is built from, and at day grain cost and
+      // d0 land on the same day by construction, so no cost-day fold is needed
+      // here — the ratio is already within one period.
       line('Cost/New user (₫)', arr(o=>rate(o.cost, o.d0)), C.pink, 'yPer'),
       line('Cost/User (₫)', arr(o=>rate(o.cost, o.lead)), C.purple, 'yPer'),
     ];
@@ -2748,7 +2738,7 @@ function renderCampByNameDaily() {
   } else {
     datasets = [
       bar('Install', arr(o=>o.install), C.blue, 'yCount'),
-      bar('New user (D0)', arr(o=>o.d0), C.teal, 'yCount'),
+      bar('New user', arr(o=>o.d0), C.teal, 'yCount'),
       line('Lead 7d (user)', arr(o=>o.lead), C.green, 'yCount'),
       line('RR D1', arr(o=>rate(o.d1, o.d0_d1)), C.purple, 'yPct'),
     ];
@@ -3175,8 +3165,8 @@ function renderCampDetail() {
   // sides; campaigns with a real 0 stay in, because spending with nothing to show
   // for it is exactly what this number is meant to expose.
   // Same shape as the lead blend below: divide only the cost of campaigns that
-  // actually have a new-user figure, so a campaign missing from
-  // new_user_first_date cannot inflate the blended Cost/New user.
+  // actually have a new-user figure, so a campaign with no retention row on any
+  // of its spending days cannot inflate the blended Cost/New user.
   const nuRows = rows.filter(r=>r.new_user!=null);
   const tNU = nuRows.reduce((s,r)=>s+(r.new_user||0),0);
   const tCostNU = nuRows.reduce((s,r)=>s+(r.cost||0),0);
@@ -3210,7 +3200,7 @@ function renderCampDetail() {
     nuSub.textContent = miss ? `${nuRows.length}/${rows.length} campaign có data` : 'Mở app thật';
     nuSub.style.color = miss ? '#f59e0b' : '';
     nuSub.title = miss
-      ? `${miss} campaign không có dòng nào trong new_user_first_date nên không được `
+      ? `${miss} campaign không có dòng retention nào trong những ngày có cost nên không được `
         + `tính vào ô này, và cost của chúng cũng bị loại khỏi Cost/New user bên cạnh `
         + `(${fmtVnd(tCostNU)} thay vì ${fmtVnd(tCost)}) để tử số và mẫu số cùng một tập campaign.`
       : '';
@@ -3266,10 +3256,9 @@ function renderCampDetail() {
       dmNote.innerHTML = bits.join('<br>');
     }
   })();
-  setTxt('kpi-cd-d0', fmtNum(tD0));
   setTxt('kpi-cd-rr1', tD0d1?fmtPct(tD1/tD0d1):'—');
-  // Name the window whenever it is shorter than the D0 card next to it, so the
-  // two cards visibly not dividing into each other has a stated reason.
+  // Name the window whenever it is shorter than the full period, so RR D1 not
+  // dividing into the New user card has a stated reason.
   const rr1Sub = document.getElementById('kpi-cd-rr1-sub');
   if (rr1Sub) {
     const mat1 = (D.maturity||{})['act.d1'] || {};
@@ -3279,7 +3268,8 @@ function renderCampDetail() {
       rr1Sub.title = `Chỉ tính cohort đã đủ tuổi: user cài từ ngày `
         + `${_dmyCd(mat1.through)} trở về trước. ${fmtNum(tD0-tD0d1)} user cài sau `
         + `ngày đó chưa có cơ hội quay lại nên không nằm ở mẫu số — để họ vào thì `
-        + `RR D1 sẽ thấp hơn thực tế. Vì vậy ô này KHÔNG bằng D1 / ô D0 bên cạnh.`;
+        + `RR D1 sẽ thấp hơn thực tế. Vì vậy ô này KHÔNG bằng D1 chia cho ô `
+        + `New user bên cạnh.`;
     } else {
       rr1Sub.textContent = 'D1 / D0';
       rr1Sub.style.color = '';
@@ -3390,9 +3380,9 @@ function renderCampDetail() {
     ${_cdChips('Tháng:','month',['all',...months],{all:'All Months'})}
     ${_cdChips('Channel:','channel',['all','FB','GG','APPLE'],{all:'All',APPLE:'Apple Ads'})}
     ${_cdChips('Vertical:','vertical',['all',...verts],{all:'All'})}
-    ${_cdChips('Sort:','sort',['cost','install','cpi','new_user','cpnu','d0','rr_d1','save_ad_rate','lead','cpl','lead_event','cpl_event'],
+    ${_cdChips('Sort:','sort',['cost','install','cpi','new_user','cpnu','rr_d1','save_ad_rate','lead','cpl','lead_event','cpl_event'],
         {cost:'Cost',install:'Install',cpi:'CPI',new_user:'New user',cpnu:'Cost/New user',
-         d0:'New user (D0)',rr_d1:'RR D1',save_ad_rate:'% Save',
+         rr_d1:'RR D1',save_ad_rate:'% Save',
          lead:'Lead 7d',cpl:'Cost/User',lead_event:'Lead event',cpl_event:'Cost/Lead'})}
     <div style="font-size:10px;color:#9ca3af;padding-top:2px">
       Tỉ lệ <span style="color:#c7cbd1;font-weight:600">màu nhạt</span> = volume quá thấp để kết luận
@@ -3452,9 +3442,9 @@ function renderCampDetail() {
   const dm = s => s ? s.slice(8,10)+'/'+s.slice(5,7) : '';
   const stBadge = name => {
     const s = (D.camp_status||{})[name];
-    if (!s) return `<td ${LOW} title="Airbridge không có dòng chi phí nào cho campaign này nên không suy ra được trạng thái">—</td>`;
-    if (s.active) return `<td style="text-align:left"><span style="font-size:10px;padding:2px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-weight:600;white-space:nowrap" title="Có chi phí ngày ${dm(asOf)} — ngày mới nhất Airbridge có data. Trạng thái suy ra từ spend, không phải đọc trực tiếp từ ads manager: campaign vừa tắt sáng nay vẫn hiện Đang chạy tới lần update sau.">● Đang chạy</span></td>`;
-    return `<td style="text-align:left"><span style="font-size:10px;padding:2px 7px;border-radius:999px;background:#f3f4f6;color:#6b7280;font-weight:600;white-space:nowrap" title="Ngày cuối cùng có chi phí là ${dm(s.last_cost_day)}; tới ${dm(asOf)} (ngày mới nhất Airbridge có data) thì không còn spend. Suy ra từ spend chứ không đọc trực tiếp từ ads manager.">○ Tắt ${dm(s.last_cost_day)}</span></td>`;
+    if (!s) return `<td class="cd-fz cd-fz3" ${LOW} title="Airbridge không có dòng chi phí nào cho campaign này nên không suy ra được trạng thái">—</td>`;
+    if (s.active) return `<td class="cd-fz cd-fz3" style="text-align:left"><span style="font-size:10px;padding:2px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-weight:600;white-space:nowrap" title="Có chi phí ngày ${dm(asOf)} — ngày mới nhất Airbridge có data. Trạng thái suy ra từ spend, không phải đọc trực tiếp từ ads manager: campaign vừa tắt sáng nay vẫn hiện Đang chạy tới lần update sau.">● Đang chạy</span></td>`;
+    return `<td class="cd-fz cd-fz3" style="text-align:left"><span style="font-size:10px;padding:2px 7px;border-radius:999px;background:#f3f4f6;color:#6b7280;font-weight:600;white-space:nowrap" title="Ngày cuối cùng có chi phí là ${dm(s.last_cost_day)}; tới ${dm(asOf)} (ngày mới nhất Airbridge có data) thì không còn spend. Suy ra từ spend chứ không đọc trực tiếp từ ads manager.">○ Tắt ${dm(s.last_cost_day)}</span></td>`;
   };
   const rrColor = v => v==null?'#9ca3af':v>0.35?'#10b981':v>0.25?'#374151':'#ef4444';
   // A muted cell = the rate is arithmetically correct but the denominator is
@@ -3478,19 +3468,20 @@ function renderCampDetail() {
     + 'gửi postback device-level cho user không đồng ý tracking, nên những user đó '
     + 'rơi vào Organic. Các dòng iOS x Google vì vậy thấp hơn thực tế — đọc kèm cột '
     + 'New user bên cạnh. Android, Apple Ads và Facebook không bị ảnh hưởng.';
-  const WHY_NU = 'Số user MỚI thật sự mở app từ campaign này, nguồn '
-    + 'ct_product_analytics.new_user_first_date (đếm distinct clientId theo ngày '
-    + 'first_date, cộng đúng những ngày campaign có cost — giống Install). Bảng này '
-    + 'lấy attribution của Airbridge và fallback sang GA khi Airbridge không nhận '
-    + 'diện được, nên vớt lại được phần user iOS mà Install bỏ sót. Đây là con số '
-    + 'GIỮA, nằm giữa Install (sàn) và conversion của Google Ads (trần, là số model '
-    + 'hoá, cửa sổ 30 ngày, không dedupe). Đây CÙNG là chỉ số của cột D0 bên phải, '
-    + 'chỉ khác bảng nguồn — hai bảng lệch nhau 1-5%. Giữ cả hai vì chúng dùng cho '
-    + 'hai việc khác nhau: D0 là mẫu số của RR D1 / RR D7 (cắt theo cohort đủ tuổi), '
-    + 'còn cột này cộng đúng những ngày có cost nên mới chia được ra Cost/New user. '
-    + 'Lưu ý: key theo clientId nên trên iOS một '
-    + 'user cài lại máy sẽ được tính là mới (khoảng 29% với GG, 9% với FB). GA chỉ '
-    + 'vớt được Google, không vớt được Facebook.';
+  const WHY_NU = 'Số user MỚI thật sự mở app từ campaign này — cột d0 của '
+    + 'retention_mapping_activation_by_source_campaign, cộng đúng những ngày '
+    + 'campaign có cost trong sheet (giống hệt quy tắc của Install), để '
+    + 'Cost/New user và CPI luôn cùng một khoảng thời gian. Đây là con số GIỮA, '
+    + 'nằm giữa Install (sàn — trên iOS sau ATT Airbridge chỉ nhận được user đồng '
+    + 'ý tracking) và conversion của Google Ads (trần — số model hoá, cửa sổ 30 '
+    + 'ngày, không dedupe); nó vớt lại được phần user iOS mà Install bỏ sót. '
+    + 'Trước 28/10/2026 cột này lấy từ ct_product_analytics.new_user_first_date; '
+    + 'đã đối chiếu và hai bảng ra CÙNG một con số (tổng 01-25/10 lệch +0,07%; '
+    + '10 tháng liên tiếp đều trong ±0,22%; theo campaign trung vị 0,00%), nên gộp '
+    + 'về một nguồn duy nhất — nguồn đang dùng cho RR D1/D7 và cho mục 3/4/5. '
+    + 'Lưu ý: đếm theo clientId nên trên iOS một user cài lại máy sẽ được tính là '
+    + 'mới (khoảng 29% với GG, 9% với FB); muốn biết incrementality thật thì chỉ '
+    + 'holdout test mới trả lời được.';
   // Per-row version: the ratio is the whole point of putting the two columns side
   // by side, and it is the one number a reader cannot compute at a glance when
   // both are six digits. Near 1.0x means the two sources agree (normal on
@@ -3516,21 +3507,6 @@ function renderCampDetail() {
     }
     return `${base} = ${ratio.toFixed(2)}x. ` + verdict + WHY_NU;
   };
-  // The single most-asked question about this table, so it is answered in the
-  // header rather than left for whoever next opens Looker side by side. RR D1 and
-  // RR D7 are the only columns whose denominator is not the D0 column beside
-  // them, and that difference is deliberate: a cohort with an H-day horizon is
-  // structurally 0% for its first H days, so counting those cohorts drags the
-  // rate down purely because the month is still running. Measured on the Aug 2026
-  // rows: b2s_bau_072126 read RR D1 24.3% / RR D7 2.0% before this and 30.8% /
-  // 10.1% after, on identical data.
-  const WHY_D0 = 'Số user mới (new users) từ campaign này trong kỳ đang xem, '
-    + 'nguồn cột d0 của retention_mapping_activation_by_source_campaign. Đây là '
-    + 'TỔNG cả kỳ — cột RR D1/RR D7 bên phải chia trên mẫu số nhỏ hơn (chỉ cohort '
-    + 'đã đủ tuổi) nên đừng lấy D1 chia ô này. Đây CÙNG là chỉ số của cột New user '
-    + 'bên trái, chỉ khác bảng nguồn — hai bảng lệch nhau 1-5%. Giữ cả hai vì ô này '
-    + 'là mẫu số của RR D1 / RR D7, còn cột New user cộng đúng những ngày có cost '
-    + 'nên mới chia được ra Cost/New user cùng kỳ với CPI.';
   // The count column is *not* affected by the cohort rule, and saying so matters:
   // otherwise the obvious reading of a shrinking denominator is that some D1s were
   // thrown away too. They were not — a cohort that is too new to have a D1
@@ -3582,8 +3558,9 @@ function renderCampDetail() {
     const shown = num != null ? `${fmtNum(num)} / ${fmtNum(d)}` : `mẫu số ${fmtNum(d)}`;
     return d < r.d0
       ? `${shown} — bỏ ${fmtNum(r.d0-d)} user cài trong ${horizon} ngày cuối kỳ vì `
-        + `chưa đủ tuổi để có D${horizon}. Cột D0 (${fmtNum(r.d0)}) là tổng cả kỳ.`
-      : `${shown} — cả kỳ đã đủ tuổi nên mẫu số bằng đúng cột D0.`;
+        + `chưa đủ tuổi để có D${horizon}. Tổng user mới cả kỳ là ${fmtNum(r.d0)}.`
+      : `${shown} — cả kỳ đã đủ tuổi nên mẫu số bằng đúng tổng user mới cả kỳ `
+        + `(${fmtNum(r.d0)}).`;
   };
   // Both the unit and the window changed here, and the tooltip has to name both.
   // This used to count lượt liên hệ trong ngày cài (cột `lead`); it now counts
@@ -3646,15 +3623,14 @@ function renderCampDetail() {
   const cplEventWindow = r => `Cost / Lead event = ${fmtVnd(r.cost||0)} / ${fmtNum(r.lead_event)} lượt. ${WHY_LEAD_EVENT}`;
   const tdL = `style="text-align:left"`;
   const head = `<tr>
-    <th style="text-align:left">#</th>
-    <th style="text-align:left">Campaign</th>
-    <th style="text-align:left" title="Suy ra từ chi phí: có spend trong ngày mới nhất Airbridge có data (${dm(asOf)}) = đang chạy. Không phải status đọc trực tiếp từ ads manager.">Status</th>
+    <th class="cd-fz cd-fz1" style="text-align:left">#</th>
+    <th class="cd-fz cd-fz2" style="text-align:left">Campaign</th>
+    <th class="cd-fz cd-fz3" style="text-align:left" title="Suy ra từ chi phí: có spend trong ngày mới nhất Airbridge có data (${dm(asOf)}) = đang chạy. Không phải status đọc trực tiếp từ ads manager.">Status</th>
     <th style="text-align:left">Cost</th>
     <th style="text-align:left" title="${WHY_INSTALL}">Install</th>
     <th style="text-align:left" title="Cost / Install. ${WHY_INSTALL}">CPI</th>
     <th style="text-align:left" title="${WHY_NU}">New user</th>
     <th style="text-align:left" title="Cost / New user. ${WHY_NU}">Cost/New user</th>
-    <th style="text-align:left" title="${WHY_D0}">New user (D0)</th>
     <th style="text-align:left" title="${WHY_D1}">D1</th>
     <th style="text-align:left" title="${WHY_RR('D1', 'act.d1', 1)}">RR D1</th>
     <th style="text-align:left" title="${WHY_RR('D7', 'act.d7', 7)}">RR D7</th>
@@ -3667,8 +3643,8 @@ function renderCampDetail() {
     <th style="text-align:left" title="Chi phí trên mỗi LƯỢT liên hệ = cost / Lead event. ${WHY_LEAD_EVENT}">Cost/Lead</th>
   </tr>`;
   const body = pageRows.map((r,i)=>`<tr>
-    <td ${tdL} style="color:#9ca3af;font-size:11px;text-align:left">${offset+i+1}</td>
-    <td style="text-align:left;max-width:300px;font-size:11px;word-break:break-all;line-height:1.35" title="${r.name} · ngành: ${(r.vertical||'other').toUpperCase()}"><span onclick="cdNameFocus(this.dataset.camp)" data-camp="${_attrEsc(r.name)}" title="Bấm để xem xu hướng theo ngày của campaign này" style="cursor:pointer;color:#4361ee;text-decoration:underline dotted;text-underline-offset:2px">${_cdHi(r.name, cdQ)}</span></td>
+    <td class="cd-fz cd-fz1" ${tdL} style="color:#9ca3af;font-size:11px;text-align:left">${offset+i+1}</td>
+    <td class="cd-fz cd-fz2" style="text-align:left;font-size:11px;word-break:break-all;line-height:1.35" title="${r.name} · ngành: ${(r.vertical||'other').toUpperCase()}"><div class="cd-name"><span onclick="cdNameFocus(this.dataset.camp)" data-camp="${_attrEsc(r.name)}" title="Bấm để xem xu hướng theo ngày của campaign này" style="cursor:pointer;color:#4361ee;text-decoration:underline dotted;text-underline-offset:2px">${_cdHi(r.name, cdQ)}</span></div></td>
     ${stBadge(r.name)}
     <td ${tdL} style="text-align:left;font-weight:600">${fmtVnd(r.cost||0)}</td>
     <td ${tdL} title="${WHY_INSTALL}">${fmtNum(r.install)}</td>
@@ -3677,13 +3653,12 @@ function renderCampDetail() {
         ? `<td ${tdL}>${r.cpi.toLocaleString('en')+' ₫'}</td>`
         : `<td ${LOW} title="Chỉ ${r.install||0} install — CPI không đáng tin">${r.cpi.toLocaleString('en')+' ₫'}</td>`)}
     ${r.new_user==null
-      ? `<td ${LOW} title="Không có dòng nào trong new_user_first_date cho campaign này trong kỳ">—</td>`
+      ? `<td ${LOW} title="Không có dòng retention nào cho campaign này trong những ngày có cost">—</td>`
       : `<td ${tdL} title="${nuVs(r)}">${fmtNum(r.new_user)}</td>`}
     ${r.cpnu==null ? `<td ${LOW}>—</td>`
       : (_cdEnough(r,'new_user')
         ? `<td ${tdL} title="${nuVs(r)}">${r.cpnu.toLocaleString('en')+' ₫'}</td>`
         : `<td ${LOW} title="Chỉ ${r.new_user||0} new user — Cost/New user không đáng tin">${r.cpnu.toLocaleString('en')+' ₫'}</td>`)}
-    <td ${tdL}>${fmtNum(r.d0)}</td>
     <td ${tdL}>${fmtNum(r.d1)}</td>
     ${cdRate(r, r.rr_d1, 'd0_d1', rrNA(r,'d0_d1',1)) ||
       `<td ${tdL} style="text-align:left;color:${rrColor(r.rr_d1)};font-weight:${(r.rr_d1||0)>0.35?'700':'400'}" title="${rrCell(r,'d0_d1',1)}">${fmtPct(r.rr_d1)}</td>`}
@@ -3707,7 +3682,19 @@ function renderCampDetail() {
         ? `<td ${tdL} title="${cplEventWindow(r)}">${r.cpl_event.toLocaleString('en')+' ₫'}</td>`
         : `<td ${LOW} title="Chỉ ${r.lead_event||0} lượt liên hệ — Cost/Lead không đáng tin. ${cplEventWindow(r)}">${r.cpl_event.toLocaleString('en')+' ₫'}</td>`)}
   </tr>`).join('');
-  tableEl.innerHTML = `<thead>${head}</thead><tbody>${body||'<tr><td colspan="19" style="text-align:center;color:#9ca3af;padding:20px">Không có campaign nào khớp filter</td></tr>'}</tbody>`;
+  tableEl.innerHTML = `<thead>${head}</thead><tbody>${body||'<tr><td colspan="18" style="text-align:center;color:#9ca3af;padding:20px">Không có campaign nào khớp filter</td></tr>'}</tbody>`;
+  // Pin the frozen block. offsetLeft is read off the header because the browser
+  // has already resolved the real column widths there, and every row shares
+  // them; setting `left` in CSS from the declared widths misses by the cell
+  // padding and leaves the columns overlapping as you scroll.
+  const fzHead = [...tableEl.querySelectorAll('thead th.cd-fz')];
+  if (fzHead.length) {
+    const x0 = fzHead[0].offsetLeft;
+    fzHead.forEach((th, i) => {
+      const left = (th.offsetLeft - x0) + 'px';
+      tableEl.querySelectorAll(`.cd-fz${i+1}`).forEach(c => { c.style.left = left; });
+    });
+  }
 
   const totalPages = Math.max(1, Math.ceil(total/PAGE));
   const btn = (disabled, label, target) =>

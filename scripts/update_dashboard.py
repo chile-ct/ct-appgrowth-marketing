@@ -1282,8 +1282,8 @@ try:
         1 for (camp, d) in ab_daily
         if d not in sheet_daily_cost.get((d.replace(day=1), camp), {}))
 
-    # New user + cost per new user, asked for 2026-10-27. Install stays; these
-    # sit beside it because on iOS install alone is not a usable denominator.
+    # New user + cost per new user, asked for 2026-10-27. Install stays; this
+    # sits beside it because on iOS install alone is not a usable denominator.
     #
     # The reason, from Airbridge's own explanation (Hằng, Slack 2026-10-26) and
     # confirmed against Google Ads the same day: after ATT, Google only claims an
@@ -1296,7 +1296,7 @@ try:
     # That leaves three numbers for the same campaign, and the honest reading is
     # a range, not a figure (gg_..._makelead30d, 01-26/10):
     #     Airbridge install          363   floor: ATT-consenting only, deduped
-    #     new_user_first_date        589   measured users who opened the app
+    #     new users who opened app   589   measured, no modelling
     #     Google Ads first_open    3,114   ceiling: modeled, 30d, not deduped
     # Across the five Google iOS campaigns Airbridge sees ~15% of what Google
     # reports. CPI on the Airbridge floor therefore reads ~143k ₫ against ~21k ₫
@@ -1304,26 +1304,42 @@ try:
     # campaigns, and the one number on this page most likely to get a campaign
     # killed for the wrong reason.
     #
-    # new_user_first_date is the defensible middle: every row is a real client
-    # that opened the app (no modelling), attributed by Airbridge where Airbridge
-    # has it and falling back to GA otherwise. GA is Google's own SDK, so it
-    # still sees the non-consenting users Airbridge pushed to Organic. It does
-    # not rescue Facebook the same way — GA catches ~1% of FB users, so FB keeps
-    # Airbridge's number — which is why this column reads as "the best each
-    # channel can measure", not as one common yardstick. Both channels land
-    # closer to truth here than either does under install alone.
-    #
-    # Caveat worth knowing before anyone calls this "acquisition": the table
-    # keys on clientId, and on iOS a reinstall gets a fresh Firebase instance id,
-    # so someone who deleted the app and came back counts as new. Measured on the
-    # seven iOS campaigns that is ~29% of Google's new users and ~9% of
+    # The middle tier is the defensible one: every row is a real client that
+    # opened the app, no modelling. Caveat before anyone calls it "acquisition":
+    # it keys on clientId, and on iOS a reinstall gets a fresh Firebase instance
+    # id, so someone who deleted the app and came back counts as new. Measured
+    # on the seven iOS campaigns that is ~29% of Google's new users and ~9% of
     # Facebook's. There is no is_returning flag to filter on yet.
     #
-    # Day grain, folded over the same per-campaign cost window as install, so
-    # cost / new_user divides one span of spend by the same span of users. One
-    # row per clientId is guaranteed by the table (its description: "Mỗi clientId
-    # chỉ có đúng 1 dòng") and first_date is that client's only date, so summing
-    # the daily counts cannot double-count anyone.
+    # SOURCE DECISION, 2026-10-27 — asked directly, "source nào đúng hơn". Two
+    # tables can answer "how many new users did this campaign bring":
+    # ct_product_analytics.new_user_first_date, and the retention table this
+    # section already reads. They are not two estimates of the same thing, they
+    # are the same number:
+    #     all campaigns, 01-25/10    221,509 vs 221,351     +0.07%
+    #     ten months, Jan-Oct        every month inside ±0.22%, no drift
+    #     26 campaigns, Oct          median 0.00%, 23/26 inside ±3%
+    # What spread remains per campaign is Android attribution assignment only
+    # (median -2.6%, worst -7.9%); the iOS rows, which are the whole reason this
+    # exists, agree at a median of 0.00%. So neither source is "more correct" at
+    # counting users, and every tie-break then favours the retention table: it is
+    # already fetched for this section, it is the denominator of RR D1/D7 on the
+    # same row and the source sections 3/4/5 run on, and dropping the second
+    # query removes an entire failure mode (including the freshness-lag warning
+    # this block used to need). Hence ONE column, sourced from d0.
+    #
+    # Day grain rather than reusing act's monthly SUM(d0), because it is folded
+    # over exactly the days the sheet has cost for — the rule install already
+    # follows, so cost/new_user and CPI always span the same days. Not cosmetic:
+    # a campaign that stopped mid-month keeps accruing d0 on days it did not pay
+    # for. Measured over October the section-wide gap is only 2.5%, but 4 of 23
+    # campaigns exceed 5% and the two worst are iOS — gg_growth_job_app_ios_...
+    # carries 477 d0 across the month against 183 on its 6 spending days, so the
+    # naive ratio would divide by a denominator 62% too large and publish a cost
+    # per user that much too cheap, on exactly the campaigns this column defends.
+    #
+    # The full-period figure is still published as `d0`, unchanged, because RR D1
+    # and RR D7 are cohort-cut and need it. It is simply no longer a column.
     #
     # Not the same thing as the DAU column, which comes from the adopt table and
     # is a different build of the same cohort: the two agree exactly from Mar to
@@ -1333,20 +1349,23 @@ try:
     nu_rows = run(f"""
     SELECT
       campaign,
-      first_date,
-      COUNT(DISTINCT clientId) as new_user
-    FROM ct_product_analytics.new_user_first_date
-    WHERE first_date BETWEEN DATE '{min(sheet_last_day).replace(day=1)}'
-                         AND DATE '{max(sheet_last_day.values())}'
+      visit_date,
+      SUM(d0) as d0
+    FROM ct_digital.dashboard__retention_mapping_activation_by_source_campaign
+    WHERE return_status = 'new'
+      AND vertical_user = 'all'
+      AND channel != 'all'
+      AND visit_date >= '2026-01-01'
+      AND visit_date <= '{sheet_max}'
       AND campaign IN ({in_list})
     GROUP BY 1, 2
     """)
     nu_daily = {}
     for r in nu_rows:
-        v = r['new_user']
+        v = r['d0']
         if v is None:
             continue
-        nu_daily[(str(r['campaign']), to_date(r['first_date']))] = int(v)
+        nu_daily[(str(r['campaign']), to_date(r['visit_date']))] = int(v)
     # nu_ prefix for the same module-scope reason as ab_ above: this block is
     # only visually nested, so every name it binds is a module-level global.
     new_user = {}
@@ -1359,19 +1378,16 @@ try:
                 nu_hit = True
         if nu_hit:
             new_user[(m_date, camp)] = nu_total
-    # Cost is folded over the sheet's full day window whether or not the new-user
-    # table reaches that far, exactly as install already is. Today the table runs
-    # ahead of the sheet (26/10 vs 25/10) so the two cover the same span, but if
-    # it ever falls behind, Cost/New user silently divides a full month of spend
-    # by a short month of users and reads too high. Per-campaign day gaps are not
-    # a usable signal — a campaign with no installs on a day legitimately has no
-    # row — so compare the table's last day against the sheet's and say so.
-    nu_max = max(d for (_c, d) in nu_daily) if nu_daily else None
-    nu_lag = (max(sheet_last_day.values()) - nu_max).days if nu_max else None
-    if nu_lag and nu_lag > 0:
-        print(f"  ! New user table only reaches {nu_max} but cost runs to "
-              f"{max(sheet_last_day.values())} ({nu_lag}d behind) — Cost/New user "
-              f"divides full spend by a short window and reads HIGH this run")
+    # How much the cost-day fold actually removes, printed so the day it stops
+    # mattering (or starts mattering a lot more) is visible in the run log rather
+    # than having to be re-measured by hand. The query is capped at sheet_max by
+    # the same bound act_rows uses, so this can no longer drift ahead of cost.
+    nu_full = sum(v for v in nu_daily.values())
+    nu_fold = sum(new_user.values())
+    if nu_full:
+        print(f"  New user: {nu_fold:,} on cost days vs {nu_full:,} over the "
+              f"whole window ({100 * (nu_full - nu_fold) / nu_full:.1f}% dropped "
+              f"as days with no spend)")
 
     # Campaign status (running / paused), asked for 2026-08-27 to replace the Ch
     # column: "để biết campaign đó đang active hay off".
@@ -1525,11 +1541,13 @@ try:
             'cost': cost,
             'install': install,
             'cpi': round(cost / install) if install else None,
-            # Sits next to install on purpose. On Google iOS the two differ by
-            # ~7x and the gap is measurement, not performance — see the long
-            # note at the nu_rows query. None (renders "—") when the new-user
-            # table has no row for this campaign-month at all, which must stay
-            # distinguishable from a real zero.
+            # Sits next to install on purpose: on Google iOS the two diverge and
+            # the gap is measurement, not performance — see the long note at the
+            # nu_rows query. Same d0 as the field below, but folded over the
+            # campaign's cost days only, so it divides against cost on the same
+            # window CPI uses. None (renders "—") when the retention table has no
+            # row on any day this campaign spent, which must stay distinguishable
+            # from a real zero.
             'new_user': nu,
             'cpnu': round(cost / nu) if nu else None,
             'd0': d0,
@@ -1926,7 +1944,7 @@ try:
         e[0] += r['install']
         e[1] += r['new_user']
     print(f"  New user: {nu_matched}/{len(camp_detail)} rows matched "
-          f"(source new_user_first_date, same day window as install); "
+          f"(d0 from the retention table, same day window as install); "
           + "; ".join(f"{k} install {i:,} -> new user {u:,} ({u / i:.2f}x)"
                       for k, (i, u) in sorted(nu_by_ch.items())))
     cd_lead_partial = sum(1 for r in camp_detail if r.get('lead_partial'))
