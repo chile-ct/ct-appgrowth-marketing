@@ -1699,7 +1699,12 @@ try:
             'phase': '+'.join(sorted(s['phases'])),
             'cost': cost,
             'install': install,
-            'cpi': round(cost / install) if install else None,
+            # `and cost` as well as install: a campaign can now have installs
+            # with no cost recorded — ChatGPT Ads spend is entered from a
+            # monthly screenshot, so the current month reads 0 until someone
+            # types it — and a CPI of "0 ₫" reads as free installs rather than
+            # as missing data. "—" is the honest rendering of an unknown.
+            'cpi': round(cost / install) if (install and cost) else None,
             # Sits next to install on purpose: on Google iOS the two diverge and
             # the gap is measurement, not performance — see the long note at the
             # nu_rows query. Same d0 as the field below, but folded over the
@@ -1708,7 +1713,7 @@ try:
             # row on any day this campaign spent, which must stay distinguishable
             # from a real zero.
             'new_user': nu,
-            'cpnu': round(cost / nu) if nu else None,
+            'cpnu': round(cost / nu) if (nu and cost) else None,
             'd0': d0,
             'd1': d1,
             'd7': d7,
