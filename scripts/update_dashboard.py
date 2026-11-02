@@ -654,6 +654,21 @@ SHEET_PHASES = {'install', 'activate'}
 # asa_growth_ convention the other three channels already use.
 GPT_CAMPAIGN_PREFIX = 'gpt_growth_'
 
+
+def _camp_vertical(camp, fallback='other'):
+    """Vertical parsed out of the campaign name.
+
+    Used where the sheet cannot supply one. raw_total's vertical column is an
+    ARRAYFORMULA that does not recognise the gpt_growth_ prefix and returns
+    blank for it (checked 2026-11-02), and the Airbridge-sourced channels have
+    no sheet row at all — both would otherwise bucket as 'other' and vanish
+    from the vertical filter. The token is matched with underscores on both
+    sides so a campaign with "jobs" or "goods" inside a longer word is not a
+    false hit, and `re` is not imported in this script.
+    """
+    return next((v for v in ('job', 'veh', 'pty', 'gds') if f'_{v}_' in camp),
+                fallback)
+
 # Growth team / Demand phase ad accounts -> (ad channel, vertical). Section 6's
 # table is App phase only; these feed the separate install-only panel under its
 # scorecard, added 2026-09-14 on Duyen's ask ("số install đến từ toàn bộ campaign
@@ -753,6 +768,7 @@ def fetch_camp_cost():
         # rather than as a mistake. Every gpt_ campaign so far is install phase.
         if channel is None and camp.lower().startswith(GPT_CAMPAIGN_PREFIX):
             channel, phase = 'GPT', (phase or 'install')
+            vertical = vertical or _camp_vertical(camp.lower())
         if channel is None or phase not in SHEET_PHASES:
             continue
         try:
@@ -858,9 +874,7 @@ def fetch_apple_camp_cost():
         # Campaign names look like asa_growth_job_app_ios_install_... /
         # asa_growth_pty_let_app_ios_..., i.e. the vertical always sits between
         # two underscores right after the fixed asa_growth_ prefix.
-        vertical = next(
-            (v for v in ('job', 'veh', 'pty', 'gds') if f'_{v}_' in camp),
-            'other')
+        vertical = _camp_vertical(camp)
         prev = last_day.get(m_date)
         if prev is None or d_date > prev:
             last_day[m_date] = d_date
@@ -929,9 +943,7 @@ def fetch_gpt_camp_install():
         camp = str(r['campaign'])
         d_date = to_date(r['event_date'])
         m_date = d_date.replace(day=1)
-        vertical = next(
-            (v for v in ('job', 'veh', 'pty', 'gds') if f'_{v}_' in camp),
-            'other')
+        vertical = _camp_vertical(camp)
         e = agg.setdefault((m_date, camp), {
             'cost': 0.0, 'install': 0.0, 'channel': 'GPT',
             'vertical': vertical, 'phases': {'install'},
