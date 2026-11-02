@@ -763,9 +763,17 @@ def fetch_camp_cost():
             bad_dates += 1
             continue
         seen += 1
-        prev = last_day.get(m_date)
-        if prev is None or d_date > prev:
-            last_day[m_date] = d_date
+        # GPT rows are kept out of last_day for the same reason Apple's are
+        # dropped by the caller: last_day feeds sheet_max, the cap that stops
+        # the BigQuery lead/activation queries running ahead of the sheet's
+        # cost. ChatGPT spend is entered from a monthly screenshot, not daily
+        # like FB/GG, so a single row dated at the end of the month would drag
+        # that cap forward for every other campaign too and reopen the bug
+        # fixed 2026-08-10 (leads counted for days with no matching cost).
+        if channel != 'GPT':
+            prev = last_day.get(m_date)
+            if prev is None or d_date > prev:
+                last_day[m_date] = d_date
         e = agg.setdefault((m_date, camp), {
             'cost': 0.0, 'install': 0.0, 'channel': channel,
             'vertical': vertical or 'other', 'phases': set(),
