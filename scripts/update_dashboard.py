@@ -615,6 +615,10 @@ TARGET_YEAR = 2026
 # here — unlike FB/GG, its cost/install come straight from Airbridge
 # (fetch_apple_camp_cost() below) rather than a hand-typed row in raw_total,
 # because Duyen has no manual entry for it in the sheet.
+#
+# ChatGPT Ads is not here either, but for the opposite reason to Apple's: see
+# GPT_CAMPAIGN_PREFIX below. Its cost CAN only come from the sheet, so it is
+# matched on the campaign name instead of the account name.
 GROWTH_ACCOUNTS = {
     'chotot_growth_sgd': 'FB',
     'chotot_pty_app':    'FB',
@@ -626,6 +630,29 @@ GROWTH_ACCOUNTS = {
     'chotot_growth_new': 'GG',
 }
 SHEET_PHASES = {'install', 'activate'}
+
+# ChatGPT Ads, added 2026-11-02 on Duyen's ask ("update thêm channel chat gpt
+# ads vào để tính đủ spend và số install"). It splits across BOTH sources,
+# which is why it is neither a GROWTH_ACCOUNTS entry nor an Apple-style
+# Airbridge-only fetch:
+#
+#   cost    -> raw_total ONLY. Airbridge carries the campaigns but reports
+#              cost_channel_metric = 0 for every one of them (checked
+#              2026-11-02, channels 'chatgpt' / 'chatgpt_ads' / 'openai'), so
+#              there is no automated spend feed the way there is for Apple.
+#   install -> Airbridge ONLY, via fetch_gpt_camp_install(). ChatGPT's own ads
+#              manager reports Conversions = 0 on every campaign because it has
+#              no install tracking, so the sheet's install column cannot carry
+#              a real number here the way it does for FB/GG.
+#
+# Matching is on the campaign prefix rather than account_name because no
+# ChatGPT row exists in raw_total yet (verified 2026-11-02: zero rows matching
+# 'gpt' in account_name or campaign_name across all 5,424 data rows). Keying on
+# the campaign name means whatever account label Duyen ends up typing, the row
+# is picked up with no further code change — and every campaign seen so far
+# follows gpt_growth_<vertical>_..., matching the fb_growth_/gg_growth_/
+# asa_growth_ convention the other three channels already use.
+GPT_CAMPAIGN_PREFIX = 'gpt_growth_'
 
 # Growth team / Demand phase ad accounts -> (ad channel, vertical). Section 6's
 # table is App phase only; these feed the separate install-only panel under its
@@ -719,6 +746,13 @@ def fetch_camp_cost():
         if not date_s or not camp:
             continue
         channel = GROWTH_ACCOUNTS.get(account.lower())
+        # ChatGPT Ads is matched on the campaign name, not the account name —
+        # see GPT_CAMPAIGN_PREFIX. The phase column is also allowed to be blank
+        # for these rows: it is a brand-new entry habit, and dropping the row
+        # silently over an unfilled column would show the channel as zero spend
+        # rather than as a mistake. Every gpt_ campaign so far is install phase.
+        if channel is None and camp.lower().startswith(GPT_CAMPAIGN_PREFIX):
+            channel, phase = 'GPT', (phase or 'install')
         if channel is None or phase not in SHEET_PHASES:
             continue
         try:
@@ -834,6 +868,84 @@ def fetch_apple_camp_cost():
     print(f"  Airbridge (Apple Search Ads): {len(rows)} rows -> "
           f"{len(agg)} campaign-months")
     return agg, last_day, daily
+
+
+# Airbridge files ChatGPT Ads traffic under three different channel strings
+# (seen 2026-11-02): 'chatgpt' carries essentially all of it, with a handful of
+# rows under 'chatgpt_ads' and 'openai'. All three are included so a campaign
+# does not lose installs to whichever label Airbridge happens to stamp on it.
+# NOT included is 'chatgpt.com', which is organic referral traffic from the
+# chatbot itself (campaign values there are things like 'zalo' and
+# 'web_to_app_pty', nothing with a gpt_ prefix) — that is not paid ChatGPT Ads
+# and must not be counted as such.
+GPT_CHANNELS = ('chatgpt', 'chatgpt_ads', 'openai')
+
+
+def fetch_gpt_camp_install():
+    """ChatGPT Ads install (and active days) from Airbridge.
+
+    Cost deliberately does NOT come from here — Airbridge reports
+    cost_channel_metric = 0 for every ChatGPT campaign, so spend has to be
+    typed into raw_total like FB/GG. See GPT_CAMPAIGN_PREFIX for the split.
+
+    Returns (agg, daily) in fetch_camp_cost()'s shape, but with cost pinned to
+    0.0: the caller adds the sheet's cost on top. The entries are created even
+    when the sheet has no matching row yet, so the campaigns show up with real
+    installs from day one and simply gain a cost column once someone enters the
+    spend — the same "starts counting by itself" behaviour DEMAND_ACCOUNTS'
+    four Facebook accounts have.
+
+    `daily` marks the days the campaign actually ran rather than the days it
+    cost money. It feeds the same cost-day fold that New user and leads use, so
+    a ChatGPT campaign that ran 20/10-01/11 is not credited with d0 from days
+    it was not live. Those two windows coincide for FB/GG (a day with spend is
+    a day it ran); here the spend side may be entered monthly, so the active
+    day is the honest window.
+
+    STARTS_WITH rather than LIKE 'gpt_growth_%' because `_` is a single-char
+    wildcard in LIKE, which would also match gptXgrowthY.
+    """
+    ch_list = ','.join(f"'{c}'" for c in GPT_CHANNELS)
+    rows = run(f"""
+    SELECT event_date, campaign,
+           GREATEST(SUM(app_installs_metric),
+                    SUM(app_install_users_metric)) as install
+    FROM chotot_airbridge.airbridge_attributed_impression_raw
+    WHERE channel IN ({ch_list})
+      AND STARTS_WITH(campaign, '{GPT_CAMPAIGN_PREFIX}')
+      AND event_date >= '2026-01-01'
+    GROUP BY 1, 2
+    """)
+    agg, daily = {}, {}
+    for r in rows:
+        camp = str(r['campaign'])
+        d_date = to_date(r['event_date'])
+        m_date = d_date.replace(day=1)
+        vertical = next(
+            (v for v in ('job', 'veh', 'pty', 'gds') if f'_{v}_' in camp),
+            'other')
+        e = agg.setdefault((m_date, camp), {
+            'cost': 0.0, 'install': 0.0, 'channel': 'GPT',
+            'vertical': vertical, 'phases': {'install'},
+        })
+        e['install'] += float(r['install'] or 0)
+        daily.setdefault((m_date, camp), {})[d_date] = 0.0
+    # Drop campaign-months with no install at all. The gpt_growth_ prefix also
+    # catches web-click campaigns (gpt_growth_pty_apt_web_click_bau_011126 and
+    # _house_ as of 2026-11-02) which never install an app, and this section is
+    # App phase only — without this they render as rows of dashes. A zero-
+    # install campaign that DOES have spend still appears: fetch_camp_cost
+    # creates that entry off the sheet row independently of this function.
+    dropped = [k for k, e in agg.items() if not e['install']]
+    for k in dropped:
+        del agg[k]
+        daily.pop(k, None)
+    print(f"  Airbridge (ChatGPT Ads): {len(rows)} rows -> "
+          f"{len(agg)} campaign-months, "
+          f"{sum(e['install'] for e in agg.values()):,.0f} installs"
+          + (f" ({len(dropped)} zero-install campaign-months skipped)"
+             if dropped else ""))
+    return agg, daily
 
 
 def _ret_date(s):
@@ -1000,6 +1112,33 @@ try:
     apple_agg, _apple_last_day, apple_daily_cost = fetch_apple_camp_cost()
     sheet_agg.update(apple_agg)
     sheet_daily_cost.update(apple_daily_cost)
+
+    # ChatGPT Ads is the one channel whose two halves come from different
+    # places, so it merges additively instead of with update(): the sheet rows
+    # (cost) are already in sheet_agg from fetch_camp_cost, and Airbridge
+    # supplies the install they cannot carry. Overwriting install rather than
+    # adding to it is deliberate — ChatGPT reports Conversions = 0, so whatever
+    # is in the sheet's install column for these rows is a placeholder, not a
+    # second measurement to be summed.
+    gpt_agg, gpt_daily = fetch_gpt_camp_install()
+    for gp_k, gp_v in gpt_agg.items():
+        gp_e = sheet_agg.get(gp_k)
+        if gp_e is None:
+            sheet_agg[gp_k] = gp_v
+        else:
+            gp_e['install'] = gp_v['install']
+        # setdefault, not assignment: a day the sheet already costed keeps its
+        # cost, and a day Airbridge saw traffic but the sheet has not reached
+        # yet joins the fold window at zero.
+        gp_d = sheet_daily_cost.setdefault(gp_k, {})
+        for gp_day in gpt_daily.get(gp_k, {}):
+            gp_d.setdefault(gp_day, 0.0)
+    gpt_costed = sum(1 for (m, c), e in sheet_agg.items()
+                     if e['channel'] == 'GPT' and e['cost'] > 0)
+    if gpt_agg and not gpt_costed:
+        print("  ChatGPT Ads: installs found but NO cost — raw_total has no "
+              "gpt_growth_* rows yet, so CPI/Cost per new user stay blank "
+              "until the spend is entered.")
 
     names = sorted({c for _m, c in sheet_agg})
     in_list = ','.join(
@@ -1945,7 +2084,12 @@ try:
         e[1] += r['new_user']
     print(f"  New user: {nu_matched}/{len(camp_detail)} rows matched "
           f"(d0 from the retention table, same day window as install); "
-          + "; ".join(f"{k} install {i:,} -> new user {u:,} ({u / i:.2f}x)"
+          # i can legitimately be 0 now that ChatGPT Ads is in: a campaign can
+          # have d0 but no attributed install. Without the guard that is a
+          # ZeroDivisionError inside this section's try, which would republish
+          # the whole of section 6 stale over nothing but a log line.
+          + "; ".join(f"{k} install {i:,} -> new user {u:,} "
+                      + (f"({u / i:.2f}x)" if i else "(no install)")
                       for k, (i, u) in sorted(nu_by_ch.items())))
     cd_lead_partial = sum(1 for r in camp_detail if r.get('lead_partial'))
     print(f"  Lead: {cd_lead_matched}/{len(camp_detail)} rows have a lead count, "
