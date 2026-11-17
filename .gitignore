@@ -1,3 +1,7 @@
 # Local preview server config — points at a machine-specific path under /tmp,
 # so it would only break for anyone else who checked it out.
 .claude/
+
+# Bytecode left behind by running or syntax-checking scripts/update_dashboard.py.
+__pycache__/
+*.pyc
