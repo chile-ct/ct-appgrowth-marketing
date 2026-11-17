@@ -260,26 +260,29 @@ for (src, metric), m in sorted(MAT.items()):
         note += ' | %d gap day(s), first %s' % (len(m['gaps']), m['gaps'][0])
     print("  Maturity %s.%s: through %s%s" % (src, metric, m['through'], note))
 
-# MAU / DAU / total-CT MAU / new users.
+# MAU / DAU / new users — three independent fetches, three independent fates.
 #
-# Wrapped the same way as every section below it, for the same reason, but it
-# took an outage to get here: these four were the last queries in the file
-# still running bare at module level. On 2026-11-10 the access this script
-# has to ct_product.dashboard__user_management_login_monthly went away, the
-# 403 propagated out of run(), and the script died on line 1 of its work —
-# before the sheet was read, before a single section had been built, before
-# anything was written. Seven days of nightly runs produced no commit at all,
-# so the published dashboard sat on 11-08 data while FB/GG spend, two new
-# pty comparead campaigns and a restarted job adview campaign piled up
-# unseen in raw_total. The skipped-section notice at the end of the workflow
-# never fired either: it runs after the commit step, and there was no commit.
+# They were one bare run of four queries until Nov 2026, when the grant on
+# ct_product.dashboard__user_management_login_monthly was revoked, the 403 came
+# straight out of run(), and the script died before the spend sheet was read or
+# a single section was built. Seven nightly runs produced no commit at all and
+# the published dashboard sat on 11-08 data while FB/GG spend, two new pty
+# comparead campaigns and a restarted job adview campaign piled up unseen in
+# raw_total. The skipped-section notice could not help either: it runs after the
+# commit step, and there was no commit.
 #
-# Wrapping them does not get the MAU numbers back — nothing here can, the
-# grant has to be restored — but it stops one dead table from holding the
-# other seven sections hostage, which is the whole premise of this file.
-mau_rows, dau_rows, ct_rows, new_rows = [], [], [], []
+# Split by table rather than wrapped as one block, because they do NOT share a
+# fate. The outage hit one dataset: ct_product. traffic_visit_detail lives in
+# chotot_data and was never implicated — and it is the one that matters most
+# here, because total_n is the denominator under every rate in sections 2-5.
+# Group them and a dead MAU table freezes that denominator while the numerators
+# beside it stay live, so each night's run would divide a growing adview count
+# by a total_n stuck on the day the grant broke and walk the rate upward on its
+# own. Separately, only the columns whose own table is down go stale.
+mau_rows, ct_rows, dau_rows, new_rows = [], [], [], []
+
+# MAU + total CT MAU — one table, so genuinely one fate.
 try:
-    # MAU
     mau_rows = run("""
     SELECT month,
       SUM(mau) as mau_app,
@@ -288,8 +291,17 @@ try:
     WHERE platform IN ('Android','iOS') AND month >= '2026-01-01'
     GROUP BY 1 ORDER BY 1
     """)
+    ct_rows = run("""
+    SELECT month, SUM(mau) as total_ct_mau
+    FROM ct_product.dashboard__user_management_login_monthly
+    WHERE month >= '2026-01-01' GROUP BY 1 ORDER BY 1
+    """)
+    print(f"  MAU: {len(mau_rows)} months")
+except Exception as e:
+    note_skipped("Overview MAU", e)
 
-    # DAU
+# DAU
+try:
     dau_rows = run("""
     SELECT DATE_TRUNC(date,MONTH) as month, AVG(daily_dau) as avg_dau
     FROM (SELECT date, SUM(dau) as daily_dau
@@ -297,15 +309,12 @@ try:
     WHERE platform IN ('Android','iOS') AND date >= '2026-01-01' GROUP BY date)
     GROUP BY 1 ORDER BY 1
     """)
+    print(f"  DAU: {len(dau_rows)} months")
+except Exception as e:
+    note_skipped("Overview DAU", e)
 
-    # Total CT MAU
-    ct_rows = run("""
-    SELECT month, SUM(mau) as total_ct_mau
-    FROM ct_product.dashboard__user_management_login_monthly
-    WHERE month >= '2026-01-01' GROUP BY 1 ORDER BY 1
-    """)
-
-    # New users
+# New users by channel — the denominator for sections 2-5, hence its own fate.
+try:
     new_rows = run("""
     SELECT DATE_TRUNC(date,MONTH) as month, channelGrouping,
       COUNT(DISTINCT clientId) as new_mau,
@@ -314,12 +323,9 @@ try:
     WHERE newVisits=1 AND platform IN ('iOS','Android') AND date >= '2026-01-01'
     GROUP BY 1,2 ORDER BY 1,2
     """)
-    print(f"  MAU: {len(mau_rows)} months | New users: {len(new_rows)} rows")
+    print(f"  New users: {len(new_rows)} rows")
 except Exception as e:
-    # Falls through to the previous data.json values at the use sites below:
-    # all_months, the overview arrays and the new-user split each have an
-    # explicit fallback, the way act_rows / ret_total_rows already do.
-    note_skipped("Overview MAU", e)
+    note_skipped("New users", e)
 
 # Activation (may fail with 403)
 act_rows = []
@@ -448,20 +454,22 @@ def days_in(d):
     return (datetime.date(d.year, d.month+1, 1) - datetime.timedelta(days=1)).day
 days = [days_in(m) for m in all_months]
 
-# Overview
+# Overview. Each of the three reads its own fetch, so one dead table does not
+# drag the other two back to last night's values with it.
 if mau_rows:
     mau_app   = get_arr(mau_rows, 'mau_app', all_months)
     mau_login = get_arr(mau_rows, 'mau_login', all_months)
     ct_mau    = get_arr(ct_rows, 'total_ct_mau', all_months)
-    avg_dau   = [round(v) if v else None for v in get_arr(dau_rows, 'avg_dau', all_months)]
 else:
-    # Padded to n: the spine is built from the maturity probe now, so it can
-    # reach a month these stored arrays never had, and every rate below indexes
-    # them by range(n). The padding reads as "—" on the page, which is the
-    # honest rendering of a month whose MAU was never fetched.
     print("  Using existing overview MAU data")
     mau_app = stale('overview','mau_app'); mau_login = stale('overview','mau_login')
-    ct_mau = stale('overview','total_ct_mau'); avg_dau = stale('overview','avg_dau')
+    ct_mau = stale('overview','total_ct_mau')
+
+if dau_rows:
+    avg_dau = [round(v) if v else None for v in get_arr(dau_rows, 'avg_dau', all_months)]
+else:
+    print("  Using existing DAU data")
+    avg_dau = stale('overview','avg_dau')
 
 # New users aggregated
 ch_map = {}
@@ -485,6 +493,9 @@ if new_rows:
         by_ch('Growth','new_login_mau')[i] + by_ch('(Other)','new_login_mau')[i]
         for i in range(n)]
 else:
+    # Reached only when traffic_visit_detail itself is down — not when the MAU
+    # tables are, which is the split above earning its keep.
+    #
     # The three published channel splits come back, not the six queried ones:
     # paid/display/crm are only ever summed into growth_n, and that sum is what
     # was stored. total_n is read back rather than re-summed for the same reason
