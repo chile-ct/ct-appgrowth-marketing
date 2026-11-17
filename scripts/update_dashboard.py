@@ -7,6 +7,10 @@ import json, os, datetime, calendar
 from google.cloud import bigquery
 
 PROJECT = "chotot-dwh"
+# First month the dashboard covers. Every query below filters on this same date;
+# keep them in step, and note the workbook the sheet half reads is per-year too
+# (see TARGET_YEAR), so a 2027 rollover touches more than this line.
+DATA_START_MONTH = datetime.date(2026, 1, 1)
 DATA_JSON = os.path.join(os.path.dirname(__file__), '..', 'data.json')
 
 client = bigquery.Client(project=PROJECT)
@@ -36,6 +40,20 @@ def safe_div(a, b):
 
 def daily(arr, days):
     return [round(arr[i]/days[i]) if arr[i] else None for i in range(len(arr))]
+
+def pad(arr, length, val=None):
+    return list(arr) + [val]*(length-len(arr))
+
+def stale(section, key):
+    """A section's values from the previous run, padded to the current spine.
+
+    Every fallback below reaches for last night's array, and the spine is built
+    from the maturity probe rather than from the arrays themselves, so it can
+    carry a month the stored copy never had — month rollover during an outage is
+    exactly when that happens. Padding is what keeps the `range(n)` loops that
+    read these from running off the end; the extra slots render as "—".
+    """
+    return pad(D[section].get(key, []), n)
 
 # Every section below is wrapped in try/except so one broken query cannot stop
 # the other seven from publishing: the handler keeps whatever that section had in
@@ -398,20 +416,26 @@ except Exception as e:
 
 # Build month list
 #
-# Every section indexes its arrays against this spine, and the stale copies kept
-# in D are only aligned with it because they were built against the same one. So
-# when the MAU query is down the spine has to come back from D unchanged rather
-# than be rebuilt from today's date: regenerating it would silently hand a month
-# more or fewer to arrays that still carry the old length, and every section
-# would be off by one. Parsing the labels back is exact (they are written by
-# month_label from these same dates) and the trailing "*" that marks the running
-# month is stripped before parsing, then re-added by month_label below.
-if mau_rows:
-    all_months = sorted(set(to_date(r['month']) for r in mau_rows))
-else:
-    print("  Using existing month spine")
-    all_months = [datetime.datetime.strptime(lbl.rstrip('*'), '%b %Y').date()
-                  for lbl in D['months']]
+# Derived from the maturity probe, not from mau_rows. Every section indexes its
+# arrays against this spine, so whatever builds it decides whether the dashboard
+# can be built at all — and hanging that on the MAU query is what turned one
+# revoked table grant into seven days of frozen dashboard in Nov 2026.
+#
+# The probe is the right source for it precisely because it is the one query
+# that is never allowed to fail quietly: the guard above refuses to rewrite
+# data.json unless act.d1 and ret90.d1 both came back with a window inside the
+# last 10 days. So by the time execution reaches here, max_date is known to
+# exist and known to be fresh, which is more than mau_rows ever guaranteed.
+#
+# Months run from the start of the data to the month holding that latest day —
+# consecutive, because every source here is a daily or monthly table with no
+# missing months, and because a gap would misalign every array against the
+# labels anyway.
+_mat_max = max(m['max_date'] for m in MAT.values())
+all_months, _m = [], DATA_START_MONTH
+while _m <= _mat_max.replace(day=1):
+    all_months.append(_m)
+    _m = datetime.date(_m.year + _m.month // 12, _m.month % 12 + 1, 1)
 months_labels = [month_label(m, today) for m in all_months]
 partial = [m for m in months_labels if m.endswith("*")]
 n = len(all_months)
@@ -431,10 +455,13 @@ if mau_rows:
     ct_mau    = get_arr(ct_rows, 'total_ct_mau', all_months)
     avg_dau   = [round(v) if v else None for v in get_arr(dau_rows, 'avg_dau', all_months)]
 else:
+    # Padded to n: the spine is built from the maturity probe now, so it can
+    # reach a month these stored arrays never had, and every rate below indexes
+    # them by range(n). The padding reads as "—" on the page, which is the
+    # honest rendering of a month whose MAU was never fetched.
     print("  Using existing overview MAU data")
-    eo = D['overview']
-    mau_app = eo['mau_app']; mau_login = eo['mau_login']
-    ct_mau = eo['total_ct_mau']; avg_dau = eo['avg_dau']
+    mau_app = stale('overview','mau_app'); mau_login = stale('overview','mau_login')
+    ct_mau = stale('overview','total_ct_mau'); avg_dau = stale('overview','avg_dau')
 
 # New users aggregated
 ch_map = {}
@@ -464,11 +491,11 @@ else:
     # — it is the denominator under every rate in sections 2-5, so it has to be
     # the number those rates were already published against.
     print("  Using existing new-user data")
-    eo = D['overview']; ea = D['acquisition']
-    direct_n = ea['direct']; organic_n = ea['organic']; other_n = ea['other']
-    growth_n = ea['growth']
+    direct_n = stale('acquisition','direct'); organic_n = stale('acquisition','organic')
+    other_n = stale('acquisition','other'); growth_n = stale('acquisition','growth')
     paid_n = display_n = growth_crm = [None]*n
-    total_n = eo['new_mau']; new_login_total = eo['new_login_mau']
+    total_n = stale('overview','new_mau')
+    new_login_total = stale('overview','new_login_mau')
 
 # Activation / NURR
 if act_rows:
@@ -493,17 +520,22 @@ if act_rows:
     paid_d1=a('Paid Search','nurr_d1'); paid_d7=a('Paid Search','nurr_d7'); paid_m1=a('Total','nurr_m1')
 else:
     print("  Using existing activation data")
-    ex=D['activation']; er=D['retention']; eg=D['growth_channel']
-    adview_total=ex['adview_total']; lead_total=ex['lead_total']
-    save_total=ex.get('save_total',[None]*n)
-    nurr_d1=er['nurr_d1']; nurr_d7=er['nurr_d7']; nurr_m1=er['nurr_m1']
-    dir_adv=ex['direct_adview']; org_adv=ex['organic_adview']; growth_adv=ex['growth_adview']
-    dir_lead=ex['direct_lead']; org_lead=ex['organic_lead']; growth_lead=ex['growth_lead']
-    dir_save=ex.get('direct_save',[None]*n); org_save=ex.get('organic_save',[None]*n)
-    growth_save=ex.get('growth_save',[None]*n)
-    dir_d1=er['direct_d1']; dir_d7=er['direct_d7']; dir_m1=er['direct_m1']
-    org_d1=er['organic_d1']; org_d7=er['organic_d7']; org_m1=er['organic_m1']
-    paid_d1=eg['nurr_d1']; paid_d7=eg['nurr_d7']; paid_m1=eg['nurr_m1']
+    adview_total=stale('activation','adview_total'); lead_total=stale('activation','lead_total')
+    save_total=stale('activation','save_total')
+    nurr_d1=stale('retention','nurr_d1'); nurr_d7=stale('retention','nurr_d7')
+    nurr_m1=stale('retention','nurr_m1')
+    dir_adv=stale('activation','direct_adview'); org_adv=stale('activation','organic_adview')
+    growth_adv=stale('activation','growth_adview')
+    dir_lead=stale('activation','direct_lead'); org_lead=stale('activation','organic_lead')
+    growth_lead=stale('activation','growth_lead')
+    dir_save=stale('activation','direct_save'); org_save=stale('activation','organic_save')
+    growth_save=stale('activation','growth_save')
+    dir_d1=stale('retention','direct_d1'); dir_d7=stale('retention','direct_d7')
+    dir_m1=stale('retention','direct_m1')
+    org_d1=stale('retention','organic_d1'); org_d7=stale('retention','organic_d7')
+    org_m1=stale('retention','organic_m1')
+    paid_d1=stale('growth_channel','nurr_d1'); paid_d7=stale('growth_channel','nurr_d7')
+    paid_m1=stale('growth_channel','nurr_m1')
 
 if ret_total_rows:
     tot_d1_bq=get_arr(ret_total_rows,'ret_d1',all_months); tot_d7_bq=get_arr(ret_total_rows,'ret_d7',all_months)
@@ -516,12 +548,13 @@ if ret_total_rows:
     web_m1=get_arr(ret_web_rows,'ret_m1',all_months) if ret_web_rows else [None]*n
 else:
     er=D['retention']
-    tot_d1_bq=er.get('total_d1',[None]*n); tot_d7_bq=er.get('total_d7',[None]*n); tot_m1_bq=er.get('total_m1',[None]*n)
-    app_d1=er.get('app_d1',tot_d1_bq); app_d7=er.get('app_d7',tot_d7_bq); app_m1=er.get('app_m1',tot_m1_bq)
-    web_d1=er.get('web_d1',[None]*n); web_d7=er.get('web_d7',[None]*n); web_m1=er.get('web_m1',[None]*n)
-
-def pad(arr, length, val=None):
-    return list(arr) + [val]*(length-len(arr))
+    tot_d1_bq=stale('retention','total_d1'); tot_d7_bq=stale('retention','total_d7')
+    tot_m1_bq=stale('retention','total_m1')
+    app_d1=stale('retention','app_d1') if 'app_d1' in er else tot_d1_bq
+    app_d7=stale('retention','app_d7') if 'app_d7' in er else tot_d7_bq
+    app_m1=stale('retention','app_m1') if 'app_m1' in er else tot_m1_bq
+    web_d1=stale('retention','web_d1'); web_d7=stale('retention','web_d7')
+    web_m1=stale('retention','web_m1')
 
 def daily_or_stored(arr, live, section, key):
     """Per-day average, or the stored one when its monthly total is stale.
@@ -532,7 +565,7 @@ def daily_or_stored(arr, live, section, key):
     month people read first. Republishing the stored per-day array keeps it
     consistent with the total it was derived from.
     """
-    return daily(arr, days) if live else D[section][key]
+    return daily(arr, days) if live else stale(section, key)
 
 tot_d1 = pad(tot_d1_bq, n)
 tot_d7 = pad(tot_d7_bq, n)
@@ -2556,7 +2589,9 @@ with open(DATA_JSON, 'w') as f:
     json.dump(out, f, indent=2, default=str)
 
 print(f"✅ data.json updated — {months_labels}")
-print(f"   Latest: {months_labels[-1]} | App MAU: {mau_app[-1]:,} | New: {total_n[-1]:,}")
+_fmt_n = lambda v: f"{v:,}" if v is not None else "n/a (stale)"
+print(f"   Latest: {months_labels[-1]} | App MAU: {_fmt_n(mau_app[-1])} "
+      f"| New: {_fmt_n(total_n[-1])}")
 
 # Written for the workflow's last step, which fails the run when this file
 # exists. See the note next to note_skipped() for why the failure is raised
