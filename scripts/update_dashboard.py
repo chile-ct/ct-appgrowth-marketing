@@ -242,42 +242,66 @@ for (src, metric), m in sorted(MAT.items()):
         note += ' | %d gap day(s), first %s' % (len(m['gaps']), m['gaps'][0])
     print("  Maturity %s.%s: through %s%s" % (src, metric, m['through'], note))
 
-# MAU
-mau_rows = run("""
-SELECT month,
-  SUM(mau) as mau_app,
-  SUM(CASE WHEN login_status='login' THEN mau END) as mau_login
-FROM ct_product.dashboard__user_management_login_monthly
-WHERE platform IN ('Android','iOS') AND month >= '2026-01-01'
-GROUP BY 1 ORDER BY 1
-""")
+# MAU / DAU / total-CT MAU / new users.
+#
+# Wrapped the same way as every section below it, for the same reason, but it
+# took an outage to get here: these four were the last queries in the file
+# still running bare at module level. On 2026-11-10 the access this script
+# has to ct_product.dashboard__user_management_login_monthly went away, the
+# 403 propagated out of run(), and the script died on line 1 of its work —
+# before the sheet was read, before a single section had been built, before
+# anything was written. Seven days of nightly runs produced no commit at all,
+# so the published dashboard sat on 11-08 data while FB/GG spend, two new
+# pty comparead campaigns and a restarted job adview campaign piled up
+# unseen in raw_total. The skipped-section notice at the end of the workflow
+# never fired either: it runs after the commit step, and there was no commit.
+#
+# Wrapping them does not get the MAU numbers back — nothing here can, the
+# grant has to be restored — but it stops one dead table from holding the
+# other seven sections hostage, which is the whole premise of this file.
+mau_rows, dau_rows, ct_rows, new_rows = [], [], [], []
+try:
+    # MAU
+    mau_rows = run("""
+    SELECT month,
+      SUM(mau) as mau_app,
+      SUM(CASE WHEN login_status='login' THEN mau END) as mau_login
+    FROM ct_product.dashboard__user_management_login_monthly
+    WHERE platform IN ('Android','iOS') AND month >= '2026-01-01'
+    GROUP BY 1 ORDER BY 1
+    """)
 
-# DAU
-dau_rows = run("""
-SELECT DATE_TRUNC(date,MONTH) as month, AVG(daily_dau) as avg_dau
-FROM (SELECT date, SUM(dau) as daily_dau
-FROM ct_product.dashboard__user_management_DAU
-WHERE platform IN ('Android','iOS') AND date >= '2026-01-01' GROUP BY date)
-GROUP BY 1 ORDER BY 1
-""")
+    # DAU
+    dau_rows = run("""
+    SELECT DATE_TRUNC(date,MONTH) as month, AVG(daily_dau) as avg_dau
+    FROM (SELECT date, SUM(dau) as daily_dau
+    FROM ct_product.dashboard__user_management_DAU
+    WHERE platform IN ('Android','iOS') AND date >= '2026-01-01' GROUP BY date)
+    GROUP BY 1 ORDER BY 1
+    """)
 
-# Total CT MAU
-ct_rows = run("""
-SELECT month, SUM(mau) as total_ct_mau
-FROM ct_product.dashboard__user_management_login_monthly
-WHERE month >= '2026-01-01' GROUP BY 1 ORDER BY 1
-""")
+    # Total CT MAU
+    ct_rows = run("""
+    SELECT month, SUM(mau) as total_ct_mau
+    FROM ct_product.dashboard__user_management_login_monthly
+    WHERE month >= '2026-01-01' GROUP BY 1 ORDER BY 1
+    """)
 
-# New users
-new_rows = run("""
-SELECT DATE_TRUNC(date,MONTH) as month, channelGrouping,
-  COUNT(DISTINCT clientId) as new_mau,
-  COUNT(DISTINCT CASE WHEN account_id IS NOT NULL THEN clientId END) as new_login_mau
-FROM chotot_data.traffic_visit_detail
-WHERE newVisits=1 AND platform IN ('iOS','Android') AND date >= '2026-01-01'
-GROUP BY 1,2 ORDER BY 1,2
-""")
-print(f"  MAU: {len(mau_rows)} months | New users: {len(new_rows)} rows")
+    # New users
+    new_rows = run("""
+    SELECT DATE_TRUNC(date,MONTH) as month, channelGrouping,
+      COUNT(DISTINCT clientId) as new_mau,
+      COUNT(DISTINCT CASE WHEN account_id IS NOT NULL THEN clientId END) as new_login_mau
+    FROM chotot_data.traffic_visit_detail
+    WHERE newVisits=1 AND platform IN ('iOS','Android') AND date >= '2026-01-01'
+    GROUP BY 1,2 ORDER BY 1,2
+    """)
+    print(f"  MAU: {len(mau_rows)} months | New users: {len(new_rows)} rows")
+except Exception as e:
+    # Falls through to the previous data.json values at the use sites below:
+    # all_months, the overview arrays and the new-user split each have an
+    # explicit fallback, the way act_rows / ret_total_rows already do.
+    note_skipped("Overview MAU", e)
 
 # Activation (may fail with 403)
 act_rows = []
@@ -373,7 +397,21 @@ except Exception as e:
     ret_web_rows = []
 
 # Build month list
-all_months = sorted(set(to_date(r['month']) for r in mau_rows))
+#
+# Every section indexes its arrays against this spine, and the stale copies kept
+# in D are only aligned with it because they were built against the same one. So
+# when the MAU query is down the spine has to come back from D unchanged rather
+# than be rebuilt from today's date: regenerating it would silently hand a month
+# more or fewer to arrays that still carry the old length, and every section
+# would be off by one. Parsing the labels back is exact (they are written by
+# month_label from these same dates) and the trailing "*" that marks the running
+# month is stripped before parsing, then re-added by month_label below.
+if mau_rows:
+    all_months = sorted(set(to_date(r['month']) for r in mau_rows))
+else:
+    print("  Using existing month spine")
+    all_months = [datetime.datetime.strptime(lbl.rstrip('*'), '%b %Y').date()
+                  for lbl in D['months']]
 months_labels = [month_label(m, today) for m in all_months]
 partial = [m for m in months_labels if m.endswith("*")]
 n = len(all_months)
@@ -387,10 +425,16 @@ def days_in(d):
 days = [days_in(m) for m in all_months]
 
 # Overview
-mau_app   = get_arr(mau_rows, 'mau_app', all_months)
-mau_login = get_arr(mau_rows, 'mau_login', all_months)
-ct_mau    = get_arr(ct_rows, 'total_ct_mau', all_months)
-avg_dau   = [round(v) if v else None for v in get_arr(dau_rows, 'avg_dau', all_months)]
+if mau_rows:
+    mau_app   = get_arr(mau_rows, 'mau_app', all_months)
+    mau_login = get_arr(mau_rows, 'mau_login', all_months)
+    ct_mau    = get_arr(ct_rows, 'total_ct_mau', all_months)
+    avg_dau   = [round(v) if v else None for v in get_arr(dau_rows, 'avg_dau', all_months)]
+else:
+    print("  Using existing overview MAU data")
+    eo = D['overview']
+    mau_app = eo['mau_app']; mau_login = eo['mau_login']
+    ct_mau = eo['total_ct_mau']; avg_dau = eo['avg_dau']
 
 # New users aggregated
 ch_map = {}
@@ -402,16 +446,29 @@ for r in new_rows:
 def by_ch(ch, key='new_mau'):
     return [ch_map.get((m,ch),{}).get(key, 0) or 0 for m in all_months]
 
-direct_n  = by_ch('Direct'); organic_n = by_ch('Organic Search')
-paid_n    = by_ch('Paid Search'); display_n= by_ch('Display')
-growth_crm= by_ch('Growth'); other_n   = by_ch('(Other)')
-growth_n  = [paid_n[i]+display_n[i]+growth_crm[i] for i in range(n)]
-total_n   = [direct_n[i]+organic_n[i]+growth_n[i]+other_n[i] for i in range(n)]
-new_login_total = [
-    by_ch('Direct','new_login_mau')[i] + by_ch('Organic Search','new_login_mau')[i] +
-    by_ch('Paid Search','new_login_mau')[i] + by_ch('Display','new_login_mau')[i] +
-    by_ch('Growth','new_login_mau')[i] + by_ch('(Other)','new_login_mau')[i]
-    for i in range(n)]
+if new_rows:
+    direct_n  = by_ch('Direct'); organic_n = by_ch('Organic Search')
+    paid_n    = by_ch('Paid Search'); display_n= by_ch('Display')
+    growth_crm= by_ch('Growth'); other_n   = by_ch('(Other)')
+    growth_n  = [paid_n[i]+display_n[i]+growth_crm[i] for i in range(n)]
+    total_n   = [direct_n[i]+organic_n[i]+growth_n[i]+other_n[i] for i in range(n)]
+    new_login_total = [
+        by_ch('Direct','new_login_mau')[i] + by_ch('Organic Search','new_login_mau')[i] +
+        by_ch('Paid Search','new_login_mau')[i] + by_ch('Display','new_login_mau')[i] +
+        by_ch('Growth','new_login_mau')[i] + by_ch('(Other)','new_login_mau')[i]
+        for i in range(n)]
+else:
+    # The three published channel splits come back, not the six queried ones:
+    # paid/display/crm are only ever summed into growth_n, and that sum is what
+    # was stored. total_n is read back rather than re-summed for the same reason
+    # — it is the denominator under every rate in sections 2-5, so it has to be
+    # the number those rates were already published against.
+    print("  Using existing new-user data")
+    eo = D['overview']; ea = D['acquisition']
+    direct_n = ea['direct']; organic_n = ea['organic']; other_n = ea['other']
+    growth_n = ea['growth']
+    paid_n = display_n = growth_crm = [None]*n
+    total_n = eo['new_mau']; new_login_total = eo['new_login_mau']
 
 # Activation / NURR
 if act_rows:
@@ -465,6 +522,17 @@ else:
 
 def pad(arr, length, val=None):
     return list(arr) + [val]*(length-len(arr))
+
+def daily_or_stored(arr, live, section, key):
+    """Per-day average, or the stored one when its monthly total is stale.
+
+    `days` tracks today even for a month whose numbers are frozen, so dividing
+    a republished total by a divisor that grows every night walks the per-day
+    average down a little each run — a decline that never happened, in the one
+    month people read first. Republishing the stored per-day array keeps it
+    consistent with the total it was derived from.
+    """
+    return daily(arr, days) if live else D[section][key]
 
 tot_d1 = pad(tot_d1_bq, n)
 tot_d7 = pad(tot_d7_bq, n)
@@ -2378,7 +2446,7 @@ out = {
         "avg_dau": avg_dau, "total_ct_mau": ct_mau,
         "web_other_mau": [a-b if a and b else None for a,b in zip(ct_mau,mau_app)],
         "new_mau": total_n, "new_login_mau": new_login_total,
-        "avg_new_dau": daily(total_n, days),
+        "avg_new_dau": daily_or_stored(total_n, bool(new_rows), "overview", "avg_new_dau"),
         "returning_mau": [a-b if a and b else None for a,b in zip(mau_app,total_n)],
         "pct_new": [safe_div(total_n[i],mau_app[i]) for i in range(n)],
         "login_rate": [safe_div(mau_login[i],mau_app[i]) for i in range(n)],
@@ -2387,8 +2455,10 @@ out = {
     },
     "acquisition": {
         "direct": direct_n, "organic": organic_n, "growth": gc_new, "other": other_n,
-        "direct_daily": daily(direct_n,days), "organic_daily": daily(organic_n,days),
-        "growth_daily": daily(gc_new,days), "other_daily": daily(other_n,days),
+        "direct_daily": daily_or_stored(direct_n, bool(new_rows), "acquisition", "direct_daily"),
+        "organic_daily": daily_or_stored(organic_n, bool(new_rows), "acquisition", "organic_daily"),
+        "growth_daily": daily_or_stored(gc_new, bool(new_rows), "acquisition", "growth_daily"),
+        "other_daily": daily_or_stored(other_n, bool(new_rows), "acquisition", "other_daily"),
         "growth_pct_total": [safe_div(gc_new[i],total_n[i]) for i in range(n)],
     },
     "activation": {
@@ -2418,7 +2488,8 @@ out = {
         "growth_d1": paid_d1, "growth_d7": paid_d7, "growth_m1": paid_m1,
     },
     "growth_channel": {
-        "new_users": gc_new, "avg_new_dau": daily(gc_new,days),
+        "new_users": gc_new,
+        "avg_new_dau": daily_or_stored(gc_new, bool(new_rows), "growth_channel", "avg_new_dau"),
         "adview_activated": growth_adv, "lead_activated": growth_lead,
         "adview_rate": [safe_div(growth_adv[i],gc_new[i]) for i in range(n)],
         "lead_rate": [safe_div(growth_lead[i],gc_new[i]) for i in range(n)],
